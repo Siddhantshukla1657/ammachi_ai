@@ -458,4 +458,50 @@ html, body { width: 100%; overflow-x: hidden; }           /* safety */
     color: #000000 !important;
   }
 }
+/* =========================
+   FORCE ALL TEXT BLACK
+   ========================= */
+@media (prefers-color-scheme: dark) {
+  body,
+  .dash-container,
+  .dash-title,
+  .dash-welcome,
+  .stat-value,
+  .p-value,
+  .w-temp,
+  .stat-label,
+  .scan-sub,
+  .w-desc,
+  .p-name,
+  .card,
+  .stat-card,
+  .price-summary,
+  .card-header strong,
+  .market-prices h3,
+  .scan-title,
+  .p-change.pos,
+  .p-change.neg,
+  .advisory,
+  .btn-cta,
+  .btn-cta.outline {
+    color: #000000 !important;   /* force black text */
+  }
+}
+
+.dashboard-content-wrapper {
+  max-width: 1300px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-top: 15px;
+  /* Optional: add top/bottom padding if you want */
+}
+
+@media (max-width: 700px) {
+  .dashboard-content-wrapper {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
 

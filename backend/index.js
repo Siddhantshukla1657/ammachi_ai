@@ -68,6 +68,7 @@ const diseaseRoutes = require('./routes/disease');
 const farmersRoutes = require('./routes/farmers');
 const marketRoutes = require('./routes/market');
 const weatherRoutes = require('./routes/weather');
+const chatbotRoutes = require('./routes/chatbot');
 
 // API Routes - keep them together and before error handlers
 app.use('/api/auth', authRoutes);
@@ -75,6 +76,7 @@ app.use('/api/disease', diseaseRoutes);
 app.use('/api/farmers', farmersRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api/weather', weatherRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -95,22 +97,22 @@ app.use((req, res) => {
 async function connectDB() {
   if (!process.env.MONGO_URI) {
     console.log("⚠️ MongoDB URI not provided. MongoDB features will be disabled.");
-    return;
+    return null;
   }
 
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("✅ MongoDB connected successfully");
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`✅ MongoDB connected: ${conn.connection.host}`);
+    return conn;
   } catch (err) {
     console.warn("❌ MongoDB connection failed:", err.message);
     console.log("⚠️ MongoDB features will be disabled.");
+    return null;
   }
 }
 
 connectDB();
+
 
 // Start server
 app.listen(PORT, () => {

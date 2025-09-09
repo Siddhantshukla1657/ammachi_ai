@@ -269,6 +269,9 @@ export default function SignUp() {
                 <option value="Other">Other</option>
               </select>
             </label>
+          </div>
+
+          <div className="field-row">
             <label className="auth-label">
               <span className="label-text">District</span>
               <input className="auth-input" name="district" value={form.district} onChange={onChange} />
