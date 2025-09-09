@@ -49,6 +49,7 @@ app.get("/", (req, res) => {
 app.use(express.static('public'));
 
 // Special route for weather API testing
+const path = require('path');
 app.get('/test-weather', (req, res) => {
   res.sendFile(path.join(__dirname, 'testapis', 'public', 'weather-test.html'));
 });
@@ -72,6 +73,8 @@ const weatherRoutes = require('./routes/weather');
 app.use('/api/auth', authRoutes);
 app.use('/api/disease', diseaseRoutes);
 app.use('/api/farmers', farmersRoutes);
+app.use('/api/market', marketRoutes);
+app.use('/api/weather', weatherRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
