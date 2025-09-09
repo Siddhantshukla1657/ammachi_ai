@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const multer = require("multer");
 const mongoose = require("mongoose");
+const path = require("path");
 require("dotenv").config();
 
 // Import Firebase config
@@ -40,6 +41,14 @@ app.get("/", (req, res) => {
   });
 });
 
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
+
+// Special route for weather API testing
+app.get('/test-weather', (req, res) => {
+  res.sendFile(path.join(__dirname, 'testapis', 'public', 'weather-test.html'));
+});
+
 app.get("/api/health", (req, res) => {
   res.json({
     status: "healthy",
@@ -50,9 +59,11 @@ app.get("/api/health", (req, res) => {
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const weatherRoutes = require('./routes/weather');
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // TODO: Add more API routes here as the project grows
 // Example:
