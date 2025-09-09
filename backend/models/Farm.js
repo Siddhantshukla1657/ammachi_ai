@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const FarmSchema = new mongoose.Schema({
-  name: { type: String, required: true },           // Name of the farm
-  area: { type: Number, required: true },           // Area in acres
+  name: { type: String, required: true },           
+  area: { type: Number, required: true },           
   location: {
-    state: { type: String, default: 'Kerala' },    // State (default Kerala)
-    district: { type: String, required: true }     // District
+    state: { type: String, default: 'Kerala' },    
+    district: { type: String, required: true }     
   },
-  crops: { type: [String], default: [] }           // Types of crops in this farm
+  crops: { type: [String], default: [] }          
 });
 
 module.exports = FarmSchema;
