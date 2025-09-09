@@ -31,7 +31,6 @@
     gap: 20px; /* space between back button and card */
   }
   
-  
   .auth-card{
     width: 100%;
     border-radius: 16px;
@@ -42,31 +41,31 @@
   
   .auth-card-inner{
     background: var(--card-bg);
-    border: 1px solid var(--border-subtle);
+    border: 2px solid var(--border-subtle);
     border-radius: 16px;
     padding: 24px;
     overflow: hidden;           
     background-clip: padding-box;
+    box-shadow: 0 4px 12px rgba(19,54,40,.08);
   }
-  
   
   .auth-title{
     margin: 0 0 6px;
     font-size: 1.9rem;
     font-weight: 800;
-    color: #064e3b;              
+    color: #2d5a47;              
     line-height: 1.2;
   }
   
   .auth-note{
     margin: 0 0 16px;
-    color: var(--text-muted);
+    color: #2d5a47;
   }
   
   /* Errors */
   .auth-error{
     background: rgba(248,113,113,.12);
-    border: 1px solid rgba(248,113,113,.25);
+    border: 2px solid rgba(127,29,29,.4);
     color: #7f1d1d;
     padding: 10px 12px;
     border-radius: 10px;
@@ -95,7 +94,7 @@
   
   .label-text{
     font-weight: 700;
-    color: #064e3b;
+    color: #2d5a47;
   }
   
   .auth-input{
@@ -108,6 +107,8 @@
     font-size: 1rem;
     width: 100%;
     box-sizing: border-box;
+    outline: none;
+    box-shadow: none;
   }
   
   .auth-input::placeholder{
@@ -131,13 +132,13 @@
   
   .chip{
     background: #d1fae5;        
-    border: 1px solid rgba(0,0,0,0.04);
+    border: 1.5px solid var(--border-subtle);
     padding: 4px 10px;
     border-radius: 999px;
     font-size: .9rem;
     color: #065f46;
+    font-weight: 500;
   }
-  
   
   .btn-submit{
     background: #a7f3d0;        
@@ -147,7 +148,7 @@
     padding: 12px 16px;
     font-weight: 800;
     cursor: pointer;
-    transition: background .2s ease, transform .1s ease;
+    transition: background .2s ease, color .2s ease, transform .1s ease;
   }
   
   .btn-submit:hover{ background: #8df0be; }
@@ -155,7 +156,7 @@
   
   .btn-outline{
     background: #fff;
-    border: 1.5px solid #cbd5e1; /* slate-300 */
+    border: 2px solid var(--border-subtle);
     padding: 10px 14px;
     border-radius: 12px;
     color: #0f1720;
@@ -163,7 +164,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background .2s ease, border-color .2s ease;
+    transition: background .2s ease;
   }
   
   .btn-outline:hover{
@@ -173,11 +174,12 @@
   
   .btn-google{
     background: #fff;
-    border: 1.5px solid #cbd5e1;
+    border: 2px solid var(--border-subtle);
     padding: 10px 14px;
     border-radius: 12px;
-    color: #0f1720;
+    color: #2d5a47;
     cursor: pointer;
+    transition: background .2s ease, border-color .2s ease;
   }
   
   
@@ -215,7 +217,6 @@
   .back-home:active{
     transform: translateY(1px);
   }
-  
   
   @media (max-width: 920px){
     .field-row{ gap: 14px; }
