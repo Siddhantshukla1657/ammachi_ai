@@ -2,7 +2,7 @@
 
 .weather-layout { display: flex; gap: 20px; }
 .weather-main { flex: 1; }
-.weather-container { max-width: 1100px; margin: 0 auto; padding: 24px; background: linear-gradient(180deg, var(--bg-1), var(--bg-2)); min-height: 100vh; }
+.weather-container { max-width: 1100px; margin: 0 auto; padding: 24px; background: linear-gradient(180deg, #e6f7ee 0%, #c7edd9 50%, #9fe0ba 100%); min-height: 100vh; }
 .weather-title { margin: 0; color: #064e3b; font-size: 1.6rem; }
 .weather-sub { margin: 4px 0 18px; color: var(--muted); }
 .weather-controls { display:flex; gap:12px; align-items:center; margin-bottom: 14px; }

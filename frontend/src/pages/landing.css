@@ -84,7 +84,7 @@
   margin-bottom: 0.25rem;
 }
 
-/* Mobile tweaks */
+
 @media (max-width: 900px) {
   .hero-content { padding: 1.25rem; max-width: 640px; }
   .brand-emblem { width: 120px; }
@@ -98,4 +98,38 @@
   .btn { width: 100%; justify-content: center; }
   .features-strip { flex-wrap: wrap; justify-content: center; }
   .feature { width: 46%; }
+}
+
+.login-btn:hover {
+  color: #fff !important;
+}
+
+
+.signup-btn:hover {
+  color: #000 !important;
+}
+
+.back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2px solid #2e7d32;     
+  color: #2e7d32;
+  background: transparent;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .2s ease, color .2s ease, transform .15s ease;
+}
+
+.back-home:hover {
+  background: #2e7d32;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.back-home:active {
+  transform: translateY(0);
 }
