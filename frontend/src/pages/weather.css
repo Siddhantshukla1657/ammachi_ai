@@ -76,7 +76,7 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-.page-scroll { overflow-y: auto; height: 100vh; padding-left: 220px; box-sizing: border-box; }
+.page-scroll { overflow-y: auto; height: 100vh; padding-left: 20px; box-sizing: border-box; }
 @media (max-width: 1200px) {
   .weather-container { padding: 16px; }
   .current-weather, .advisories { min-width: 220px; }
