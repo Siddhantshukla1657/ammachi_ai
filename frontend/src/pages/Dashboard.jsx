@@ -60,14 +60,60 @@ export default function Dashboard() {
     return () => { window.removeEventListener('resize', handleResize); if (chart) chart.dispose && chart.dispose(); };
   }, []);
 
-  // Weather state (mock/fallback)
-  const [weather] = useState({
+  // Weather state with API integration
+  const [weather, setWeather] = useState({
     temp: 28,
     desc: 'Partly Cloudy',
     humidity: 75,
     wind: 12,
     icon: <FaCloud style={{fontSize: 32, color: "#3b7c5a"}} />
   });
+  
+  // Fetch weather data from API
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      try {
+        // Using Thiruvananthapuram as default location
+        const { lat, lon } = { lat: 8.5241, lon: 76.9366 };
+        
+        // Fetch current weather data
+        const response = await fetch(`/api/weather/current?lat=${lat}&lon=${lon}`);
+        
+        if (!response.ok) {
+          throw new Error(`Weather API returned status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Update weather state with real data
+        setWeather({
+          temp: Math.round(data.main?.temp || 28),
+          desc: data.weather?.[0]?.description || 'Partly Cloudy',
+          humidity: data.main?.humidity || 75,
+          wind: Math.round(data.wind?.speed || 12),
+          icon: getWeatherIcon(data.weather?.[0]?.main)
+        });
+      } catch (error) {
+        console.error('Failed to fetch weather data:', error);
+        // Keep the default weather data on error
+      }
+    };
+    
+    fetchWeatherData();
+  }, []);
+  
+  // Helper function to get weather icon based on condition
+  const getWeatherIcon = (weatherCode) => {
+    if (!weatherCode) return <FaCloud style={{fontSize: 32, color: "#3b7c5a"}} />;
+    const code = weatherCode.toLowerCase();
+    if (code.includes('clear')) return <FaCloud style={{fontSize: 32, color: "#f59e0b"}} />;
+    if (code.includes('cloud')) return <FaCloud style={{fontSize: 32, color: "#3b7c5a"}} />;
+    if (code.includes('rain')) return <FaTint style={{fontSize: 32, color: "#3b82f6"}} />;
+    if (code.includes('snow')) return <FaCloud style={{fontSize: 32, color: "#e5e7eb"}} />;
+    if (code.includes('thunder')) return <FaExclamationTriangle style={{fontSize: 32, color: "#f59e0b"}} />;
+    if (code.includes('mist') || code.includes('fog')) return <FaCloud style={{fontSize: 32, color: "#9ca3af"}} />;
+    return <FaCloud style={{fontSize: 32, color: "#3b7c5a"}} />;
+  };
 
   // Recent scans (mock/fallback)
   const recentScans = [
@@ -87,8 +133,8 @@ export default function Dashboard() {
     }
   ];
 
-  // Tips (mock/fallback)
-  const tips = [
+  // Weather-based farming tips
+  const [tips, setTips] = useState([
     {
       title: 'Morning Care',
       desc: "Check for pest damage during early morning hours when they're most active.",
@@ -97,11 +143,59 @@ export default function Dashboard() {
     },
     {
       title: 'Watering Tip',
-      desc: 'High humidity today - reduce watering to prevent fungal growth.',
+      desc: 'Adjust watering based on current weather conditions.',
       color: '#e0edff',
       border: '#a5b4fc'
     }
-  ];
+  ]);
+  
+  // Update tips based on weather data
+  useEffect(() => {
+    const updatedTips = [...tips];
+    
+    // Update watering tip based on humidity
+    if (weather.humidity > 70) {
+      updatedTips[1] = {
+        ...updatedTips[1],
+        desc: `High humidity (${weather.humidity}%) - reduce watering to prevent fungal growth.`,
+        color: '#e0edff',
+        border: '#a5b4fc'
+      };
+    } else if (weather.humidity < 40) {
+      updatedTips[1] = {
+        ...updatedTips[1],
+        desc: `Low humidity (${weather.humidity}%) - consider increasing watering frequency.`,
+        color: '#fee2e2',
+        border: '#fca5a5'
+      };
+    } else {
+      updatedTips[1] = {
+        ...updatedTips[1],
+        desc: `Moderate humidity (${weather.humidity}%) - maintain regular watering schedule.`,
+        color: '#e0edff',
+        border: '#a5b4fc'
+      };
+    }
+    
+    // Add weather-specific tip based on conditions
+    if (weather.desc.toLowerCase().includes('rain')) {
+      updatedTips.push({
+        title: 'Rain Alert',
+        desc: 'Rainy conditions detected. Consider postponing outdoor activities like spraying or harvesting.',
+        color: '#dbeafe',
+        border: '#93c5fd'
+      });
+    } else if (weather.desc.toLowerCase().includes('clear') || weather.desc.toLowerCase().includes('sun')) {
+      updatedTips.push({
+        title: 'Sunny Day',
+        desc: 'Good conditions for harvesting and drying crops. Ensure adequate irrigation.',
+        color: '#fef3c7',
+        border: '#fcd34d'
+      });
+    }
+    
+    setTips(updatedTips);
+  }, [weather]);
 
   return (
     <div className="dash-layout">
@@ -175,9 +269,26 @@ export default function Dashboard() {
 
           {/* Block 3: Weather */}
           <div className="card todays-weather" style={{flex: 1, minWidth: 0}}>
-            <div style={{display: 'flex', alignItems: 'center', marginBottom: 10}}>
-              <FaCloud style={{marginRight: 8, color: '#3b7c5a'}} />
-              <strong style={{fontSize: '1.15rem'}}>Today's Weather</strong>
+            <div style={{display: 'flex', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between'}}>
+              <div style={{display: 'flex', alignItems: 'center'}}>
+                <FaCloud style={{marginRight: 8, color: '#3b7c5a'}} />
+                <strong style={{fontSize: '1.15rem'}}>Today's Weather</strong>
+              </div>
+              <button 
+                onClick={() => window.location.hash = '#/weather'}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#059669',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                View Details
+              </button>
             </div>
             <div style={{display: 'flex', alignItems: 'center', marginBottom: 4}}>
               <span style={{fontSize: 28, fontWeight: 800, marginRight: 10}}>{weather.temp}°C</span>
