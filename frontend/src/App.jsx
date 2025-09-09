@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useMemo, useState } from 'react';
+import Landing from './pages/Landing.jsx';
+import SignIn from './pages/SignIn.jsx';
+import SignUp from './pages/SignUp.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Profile from './pages/Profile.jsx';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+function getRoute() {
+  const h = window.location.hash.replace('#', '');
+  if (h.startsWith('/login')) return '/login';
+  if (h.startsWith('/signup')) return '/signup';
+  if (h.startsWith('/dashboard')) return '/dashboard';
+  if (h.startsWith('/profile')) return '/profile';
+  return '/';
 }
 
-export default App
+export default function App() {
+  const [route, setRoute] = useState(getRoute());
+
+  useEffect(() => {
+    const onChange = () => setRoute(getRoute());
+    window.addEventListener('hashchange', onChange);
+    return () => window.removeEventListener('hashchange', onChange);
+  }, []);
+
+  const isAuthed = useMemo(() => {
+    try { return Boolean(JSON.parse(localStorage.getItem('ammachi_session') || 'null')); } catch { return false; }
+  }, [route]);
+
+  if ((route === '/dashboard' || route === '/profile') && !isAuthed) {
+    window.location.hash = '#/login';
+    return null;
+  }
+
+  switch (route) {
+    case '/login':
+      return <SignIn />;
+    case '/signup':
+      return <SignUp />;
+    case '/dashboard':
+      return <Dashboard />;
+    case '/profile':
+      return <Profile />;
+    default:
+      return <Landing />;
+  }
+}
