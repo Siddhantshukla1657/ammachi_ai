@@ -5,10 +5,21 @@ const MARKET_API_BASE_URL = 'https://api.data.gov.in/resource';
 const MARKET_RESOURCE_ID = '35985678-0d79-46b4-9ed6-6f13308a1d24';
 
 /**
- * Utility: Standard API Error Response
+ * Utility: Standard API Error Response with fallback data
  */
 const handleError = (res, error, fallbackMessage) => {
   console.error('Market API error:', error.message);
+
+  // Check if it's an API key issue or network issue
+  if (error.response && (error.response.status === 403 || error.response.status === 401)) {
+    console.warn('API key not authorized or invalid, returning mock data');
+    return res.json({
+      success: true,
+      message: 'Using demo data - API key not configured',
+      data: getMockMarketData(),
+      demo: true
+    });
+  }
 
   if (error.response) {
     console.error('Error Response:', error.response.data);
@@ -24,6 +35,57 @@ const handleError = (res, error, fallbackMessage) => {
     error: fallbackMessage,
     message: error.message,
   });
+};
+
+/**
+ * Get mock market data for demonstration
+ */
+const getMockMarketData = () => {
+  return [
+    {
+      variety: 'Basmati',
+      market: 'Ernakulam',
+      grade: 'Grade A',
+      min_price: 2200,
+      max_price: 2600,
+      modal_price: 2400,
+      arrival_date: new Date().toISOString(),
+      district: 'Ernakulam',
+      commodity: 'Rice',
+      state: 'Kerala'
+    },
+    {
+      variety: 'Coconut',
+      market: 'Ernakulam',
+      grade: 'Premium',
+      min_price: 30,
+      max_price: 40,
+      modal_price: 35,
+      arrival_date: new Date().toISOString(),
+      district: 'Ernakulam',
+      commodity: 'Coconut',
+      state: 'Kerala'
+    },
+    {
+      variety: 'Black Pepper',
+      market: 'Ernakulam',
+      grade: 'Grade A',
+      min_price: 480,
+      max_price: 560,
+      modal_price: 520,
+      arrival_date: new Date().toISOString(),
+      district: 'Ernakulam',
+      commodity: 'Pepper',
+      state: 'Kerala'
+    }
+  ];
+};
+
+/**
+ * Get mock markets data
+ */
+const getMockMarkets = () => {
+  return ['Ernakulam', 'Kochi', 'Thrissur', 'Alappuzha', 'Kozhikode', 'Kollam'];
 };
 
 /**
@@ -59,6 +121,25 @@ const buildApiUrl = (filters = {}, options = {}) => {
 exports.getMarketPrices = async (req, res) => {
   try {
     const { commodity, state, market } = req.query;
+    
+    // Check if API key is available
+    if (!process.env.MARKET_API_KEY) {
+      console.warn('MARKET_API_KEY not found, returning mock data');
+      const mockData = getMockMarketData().filter(item => 
+        (!commodity || item.commodity.toLowerCase().includes(commodity.toLowerCase())) &&
+        (!state || item.state === state) &&
+        (!market || item.market === market)
+      );
+      
+      return res.json({
+        success: true,
+        message: 'Demo data - MARKET_API_KEY not configured',
+        count: mockData.length,
+        data: mockData,
+        query_params: { state, market, commodity },
+        demo: true
+      });
+    }
     
     // Validate required parameters
     if (!state || !market || !commodity) {
@@ -181,6 +262,19 @@ exports.getCommodities = async (req, res) => {
 exports.getMarkets = async (req, res) => {
   try {
     const { state, district } = req.query;
+    
+    // Check if API key is available
+    if (!process.env.MARKET_API_KEY) {
+      console.warn('MARKET_API_KEY not found, returning mock markets');
+      return res.json({
+        success: true,
+        message: 'Demo data - MARKET_API_KEY not configured',
+        count: getMockMarkets().length,
+        data: getMockMarkets(),
+        query_params: { state: state || 'all', district: district || 'all' },
+        demo: true
+      });
+    }
     
     // Build filter parameters
     const filters = {};

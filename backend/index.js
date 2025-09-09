@@ -1,10 +1,9 @@
 // index.js
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + '/.env' });
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const mongoose = require("mongoose");
-require("dotenv").config();
 
 // Import Firebase config (keeps side-effects/init if any)
 const { admin } = require('./config/firebase');

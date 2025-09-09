@@ -1,4 +1,12 @@
-:root { --sidebar-bg: #eafaf0; --sidebar-accent: #bff3d6; --text-dark: #063f2d; }
+:root { 
+  --mediumseagreen: #3CB371;
+  --mediumseagreen-light: #66CDAA;
+  --mediumseagreen-dark: #2E8B57;
+  --mediumseagreen-darker: #228B22;
+  --sidebar-bg: #F0FFF0; /* honeydew */
+  --sidebar-accent: var(--mediumseagreen-light); 
+  --text-dark: var(--mediumseagreen-darker); 
+}
 
 .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 270px; min-width: 270px; background: var(--sidebar-bg); box-shadow: 0 6px 18px rgba(4,38,26,0.04); display: flex; flex-direction: column; justify-content: flex-start; z-index: 100; border-radius: 0; transition: width 0.2s; padding: 20px 0 16px 0; }
 
@@ -18,9 +26,8 @@
 /* .sidebar-user { display: flex; align-items: center; gap: 12px; border-radius: 12px; }
 .user-avatar { width: 72px !important; height: 72px !important; border-radius: 50%; background-color:darkgreen !important; var(--sidebar-accent); color: var(--text-dark); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; }
 .user-name { color: var(--text-dark); font-weight: 800; font-size: 1rem; } */
-.sidebar-signout { background:mediumseagreen; color: #fff; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; padding: 12px 12px; border-radius: 12px; transition: background 0.15s; margin: 6px 6px -1px 10px; width: calc(100% - 12px*2); }
-/* .sidebar-signout .sidebar-icon { font-size: 20px; color: #fff !important;} */
-.sidebar-signout:hover { background:rgb(54, 155, 100); }
+.sidebar-signout { background: var(--mediumseagreen); color: #fff; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; padding: 12px 12px; border-radius: 12px; transition: background 0.15s; margin: 6px 6px -1px 10px; width: calc(100% - 12px*2); }
+.sidebar-signout:hover { background: var(--mediumseagreen-dark); }
 
 @media (max-width: 1200px) {
   .sidebar { width: 220px; min-width: 220px; }
