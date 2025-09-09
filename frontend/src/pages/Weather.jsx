@@ -59,7 +59,7 @@ export default function Weather(){
   return (
     <div className="weather-layout">
       <Sidebar />
-      <main className="weather-main">
+      <main className="weather-main page-scroll">
         <div className="weather-container">
           <header className="weather-header">
             <h1 className="weather-title">Weather Forecast</h1>

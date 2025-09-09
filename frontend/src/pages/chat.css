@@ -25,4 +25,23 @@
 .chat-input { flex:1; padding:12px 14px; border-radius:999px; border:1px solid rgba(6,78,59,0.06); }
 .chat-send { background:var(--accent); color:#063f2d; border:none; padding:12px 14px; border-radius:999px; cursor:pointer; }
 
-@media (max-width:900px){ .chat-container{ padding:16px;} .msg-bubble{ max-width:86%; } }
+@media (max-width: 1200px) {
+  .chat-container { padding: 12px; }
+}
+@media (max-width: 900px) {
+  .chat-layout { flex-direction: column; }
+  .chat-main { margin-left: 0; }
+  .chat-container { padding: 6px; }
+  .chat-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .chat-window { padding: 6px; }
+  .msg-bubble { max-width: 90%; font-size: 0.98rem; }
+  .chat-quick { flex-wrap: wrap; gap: 6px; }
+  .chat-input-row { flex-direction: row; gap: 4px; }
+}
+@media (max-width: 600px) {
+  .chat-container { padding: 2px; }
+  .chat-header { font-size: 0.95rem; }
+  .msg-bubble { padding: 8px 8px; font-size: 0.93rem; }
+  .chat-input { padding: 8px 8px; font-size: 0.95rem; }
+  .chat-send { padding: 8px 8px; font-size: 1rem; }
+}
