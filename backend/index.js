@@ -5,11 +5,25 @@ const multer = require("multer");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
+// Import Firebase config
+const { admin } = require('./config/firebase');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:5173'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -34,10 +48,15 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Import routes
+const authRoutes = require('./routes/auth');
+
+// API routes
+app.use('/api/auth', authRoutes);
+
 // TODO: Add more API routes here as the project grows
 // Example:
 // app.use('/api/users', userRoutes);
-// app.use('/api/auth', authRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
