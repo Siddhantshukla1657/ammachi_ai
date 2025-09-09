@@ -100,24 +100,24 @@
   
   .auth-input{
     appearance: none;
-    background: #f8fafc;       
-    border: 1.5px solid #064e3b; /* changed from #0f1720 to #064e3b */
+    background: #ffffff;      
+    border: 1.5px solid #cde6d5 !important;
     border-radius: 10px;
     padding: 12px 14px;
-    color: var(--text-dark);
+    color: #0f5132;
     font-size: 1rem;
     width: 100%;
     box-sizing: border-box;
   }
   
   .auth-input::placeholder{
-    color: #64748b;           
+    color: inherit !important;           
   }
   
   .auth-input:focus{
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent-soft);
+    border-color: #2fb46a;
+    box-shadow: 0 0 0 3px rgba(47,180,106,.18);
     background: #ffffff;
   }
   
