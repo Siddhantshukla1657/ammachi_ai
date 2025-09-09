@@ -1,0 +1,257 @@
+const axios = require('axios');
+
+// Constants
+const MARKET_API_BASE_URL = 'https://api.data.gov.in/resource';
+const MARKET_RESOURCE_ID = '35985678-0d79-46b4-9ed6-6f13308a1d24';
+
+/**
+ * Utility: Standard API Error Response
+ */
+const handleError = (res, error, fallbackMessage) => {
+  console.error('Market API error:', error.message);
+
+  if (error.response) {
+    console.error('Error Response:', error.response.data);
+    console.error('Error Status:', error.response.status);
+    return res.status(error.response.status).json({
+      error: 'Market API Error',
+      details: error.response.data,
+      status: error.response.status
+    });
+  }
+
+  return res.status(500).json({
+    error: fallbackMessage,
+    message: error.message,
+  });
+};
+
+/**
+ * Utility: Build API URL with proper filters
+ */
+const buildApiUrl = (filters = {}, options = {}) => {
+  const { limit = 100, offset = 0, format = 'json' } = options;
+  
+  let url = `${MARKET_API_BASE_URL}/${MARKET_RESOURCE_ID}`;
+  const params = new URLSearchParams();
+  
+  // Add API key
+  params.append('api-key', process.env.MARKET_API_KEY);
+  params.append('format', format);
+  params.append('limit', limit.toString());
+  params.append('offset', offset.toString());
+  
+  // Add filters
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      params.append(`filters[${key}]`, value);
+    }
+  });
+  
+  return `${url}?${params.toString()}`;
+};
+
+/**
+ * 🛒 Get market prices for commodities
+ * Input: state, market, commodity
+ * Output: variety, market, grade, min_price, max_price, modal_price
+ */
+exports.getMarketPrices = async (req, res) => {
+  try {
+    const { commodity, state, market } = req.query;
+    
+    // Validate required parameters
+    if (!state || !market || !commodity) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        required: ['state', 'market', 'commodity'],
+        provided: { state: !!state, market: !!market, commodity: !!commodity }
+      });
+    }
+    
+    // Build filter parameters for the correct dataset structure
+    // Note: Dataset uses capitalized field names
+    const filters = {
+      'State': state,
+      'Market': market,
+      'Commodity': commodity
+    };
+    
+    // Build API URL
+    const apiUrl = buildApiUrl(filters, { limit: 100, offset: 0 });
+    
+    console.log('Making API request to:', apiUrl);
+    
+    const response = await axios.get(apiUrl, {
+      headers: {
+        'X-API-Key': process.env.MARKET_API_KEY,
+        'Accept': 'application/json',
+        'User-Agent': 'Ammachi-AI-Backend/1.0'
+      },
+      timeout: 10000 // 10 second timeout
+    });
+    
+    // Process the response to extract the required fields
+    const records = response.data?.records || [];
+    
+    if (records.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No market price data found for the specified criteria',
+        count: 0,
+        data: [],
+        query_params: { state, market, commodity }
+      });
+    }
+    
+    // Map the response to the required output format
+    // Note: Dataset uses capitalized field names
+    const processedData = records.map(record => ({
+      variety: record.Variety || 'Not specified',
+      market: record.Market || market,
+      grade: record.Grade || 'Not specified',
+      min_price: parseFloat(record.Min_Price) || 0,
+      max_price: parseFloat(record.Max_Price) || 0,
+      modal_price: parseFloat(record.Modal_Price) || 0,
+      arrival_date: record.Arrival_Date || null,
+      district: record.District || null,
+      commodity: record.Commodity || commodity,
+      commodity_code: record.Commodity_Code || null,
+      state: record.State || state
+    }));
+    
+    res.json({
+      success: true,
+      count: processedData.length,
+      data: processedData,
+      query_params: { state, market, commodity },
+      api_response_count: records.length
+    });
+    
+  } catch (error) {
+    handleError(res, error, 'Failed to fetch market price data');
+  }
+};
+
+/**
+ * 📊 Get available commodities list
+ */
+exports.getCommodities = async (req, res) => {
+  try {
+    const { state } = req.query;
+    
+    // Build filters if state is provided
+    const filters = {};
+    if (state) {
+      filters['State'] = state;
+    }
+    
+    // Build API URL
+    const apiUrl = buildApiUrl(filters, { limit: 1000, offset: 0 });
+    
+    const response = await axios.get(apiUrl, {
+      headers: {
+        'X-API-Key': process.env.MARKET_API_KEY,
+        'Accept': 'application/json',
+        'User-Agent': 'Ammachi-AI-Backend/1.0'
+      },
+      timeout: 10000
+    });
+    
+    // Extract unique commodity names
+    const records = response.data?.records || [];
+    const commodities = [...new Set(records.map(record => record.Commodity))]
+      .filter(Boolean)
+      .sort();
+    
+    res.json({
+      success: true,
+      count: commodities.length,
+      data: commodities,
+      query_params: { state: state || 'all' }
+    });
+  } catch (error) {
+    handleError(res, error, 'Failed to fetch commodities list');
+  }
+};
+
+/**
+ * 🏦 Get available markets list
+ */
+exports.getMarkets = async (req, res) => {
+  try {
+    const { state, district } = req.query;
+    
+    // Build filter parameters
+    const filters = {};
+    if (state) filters['State'] = state;
+    if (district) filters['District'] = district;
+    
+    // Build API URL
+    const apiUrl = buildApiUrl(filters, { limit: 1000, offset: 0 });
+    
+    const response = await axios.get(apiUrl, {
+      headers: {
+        'X-API-Key': process.env.MARKET_API_KEY,
+        'Accept': 'application/json',
+        'User-Agent': 'Ammachi-AI-Backend/1.0'
+      },
+      timeout: 10000
+    });
+    
+    // Extract unique market names
+    const records = response.data?.records || [];
+    const markets = [...new Set(records.map(record => record.Market))]
+      .filter(Boolean)
+      .sort();
+    
+    res.json({
+      success: true,
+      count: markets.length,
+      data: markets,
+      query_params: { state: state || 'all', district: district || 'all' }
+    });
+  } catch (error) {
+    handleError(res, error, 'Failed to fetch markets list');
+  }
+};
+
+/**
+ * 🗺️ Get available districts list
+ */
+exports.getDistricts = async (req, res) => {
+  try {
+    const { state } = req.query;
+    
+    // Build filter parameters
+    const filters = {};
+    if (state) filters['State'] = state;
+    
+    // Build API URL
+    const apiUrl = buildApiUrl(filters, { limit: 1000, offset: 0 });
+    
+    const response = await axios.get(apiUrl, {
+      headers: {
+        'X-API-Key': process.env.MARKET_API_KEY,
+        'Accept': 'application/json',
+        'User-Agent': 'Ammachi-AI-Backend/1.0'
+      },
+      timeout: 10000
+    });
+    
+    // Extract unique district names
+    const records = response.data?.records || [];
+    const districts = [...new Set(records.map(record => record.District))]
+      .filter(Boolean)
+      .sort();
+    
+    res.json({
+      success: true,
+      count: districts.length,
+      data: districts,
+      query_params: { state: state || 'all' }
+    });
+  } catch (error) {
+    handleError(res, error, 'Failed to fetch districts list');
+  }
+};
