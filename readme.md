@@ -330,7 +330,4 @@ For support and questions:
 
 *"Empowering agriculture through technology, one farm at a time"*
 
-[![GitHub stars](https://img.shields.io/github/stars/Siddhantshukla1657/ammachi_ai?style=social)](https://github.com/Siddhantshukla1657/ammachi_ai/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/Siddhantshukla1657/ammachi_ai?style=social)](https://github.com/Siddhantshukla1657/ammachi_ai/network)
-
 </div>

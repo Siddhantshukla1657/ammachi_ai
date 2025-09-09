@@ -19,7 +19,12 @@
 .hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(3,85,50,0.22), rgba(3,85,50,0.34)); mix-blend-mode: multiply; }
 .hero-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .7; filter: saturate(1.02) contrast(.92) brightness(.96); }
 .hero-content { position: relative; z-index: 1; text-align: center; padding: 2rem; max-width: 960px; }
-.brand-emblem { width: 84px; height: 84px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: transparent; font-size: 34px; margin: 0 auto 1.25rem; box-shadow: 0 8px 24px rgba(6,63,45,0.06); object-fit: contain; }
+.brand-emblem {
+  width: 150px;
+  height: auto;
+  margin-bottom: 1.5rem;
+}
+
 .hero-title { font-size: clamp(2rem, 4vw + 1rem, 3.5rem); margin: 0 0 .25rem; font-weight: 800; letter-spacing: -.02em; }
 .hero-title .accent { color: var(--brand-pastel-deep); }
 .hero-subtitle { font-size: clamp(1rem, 1.3vw + .6rem, 1.5rem); margin: 0 0 .5rem; font-weight: 600; color: var(--text-dark); }
@@ -42,23 +47,19 @@
   margin-top: 2rem;
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
-  flex-wrap: wrap; /* allows wrapping on smaller screens */
+  gap: 1rem;
 }
 
 .feature {
-  flex: 1 1 200px; /* ensures equal growth/shrink with min width */
-  max-width: 220px; /* keeps them balanced */
-  min-height: 120px;
-  
+  width: 160px;       
+  height: 130px;      
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  text-align: center;
 
+  text-align: center;
   background: rgba(255, 255, 255, 0.12);
-  padding: 1rem;
   border-radius: 12px;
   backdrop-filter: blur(6px);
   color: #fff;
@@ -71,9 +72,14 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.feature .icon {
+  font-size: 2.5rem;   
+  margin-bottom: 0.5rem;
+  line-height: 1;     
+}
+
+
 .feature strong {
-  display: block;
-  font-size: 1rem;
+  font-size: 0.95rem;
   margin-bottom: 0.25rem;
-  color: #fff;
 }
