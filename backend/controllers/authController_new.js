@@ -1,4 +1,4 @@
-const { OAuth2Client } = require('google-auth-library');
+const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
 const { body, validationResult } = require('express-validator');
 const { auth, isFirebaseEnabled } = require('../config/firebase');
@@ -235,35 +235,6 @@ class AuthController {
     } catch (error) {
       console.error('Login error:', error);
       res.status(500).json({ error: error.message || 'Login failed' });
-    }
-  }
-
-  // Google OAuth Login/Register (placeholder)
-  static async googleAuth(req, res) {
-    try {
-      return res.status(501).json({ error: 'Google auth not implemented yet' });
-    } catch (error) {
-      console.error('Google auth error:', error);
-      res.status(500).json({ error: 'Google authentication failed' });
-    }
-  }
-
-  // Verify Firebase ID Token (placeholder)
-  static async verifyToken(req, res) {
-    try {
-      return res.status(501).json({ error: 'Token verification not implemented yet' });
-    } catch (error) {
-      console.error('Token verification error:', error);
-      res.status(403).json({ error: 'Invalid token' });
-    }
-  }
-
-  // Logout
-  static async logout(req, res) {
-    try {
-      res.json({ message: 'Logged out successfully' });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
     }
   }
 
