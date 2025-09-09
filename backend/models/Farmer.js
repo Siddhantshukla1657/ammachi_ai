@@ -17,6 +17,7 @@ const FarmerSchema = new mongoose.Schema({
     state: { type: String, default: 'Kerala' }, 
     district: { type: String, required: true }  
   },
+  firebaseUid: { type: String, sparse: true, index: true },
   createdAt: { type: Date, default: Date.now }
 });
 
