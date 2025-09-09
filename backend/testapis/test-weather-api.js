@@ -9,12 +9,10 @@ const lon = 77.5946;
 async function testCurrentWeather() {
   try {
     console.log('Testing Current Weather API...');
-    const response = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
+    const response = await axios.get('http://localhost:5000/api/weather/current', {
       params: {
         lat,
-        lon,
-        appid: process.env.OPENWEATHER_API_KEY, // Using API key from environment variable
-        units: 'metric'
+        lon
       }
     });
     
@@ -29,7 +27,12 @@ async function testCurrentWeather() {
   } catch (error) {
     console.error('❌ Current Weather API Error:', error.message);
     if (error.response) {
-      console.error('Error Data:', error.response.data);
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error details:', error);
     }
     console.log('\n');
     return false;
@@ -40,13 +43,10 @@ async function testCurrentWeather() {
 async function testHourlyForecast() {
   try {
     console.log('Testing Hourly Forecast API...');
-    const response = await axios.get('https://api.openweathermap.org/data/2.5/forecast', {
+    const response = await axios.get('http://localhost:5000/api/weather/hourly', {
       params: {
         lat,
-        lon,
-        appid: process.env.OPENWEATHER_API_KEY, // Using API key from environment variable
-        units: 'metric',
-        cnt: 16
+        lon
       }
     });
     
@@ -61,7 +61,12 @@ async function testHourlyForecast() {
   } catch (error) {
     console.error('❌ Hourly Forecast API Error:', error.message);
     if (error.response) {
-      console.error('Error Data:', error.response.data);
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error details:', error);
     }
     console.log('\n');
     return false;
@@ -72,74 +77,73 @@ async function testHourlyForecast() {
 async function testDailyForecast() {
   try {
     console.log('Testing Daily Forecast API...');
-    // Using 5 day forecast API instead of One Call API which requires paid subscription
-    const response = await axios.get('https://api.openweathermap.org/data/2.5/forecast', {
+    const response = await axios.get('http://localhost:5000/api/weather/daily', {
       params: {
         lat,
-        lon,
-        appid: process.env.OPENWEATHER_API_KEY, // Using API key from environment variable
-        units: 'metric',
-        cnt: 40 // Full 5 days forecast
+        lon
       }
     });
     
     console.log('✅ Daily Forecast API Response:');
     console.log('City:', response.data.city.name);
-    console.log('Number of timestamps:', response.data.list.length);
+    console.log('Number of days in forecast:', response.data.count);
     
-    // Group forecasts by day
-    const dailyForecasts = {};
-    response.data.list.forEach(forecast => {
-      const date = new Date(forecast.dt * 1000).toLocaleDateString();
-      if (!dailyForecasts[date]) {
-        dailyForecasts[date] = [];
-      }
-      dailyForecasts[date].push(forecast);
-    });
-    
-    console.log('Number of days in forecast:', Object.keys(dailyForecasts).length);
-    const firstDay = Object.keys(dailyForecasts)[0];
-    console.log('First day forecast date:', firstDay);
-    console.log('Weather:', dailyForecasts[firstDay][0].weather[0].main, '-', dailyForecasts[firstDay][0].weather[0].description);
-    console.log('Temperature:', dailyForecasts[firstDay][0].main.temp, '°C');
+    if (response.data.list && response.data.list.length > 0) {
+      const firstDay = response.data.list[0];
+      console.log('First day forecast date:', firstDay.date);
+      console.log('Weather:', firstDay.weather.main, '-', firstDay.weather.description);
+      console.log('Temperature:', firstDay.temp, '°C');
+      console.log('Details:', JSON.stringify(firstDay.details));
+    }
     console.log('\n');
     return true;
   } catch (error) {
     console.error('❌ Daily Forecast API Error:', error.message);
     if (error.response) {
-      console.error('Error Data:', error.response.data);
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error details:', error);
     }
     console.log('\n');
     return false;
   }
 }
 
-// Function to test air pollution endpoint (as an alternative to historical data which requires paid subscription)
-async function testAirPollution() {
+// Function to test historical weather endpoint
+async function testHistoricalWeather() {
   try {
-    console.log('Testing Air Pollution API...');
+    console.log('Testing Historical Weather API...');
     
-    const response = await axios.get('https://api.openweathermap.org/data/2.5/air_pollution', {
+    const response = await axios.get('http://localhost:5000/api/weather/historical', {
       params: {
         lat,
-        lon,
-        appid: process.env.OPENWEATHER_API_KEY // Using API key from environment variable
+        lon
       }
     });
     
-    console.log('✅ Air Pollution API Response:');
-    console.log('Date:', new Date(response.data.list[0].dt * 1000).toLocaleString());
-    console.log('Air Quality Index:', response.data.list[0].main.aqi);
-    console.log('CO:', response.data.list[0].components.co);
-    console.log('NO2:', response.data.list[0].components.no2);
-    console.log('O3:', response.data.list[0].components.o3);
-    console.log('PM2.5:', response.data.list[0].components.pm2_5);
+    console.log('✅ Historical Weather API Response (Air Pollution Data):');
+    console.log('Number of days:', response.data.count);
+    console.log('First day date:', new Date(response.data.data[0].dt * 1000).toLocaleString());
+    console.log('Air Quality Index:', response.data.data[0].main.aqi);
+    console.log('Air Quality:', response.data.data[0].data[0].weather[0].main, '-', response.data.data[0].data[0].weather[0].description);
+    console.log('CO:', response.data.data[0].components.co);
+    console.log('NO2:', response.data.data[0].components.no2);
+    console.log('O3:', response.data.data[0].components.o3);
+    console.log('PM2.5:', response.data.data[0].components.pm2_5);
     console.log('\n');
     return true;
   } catch (error) {
     console.error('❌ Historical Weather API Error:', error.message);
     if (error.response) {
-      console.error('Error Data:', error.response.data);
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error details:', error);
     }
     console.log('\n');
     return false;
@@ -159,7 +163,7 @@ async function runAllTests() {
     currentWeather: await testCurrentWeather(),
     hourlyForecast: await testHourlyForecast(),
     dailyForecast: await testDailyForecast(),
-    airPollution: await testAirPollution()
+    historicalWeather: await testHistoricalWeather()
   };
   
   console.log('='.repeat(50));
@@ -167,8 +171,8 @@ async function runAllTests() {
   console.log('='.repeat(50));
   console.log('Current Weather API:', results.currentWeather ? '✅ PASS' : '❌ FAIL');
   console.log('Hourly Forecast API:', results.hourlyForecast ? '✅ PASS' : '❌ FAIL');
-  console.log('Daily Forecast API (5-day):', results.dailyForecast ? '✅ PASS' : '❌ FAIL');
-  console.log('Air Pollution API:', results.airPollution ? '✅ PASS' : '❌ FAIL');
+  console.log('Daily Forecast API:', results.dailyForecast ? '✅ PASS' : '❌ FAIL');
+  console.log('Historical Weather API:', results.historicalWeather ? '✅ PASS' : '❌ FAIL');
   console.log('\n');
   
   const allPassed = Object.values(results).every(result => result === true);
