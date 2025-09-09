@@ -1,5 +1,3 @@
-
-
 :root{
   --sidebar-w: 260px;   /* actual sidebar width */
   --gutter: 12px;       /* small gap both sides */
@@ -91,18 +89,17 @@ body, .dash-container {
 .dash-layout{
   display:block;
   width:100%;
-  margin:0;
-  padding-left: calc(var(--sidebar-w) + var(--gutter));  /* sidebar + small gap */
-  padding-right: var(--gutter);                          /* small right gutter */
+  padding-left: var(--gutter);    /* Equal left and right padding */
+  padding-right: 0 !important;
   background: linear-gradient(180deg,#f4fbf6 0%,#eaf7ee 100%);
 }
 
 /* Treat the first child as the sidebar; pin it with the left gutter */
 .dash-layout > :first-child{
   position:fixed;
+  left: var(--gutter);
   top: var(--gutter);
   bottom: var(--gutter);
-  left: var(--gutter);
   width: var(--sidebar-w);
   max-width: var(--sidebar-w);
   z-index: 10;
@@ -111,8 +108,9 @@ body, .dash-container {
 /* Main fills remaining space; tiny internal padding for breathing room */
 .dashboard-main{
   margin:0 !important;
-  padding: var(--gutter) !important;   /* inner padding, still looks full-bleed */
+  padding-left: var(--gutter) !important;   /* inner padding, still looks full-bleed */
   min-width:0;
+  padding-right: 0 !important;
 }
 
 /* Keep container full height; no extra side padding */
@@ -177,7 +175,7 @@ body, .dash-container {
 /* --------- ADVISORY --------- */
 
 .advisory{
-  margin-top:8px; background:var(--soft-blue); padding:10px 14px;
+  margin-top:8px; background:var(--soft-blue); padding:14px 14px;
   border-radius:8px; color:#0b4a6c; box-shadow:0 4px 8px rgba(0,0,0,0.03);
 }
 
@@ -236,7 +234,8 @@ body, .dash-container {
 @media (max-width: 1000px){
   :root{ --sidebar-w: 240px; --gutter: 10px; }
   .dash-layout{
-    padding-left: var(--gutter);          /* sidebar goes stacked on small screens */
+    padding-left: var(--gutter); 
+    padding-right: 0 !important;         /* sidebar goes stacked on small screens */
   }
   .dash-layout > :first-child{
     position:static;
@@ -245,7 +244,7 @@ body, .dash-container {
     height:auto;
     margin-bottom: var(--gutter);
   }
-  .dashboard-main{ padding: var(--gutter); }
+
   .dash-grid.two-cols{ grid-template-columns:1fr; }
   .stats-row{ flex-direction:column; }
   .market-row{ flex-direction:column; }
@@ -310,13 +309,13 @@ html, body { width: 100%; overflow-x: hidden; }           /* safety */
 .dash-layout, .dashboard-main, .dash-container { max-width: 100%; }
 
 /* ---------- small, even gutters (keep what you liked) ---------- */
-:root { --sidebar-w: 260px; --gutter: 12px; }
+:root { --sidebar-w: 260px; --gutter: 20px; }
 
 .dash-layout{
-  display:block;
+  display:block ;
   width:100%;
-  padding-left: calc(var(--sidebar-w) + var(--gutter));
-  padding-right: var(--gutter);
+  padding-left: calc(var(--sidebar-w) + var(--gutter)) !important;
+  padding-right: 0 !important;
 }
 
 .dash-layout > :first-child{
@@ -362,7 +361,7 @@ html, body { width: 100%; overflow-x: hidden; }           /* safety */
 
 /* ---------- If your Sidebar ever becomes non-fixed on small screens ---------- */
 @media (max-width: 900px){
-  .dash-layout{ padding-left: var(--gutter); }
+  .dash-layout{ padding-left: var(--gutter); padding-right: 0 !important;}
   .dash-layout > :first-child{
     position: static; width: 100%; max-width: none; height: auto; margin-bottom: var(--gutter);
   }
