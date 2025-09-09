@@ -55,6 +55,23 @@ class AuthController {
         firebaseUid: firebaseUser.uid
       });
 
+      // Also persist to MongoDB if connected
+      try {
+        const mongoose = require('mongoose');
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          const MongoUser = require('../models/MongoUser');
+          await MongoUser.create({
+            firebaseUid: firebaseUser.uid,
+            email,
+            displayName: displayName || email.split('@')[0],
+            provider: 'email'
+          });
+          console.log('Saved user to MongoDB');
+        }
+      } catch (e) {
+        console.warn('Could not save user to MongoDB:', e.message);
+      }
+
       // Generate custom token
       const customToken = await auth.createCustomToken(firebaseUser.uid);
 
