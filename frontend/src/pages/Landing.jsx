@@ -36,22 +36,31 @@ export default function Landing() {
           </a>
         </div>
 
-        {/* ✅ New feature strip goes here */}
+
         <div className="features-strip">
-          <div className="feature">
-            🌱 <div><strong>Disease Detection</strong><br/>Instant crop diagnosis</div>
-          </div>
-          <div className="feature">
-            ☀️ <div><strong>Weather Alerts</strong><br/>7-day forecasts</div>
-          </div>
-          <div className="feature">
-            💰 <div><strong>Market Prices</strong><br/>Live crop rates</div>
-          </div>
-          <div className="feature">
-            🤖 <div><strong>AI Assistant</strong><br/>24/7 farming help</div>
-          </div>
-        </div>
-        {/* ✅ End of feature strip */}
+  <div className="feature">
+    <div className="icon">🌱</div>
+    <strong>Disease Detection</strong>
+    <div>Instant crop diagnosis</div>
+  </div>
+  <div className="feature">
+    <div className="icon">☀️</div>
+    <strong>Weather Alerts</strong>
+    <div>7-day forecasts</div>
+  </div>
+  <div className="feature">
+    <div className="icon">💰</div>
+    <strong>Market Prices</strong>
+    <div>Live crop rates</div>
+  </div>
+  <div className="feature">
+    <div className="icon">🤖</div>
+    <strong>AI Assistant</strong>
+    <div>24/7 farming help</div>
+  </div>
+</div>
+
+
 
         <footer className="hero-footer">
           © 2025 Ammachi AI. Built for the heart of farming.
