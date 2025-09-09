@@ -78,8 +78,13 @@ app.use((req, res) => {
   });
 });
 
-// MongoDB Connection
+// MongoDB Connection (Optional - only if MONGO_URI is provided)
 async function connectDB() {
+  if (!process.env.MONGO_URI) {
+    console.log("⚠️ MongoDB URI not provided. MongoDB features will be disabled.");
+    return;
+  }
+  
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
@@ -87,8 +92,8 @@ async function connectDB() {
     });
     console.log("✅ MongoDB connected successfully");
   } catch (err) {
-    console.error("❌ MongoDB connection failed:", err);
-    process.exit(1);
+    console.warn("❌ MongoDB connection failed:", err.message);
+    console.log("⚠️ MongoDB features will be disabled.");
   }
 }
 
