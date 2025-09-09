@@ -54,7 +54,7 @@ export default function Profile() {
   return (
     <div className="profile-layout">
       <Sidebar />
-      <main className="profile-page">
+      <main className="profile-main page-scroll">
         <div className="profile-container">
           <aside className="profile-side">
             <div className="profile-summary card">

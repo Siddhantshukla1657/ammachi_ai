@@ -11,7 +11,7 @@
 
 .dash-layout { display:flex; gap:20px; }
 .dash-main { flex:1; }
-.dash-container { min-height:100vh; padding:24px; background: linear-gradient(180deg,var(--bg-1),var(--bg-2)); color: #042619; }
+.dash-container { min-height:100vh; padding:24px; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); color: #042619; }
 .dash-header { display:flex; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto 18px; }
 .dash-title { margin:0; font-weight:800; color:var(--accent-deep); }
 .dash-signout { background:transparent; border:0; color:var(--accent-deep); padding:8px 12px; border-radius:8px; cursor:pointer; }

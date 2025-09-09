@@ -60,7 +60,7 @@ export default function Market() {
   return (
     <div className="market-layout">
       <Sidebar />
-      <main className="market-main">
+      <main className="market-main page-scroll">
         <div className="market-container">
           <header className="market-header">
             <h1 className="market-title">Market Prices</h1>
