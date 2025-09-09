@@ -1,5 +1,4 @@
 const { OAuth2Client } = require('google-auth-library');
-const { OAuth2Client } = require('google-auth-library');
 const { body, validationResult } = require('express-validator');
 const { auth, isFirebaseEnabled } = require('../config/firebase');
 const User = require('../models/User');
