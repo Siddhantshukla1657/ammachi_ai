@@ -1,10 +1,4 @@
-/* =========================================================
-   Ammachi Dashboard – Clean Edge-to-Edge with Small Gutters
-   Assumptions:
-   - <Dashboard/> wraps: <div class="dash-layout"><Sidebar/><main class="dashboard-main page-scroll dash-container">...</main></div>
-   - We don’t edit Sidebar internals.
-   - We reserve space for a fixed sidebar and add small gutters.
-   ========================================================= */
+
 
 :root{
   --sidebar-w: 260px;   /* actual sidebar width */
@@ -18,6 +12,78 @@
   --muted: #5a7a68;
   --soft-blue: rgba(225,241,255,0.9);
 }
+/* =======================
+   THEME VARIABLES
+   ======================= */
+
+/* Light mode defaults */
+:root {
+  --bg-1: #ebfdf2;
+  --bg-2: #dff6e8;
+  --hero-green: linear-gradient(90deg,#2fb46a,#1ea055);
+
+  --accent-deep: #1a7f3f;
+  --text-main: #042619;      /* text color */
+  --text-muted: #5a7a68;     /* muted text */
+
+  --card-bg: #ffffff;
+  --card-contrast: #f7fff7;
+  --soft-blue: rgba(225,241,255,0.9);
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-1: #0e1b14;
+    --bg-2: #14241a;
+    --hero-green: linear-gradient(90deg,#1ea055,#146c3c);
+
+    --accent-deep: #59f3a0;
+    --text-main: #f2fff9;
+    --text-muted: #a3b5a8;
+
+    --card-bg: #1a2a22;
+    --card-contrast: #223229;
+    --soft-blue: rgba(100,140,180,0.2);
+  }
+}
+
+/* =======================
+   COMPONENT STYLES
+   ======================= */
+
+body, .dash-container {
+  background: var(--bg-1);
+  color: var(--text-main);
+}
+
+.dash-title,
+.dash-welcome,
+.stat-value,
+.p-value,
+.w-temp {
+  color: var(--text-main);
+}
+
+.stat-label,
+.scan-sub,
+.w-desc,
+.p-name {
+  color: var(--text-muted);
+}
+
+.card,
+.stat-card,
+.price-summary {
+  background: var(--card-bg);
+  color: var(--text-main);
+}
+
+.advisory {
+  background: var(--soft-blue);
+}
+
+/* ---- rest of your CSS (layout, hero, stats, grid, etc) ---- */
 
 /* --------- LAYOUT (no overlap, small gutters) --------- */
 
@@ -301,3 +367,96 @@ html, body { width: 100%; overflow-x: hidden; }           /* safety */
     position: static; width: 100%; max-width: none; height: auto; margin-bottom: var(--gutter);
   }
 }
+/* =========================
+   DARK MODE — COLOR ONLY
+   (append at end of file)
+   ========================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* keep your layout as-is; just flip palette */
+    --bg-1: #0e1b14;
+    --bg-2: #14241a;
+    --hero-green: linear-gradient(90deg,#1ea055,#146c3c);
+
+    --text-main: #f2fff9;   /* bright text */
+    --text-muted: #a3b5a8;  /* softer text */
+
+    --card-bg: #1a2a22;       /* card surfaces */
+    --card-contrast: #1f3228; /* contrast surface */
+    --soft-blue: rgba(120,170,255,0.14);
+
+    --accent-deep: #59f3a0;
+  }
+
+  /* Text that must remain high-contrast */
+  .dash-title,
+  .dash-welcome,
+  .stat-value,
+  .p-value,
+  .w-temp {
+    color: var(--text-main) !important;
+  }
+
+  /* Muted/secondary text */
+  .stat-label,
+  .scan-sub,
+  .w-desc,
+  .p-name {
+    color: var(--text-muted) !important;
+  }
+
+  /* Card surfaces */
+  .card,
+  .stat-card,
+  .price-summary {
+    background: var(--card-bg) !important;
+    color: var(--text-main) !important;
+  }
+
+  /* Info/advisory bar */
+  .advisory {
+    background: var(--soft-blue) !important;
+    color: var(--text-main) !important;
+  }
+
+  /* Buttons in the hero */
+  .btn-cta {
+    background: var(--card-bg) !important;
+    color: var(--accent-deep) !important;
+    border-color: transparent !important;
+  }
+  .btn-cta.outline {
+    background: transparent !important;
+    color: var(--text-main) !important;
+    border: 1px solid rgba(255,255,255,0.18) !important;
+  }
+}
+/* =========================
+   DARK MODE FIX — strong contrast for values
+   ========================= */
+@media (prefers-color-scheme: dark) {
+  /* Force bright white for all key numbers/values */
+  .stat-value,
+  .p-value,
+  .w-temp,
+  .scan-title,
+  .p-change.pos,
+  .p-change.neg {
+    color: #000000 !important;   /* pure white for maximum contrast */
+  }
+
+  /* Labels stay softer but still visible */
+  .stat-label,
+  .scan-sub,
+  .w-desc,
+  .p-name {
+    color: #6a6e6c !important;   /* light gray-green */
+  }
+
+  /* Section headers (Recent Scans, Weather Forecast, Market Prices) */
+  .card-header strong,
+  .market-prices h3 {
+    color: #000000 !important;
+  }
+}
+
