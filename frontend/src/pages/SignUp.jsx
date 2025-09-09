@@ -262,10 +262,6 @@ export default function SignUp() {
                 <option value="Other">Other</option>
               </select>
             </label>
-            <label className="auth-label">
-              <span className="label-text">Farms to create</span>
-              <input className="auth-input" name="numFarmsDisplay" value={String(form.numFarms)} readOnly />
-            </label>
           </div>
 
           <div className="field-row">
