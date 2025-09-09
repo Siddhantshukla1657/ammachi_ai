@@ -15,9 +15,9 @@
   justify-content: center;
   color: var(--text-dark);
 }
-.hero-background { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(235,249,245,1), rgba(238,252,246,1)); }
-.hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(2,78,43,0.12), rgba(2,78,43,0.18)); mix-blend-mode: multiply; }
-.hero-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .85; filter: saturate(1.05) contrast(.95); }
+.hero-background { position: absolute; inset: 0; background: linear-gradient(180deg, #e6f7ee 0%, #c7edd9 50%, #9fe0ba 100%); }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(3,85,50,0.22), rgba(3,85,50,0.34)); mix-blend-mode: multiply; }
+.hero-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .7; filter: saturate(1.02) contrast(.92) brightness(.96); }
 .hero-content { position: relative; z-index: 1; text-align: center; padding: 2rem; max-width: 960px; }
 .brand-emblem { width: 84px; height: 84px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: transparent; font-size: 34px; margin: 0 auto 1.25rem; box-shadow: 0 8px 24px rgba(6,63,45,0.06); object-fit: contain; }
 .hero-title { font-size: clamp(2rem, 4vw + 1rem, 3.5rem); margin: 0 0 .25rem; font-weight: 800; letter-spacing: -.02em; }
