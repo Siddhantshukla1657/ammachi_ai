@@ -9,7 +9,7 @@ class User {
     this.email = data.email;
     this.displayName = data.displayName || '';
     this.photoURL = data.photoURL || '';
-    this.provider = data.provider || 'email'; // 'email', 'google', 'facebook', etc.
+    this.provider = data.provider || 'email'; 
     this.isEmailVerified = data.isEmailVerified || false;
     this.createdAt = data.createdAt || new Date();
     this.lastLoginAt = data.lastLoginAt || new Date();
