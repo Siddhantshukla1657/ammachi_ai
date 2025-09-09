@@ -13,15 +13,19 @@ function saveLocalFarm(payload) {
     list.push(payload);
     localStorage.setItem('local_farmers', JSON.stringify(list));
     return true;
-  } catch (e) { console.warn('Failed to save local farmer', e); return false; }
+  } catch (e) {
+    console.warn('Failed to save local farmer', e);
+    return false;
+  }
 }
 
 function navigateToDashboard() {
   try {
     window.location.hash = '#/dashboard';
-    // some environments may not fire hashchange reliably, dispatch manually
-    try { window.dispatchEvent(new HashChangeEvent('hashchange')); } catch (e) { /* ignore */ }
-  } catch (e) { console.warn('Navigation failed', e); }
+    try { window.dispatchEvent(new HashChangeEvent('hashchange')); } catch (e) {}
+  } catch (e) {
+    console.warn('Navigation failed', e);
+  }
 }
 
 const initial = {
@@ -37,7 +41,7 @@ const initial = {
   state: 'Kerala',
   district: '',
   numFarms: 1,
-  farms: [ { name: '', acres: '', location: '', crops: '' } ]
+  farms: [{ name: '', acres: '', location: '', crops: '' }]
 };
 
 export default function SignUp() {
@@ -53,17 +57,23 @@ export default function SignUp() {
         setForm(f => ({ ...f, name: pref.name || f.name, email: pref.email || f.email }));
         localStorage.removeItem('ammachi_oauth_prefill');
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {}
   }, []);
 
-  // derive a combined crop list from all farms for UI chips
-  const cropList = useMemo(() => ((form.farms || [])
-    .flatMap(f => (f.crops || '').split(',').map(c => c.trim()))
-    .filter(Boolean)), [form.farms]);
+  const cropList = useMemo(
+    () =>
+      (form.farms || [])
+        .flatMap(f => (f.crops || '').split(',').map(c => c.trim()))
+        .filter(Boolean),
+    [form.farms]
+  );
 
   function onChange(e) {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: name === 'experience' || name === 'numFarms' ? Number(value) : value }));
+    setForm(prev => ({
+      ...prev,
+      [name]: name === 'experience' || name === 'numFarms' ? Number(value) : value
+    }));
   }
 
   function onFarmChange(index, key, value) {
@@ -120,21 +130,26 @@ export default function SignUp() {
       farmSize: form.farmSize || '',
       state: form.state || 'Kerala',
       district: form.district || '',
-      farms: (form.farms || []).map(f => ({ name: String(f.name || '').trim(), acres: String(f.acres || '').trim(), location: String(f.location || '').trim(), crops: (String(f.crops || '').split(',').map(c=>c.trim()).filter(Boolean) ) })),
+      farms: (form.farms || []).map(f => ({
+        name: String(f.name || '').trim(),
+        acres: String(f.acres || '').trim(),
+        location: String(f.location || '').trim(),
+        crops: String(f.crops || '').split(',').map(c => c.trim()).filter(Boolean)
+      })),
       createdAt: new Date().toISOString()
     };
 
-    console.log('SignUp payload', payload);
     const v = validate(payload);
-    if (v) { console.warn('Validation failed:', v); setError(v); return; }
+    if (v) { setError(v); return; }
 
     try {
-      // Call backend API to create farmer
+      // Backend API
       const res = await fetch('/api/farmers/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
       if (res.ok) {
         const data = await res.json();
         const profile = data.profile || payload;
@@ -143,9 +158,11 @@ export default function SignUp() {
         navigateToDashboard();
         return;
       }
+
       const text = await res.text();
       console.warn('Backend register failed', res.status, text);
-      // fallback to local
+
+
       const ok = saveLocalFarm(payload);
       localStorage.setItem('ammachi_profile', JSON.stringify(payload));
       localStorage.setItem('ammachi_session', JSON.stringify({ id: payload.farmerId, name: payload.name }));
@@ -159,10 +176,7 @@ export default function SignUp() {
         localStorage.setItem('ammachi_profile', JSON.stringify(payload));
         localStorage.setItem('ammachi_session', JSON.stringify({ id: payload.farmerId, name: payload.name }));
         setInfo('Saved locally (network error). You are signed in for this browser.');
-        if (ok) {
-          navigateToDashboard();
-          return;
-        }
+        if (ok) { navigateToDashboard(); return; }
         setError('Failed to save locally after network error.');
       } catch (e) {
         console.error('Local save failed', e);
@@ -173,11 +187,25 @@ export default function SignUp() {
 
   return (
     <section className="auth-shell">
+      <div className="auth-container">
+        <a href="#/" className="back-home" aria-label="Back to home">← Back to Home</a>
+  
+      
+
+      
+
       <div className="auth-card">
+      <div className="auth-card-inner">
         <h2 className="auth-title">Farmer Sign Up</h2>
         <p className="auth-note">Create your account to access the dashboard. All fields are required.</p>
+
         {error && <div className="auth-error" role="alert">{error}</div>}
-        {info && <div style={{ background: 'rgba(34,197,94,0.06)', padding: 10, borderRadius: 8, color: '#064e3b', marginBottom: 12 }}>{info}</div>}
+        {info && (
+          <div style={{ background: 'rgba(34,197,94,0.06)', padding: 10, borderRadius: 8, color: '#064e3b', marginBottom: 12 }}>
+            {info}
+          </div>
+        )}
+
         <form className="auth-form" onSubmit={onSubmit} noValidate>
           <div className="field-row">
             <label className="auth-label">
@@ -278,10 +306,12 @@ export default function SignUp() {
           </div>
 
           <div style={{ display: 'flex', gap: 12 }}>
-            <button className="btn-submit" type="submit" onClick={(e)=>onSubmit(e)}>Create Account</button>
+            <button className="btn-submit" type="submit">Create Account</button>
             <a className="btn-outline" href="#/login">Back to Sign In</a>
           </div>
         </form>
+      </div>
+      </div>
       </div>
     </section>
   );

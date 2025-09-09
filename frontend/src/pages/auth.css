@@ -1,30 +1,256 @@
-:root { --card-bg: rgba(245, 253, 250, 0.85); --border-subtle: rgba(161, 213, 190, 0.6); --pastel-green: #cff6e1; --pastel-accent: #bfead4; --text-dark: #0f1720; }
+/* ================================
+   Auth Pages — Ammachi AI
+   ================================ */
 
-.auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 2rem; background: linear-gradient(180deg, rgba(235,249,245,1), rgba(238,252,246,1)); }
-.auth-card { width: 100%; max-width: 820px; background: var(--card-bg); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 24px; color: var(--text-dark); box-shadow: 0 8px 20px rgba(19, 54, 40, 0.06); overflow: visible; }
-.farm-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-@media (max-width: 920px) { .farm-row { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-@media (max-width: 640px) { .farm-row { grid-template-columns: 1fr; } }
-.auth-title { margin: 0 0 4px; font-size: 1.75rem; font-weight: 800; color: #064e3b; }
-.auth-note { margin: 0 0 16px; color: #11654a; }
-.auth-error { background: rgba(248, 113, 113, 0.12); border: 1px solid rgba(248, 113, 113, 0.25); color: #7f1d1d; padding: 10px 12px; border-radius: 10px; margin: 0 0 14px; }
-.auth-form { display: grid; gap: 14px; }
-.field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.auth-label { display: grid; gap: 6px; }
-.label-text { font-weight: 600; color: #064e3b; }
-.auth-input { appearance: none; background: white; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px 14px; color: var(--text-dark); font-size: 1rem; }
-.auth-input:focus { outline: 2px solid var(--pastel-green); outline-offset: 1px; box-shadow: 0 6px 18px rgba(34,197,94,0.06); }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
-.chip { background: var(--pastel-accent); border: 1px solid rgba(0,0,0,0.03); padding: 4px 10px; border-radius: 999px; font-size: .9rem; color: #064e3b; }
-.btn-submit { background: #a7f3d0; color: var(--text-dark); border: none; border-radius: 12px; padding: 12px 16px; font-weight: 800; cursor: pointer; }
-.btn-submit:hover { background: #8df0be; }
-.btn-outline { background: transparent; border: 1px solid rgba(6,78,59,0.08); padding: 10px 14px; border-radius: 12px; color: #064e3b; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-.btn-google { background: #fff; border: 1px solid rgba(6,78,59,0.08); padding: 10px 14px; border-radius: 12px; color: #064e3b; cursor: pointer; }
+   :root{
+    --card-bg: rgba(245, 253, 250, 0.92);
+    --border-subtle: rgba(161, 213, 190, 0.6);
+    --text-dark: #0f1720;          /* slate-950-ish */
+    --text-muted: #11654a;         /* deep green */
+    --accent: #059669;             /* emerald-600 */
+    --accent-soft: rgba(5,150,105,.20);
+    --shadow: 0 8px 20px rgba(19,54,40,.06);
+  }
+  
+  /* Background and page centering */
+  .auth-shell{
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+    background: linear-gradient(180deg, #e6f7ee 0%, #c7edd9 50%, #9fe0ba 100%);
+  }
+  
+  /* Wrapper so back button can be left-aligned */
+  .auth-container{
+    width: 100%;
+    max-width: 820px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px; /* space between back button and card */
+  }
+  
+  
+  .auth-card{
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    background: transparent;
+    position: relative;
+  }
+  
+  .auth-card-inner{
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 24px;
+    overflow: hidden;           
+    background-clip: padding-box;
+  }
+  
+  
+  .auth-title{
+    margin: 0 0 6px;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: #064e3b;              
+    line-height: 1.2;
+  }
+  
+  .auth-note{
+    margin: 0 0 16px;
+    color: var(--text-muted);
+  }
+  
+  /* Errors */
+  .auth-error{
+    background: rgba(248,113,113,.12);
+    border: 1px solid rgba(248,113,113,.25);
+    color: #7f1d1d;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin: 0 0 14px;
+  }
+  
+  /* Form layout */
+  .auth-form{
+    display: grid;
+    gap: 16px;
+  }
+  
+  .field-row{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* perfectly even halves */
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .auth-label{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;                    
+  }
+  
+  .label-text{
+    font-weight: 700;
+    color: #064e3b;
+  }
+  
+  .auth-input{
+    appearance: none;
+    background: #f8fafc;       
+    border: 1.5px solid #94a3b8;
+    border-color: #0f1720;
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text-dark);
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .auth-input::placeholder{
+    color: #64748b;           
+  }
+  
+  .auth-input:focus{
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+    background: #ffffff;
+  }
+  
+  /* Chips preview */
+  .chips{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 4px 0 6px;
+  }
+  
+  .chip{
+    background: #d1fae5;        
+    border: 1px solid rgba(0,0,0,0.04);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: .9rem;
+    color: #065f46;
+  }
+  
+  
+  .btn-submit{
+    background: #a7f3d0;        
+    color: var(--text-dark);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .2s ease, transform .1s ease;
+  }
+  
+  .btn-submit:hover{ background: #8df0be; }
+  .btn-submit:active{ transform: translateY(1px); }
+  
+  .btn-outline{
+    background: #fff;
+    border: 1.5px solid #cbd5e1; /* slate-300 */
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: #0f1720;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .2s ease, border-color .2s ease;
+  }
+  
+  .btn-outline:hover{
+    background: #f8fafc;
+    border-color: #94a3b8;
+  }
+  
+  .btn-google{
+    background: #fff;
+    border: 1.5px solid #cbd5e1;
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: #0f1720;
+    cursor: pointer;
+  }
+  
+  
+  .auth-form > div:last-child{
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+  }
+  
+  
+  .auth-switch{ margin: 12px 0 0; color: #064e3b; }
+  .auth-switch a{ color: #0ea96a; text-decoration: underline; }
+  
+  
+  .back-home{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 2px solid #2e7d32;
+    color: #2e7d32;
+    background: transparent;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .2s ease, color .2s ease, transform .1s ease;
+    align-self: flex-start;
+  }
+  
+  .back-home:hover{
+    background: #2e7d32;
+    color: #fff;
+  }
+  
+  .back-home:active{
+    transform: translateY(1px);
+  }
+  
+  
+  @media (max-width: 920px){
+    .field-row{ gap: 14px; }
+  }
+  
+  @media (max-width: 720px){
+    .auth-card-inner{ padding: 18px; }
+    .field-row{ grid-template-columns: 1fr; }
+  }
+ /* Farms row: 4 columns and aligned inputs */
+.farm-row{
+  display: grid;
+  grid-template-columns: 1.2fr 0.6fr 1fr 1.6fr; /* Name | Acres | Location | Crops */
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+}
 
-.auth-switch { margin: 12px 0 0; color: #064e3b; }
-.auth-switch a { color: #0ea96a; }
+/* Inside the farms row, force labels to reserve space for up to 2 lines */
+.farm-row .auth-label{
+  display: grid;
+  grid-template-rows: auto 1fr; /* label text row, then input row */
+}
 
-@media (max-width: 720px) {
-  .field-row { grid-template-columns: minmax(0, 1fr); }
-  .auth-card { padding: 18px; }
+.farm-row .label-text{
+  white-space: normal;
+  line-height: 1.2;
+  min-height: 44px; /* ~2 lines so all four inputs line up */
+}
+
+/* Responsive collapse */
+@media (max-width: 920px){
+  .farm-row{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px){
+  .farm-row{ grid-template-columns: 1fr; }
 }

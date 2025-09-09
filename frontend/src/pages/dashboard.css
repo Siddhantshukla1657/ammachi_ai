@@ -3,7 +3,7 @@
 .dash-layout { display: flex; gap: 20px; }
 .dash-main { flex: 1; }
 
-.dash-container { min-height: 100vh; background: linear-gradient(180deg, var(--dash-bg-1), var(--dash-bg-2)); color: #043124; padding: 24px; }
+.dash-container { min-height: 100vh; background: linear-gradient(180deg, #e6f7ee 0%, #c7edd9 50%, #9fe0ba 100%); color: #043124; padding: 24px; }
 .dash-header { display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto 18px; }
 .dash-title { margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--dash-accent-deep); }
 .dash-signout { background: transparent; border: 0; color: var(--dash-accent-deep); padding: 8px 12px; border-radius: 8px; cursor: pointer; }

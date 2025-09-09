@@ -1,8 +1,8 @@
 import React from 'react';
 import './landing.css';
 
-const bgUrl =
-  'https://cdn.builder.io/api/v1/image/assets%2Fc21b63e7074b4525a6e3164505c4a230%2Ffcc6827670244419818678eb20abc5a5?format=webp&width=1600';
+const bgUrl = '/images/landing-bg.webp';
+
 const logoUrl =
   'https://cdn.builder.io/api/v1/image/assets%2Fc21b63e7074b4525a6e3164505c4a230%2Fac56160c2de4493283652bdd34caa4b0?format=webp&width=300';
 
@@ -22,18 +22,15 @@ export default function Landing() {
         </p>
 
         <div className="cta-row">
-          <a className="btn btn-primary" href="#/login" aria-label="Login">
-            <span className="btn-icon" aria-hidden>
-              ↪
-            </span>
-            <span>Login</span>
-          </a>
-          <a className="btn btn-outline" href="#/signup" aria-label="Sign Up">
-            <span className="btn-icon" aria-hidden>
-              ✚
-            </span>
-            <span>Sign Up</span>
-          </a>
+        <a className="btn btn-primary login-btn" href="#/login" aria-label="Login">
+          <span className="btn-icon" aria-hidden>↪</span>
+          <span>Login</span>
+        </a>
+        <a className="btn btn-outline signup-btn" href="#/signup" aria-label="Sign Up">
+          <span className="btn-icon" aria-hidden>✚</span>
+          <span>Sign Up</span>
+</a>
+
         </div>
 
 
@@ -66,11 +63,8 @@ export default function Landing() {
           © 2025 Ammachi AI. Built for the heart of farming.
         </footer>
       </div>
-      <img
-        className="hero-image"
-        src={bgUrl}
-        alt="Green crops in a field"
-      />
+      <img className="hero-image" src={bgUrl} alt="Green crops in a field" />
+
     </main>
   );
 }
