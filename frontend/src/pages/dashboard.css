@@ -1,44 +1,74 @@
-:root { --dash-bg-1: #f4fbf6; --dash-bg-2: #eaf7ee; --dash-accent: #2fb46a; --dash-accent-deep: #1ea055; --muted: #6b8a78; --card-bg: #ffffff; --card-border: rgba(37,147,93,0.08); }
+:root {
+  --bg-1: #ebfdf2;
+  --bg-2: #dff6e8;
+  --hero-green: linear-gradient(90deg,#2fb46a,#1ea055);
+  --accent-deep: #1a7f3f;
+  --card-bg: #ffffff;
+  --card-contrast: #f7fff7;
+  --muted: #5a7a68;
+  --soft-blue: rgba(225,241,255,0.9);
+}
 
-.dash-layout { display: flex; gap: 20px; }
-.dash-main { flex: 1; }
+.dash-layout { display:flex; gap:20px; }
+.dash-main { flex:1; }
+.dash-container { min-height:100vh; padding:24px; background: linear-gradient(180deg,var(--bg-1),var(--bg-2)); color: #042619; }
+.dash-header { display:flex; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto 18px; }
+.dash-title { margin:0; font-weight:800; color:var(--accent-deep); }
+.dash-signout { background:transparent; border:0; color:var(--accent-deep); padding:8px 12px; border-radius:8px; cursor:pointer; }
 
-.dash-container { min-height: 100vh; background: linear-gradient(180deg, #e6f7ee 0%, #c7edd9 50%, #9fe0ba 100%); color: #043124; padding: 24px; }
+/* HERO */
+.dash-card { max-width:1200px; margin:0 auto; }
+.dash-hero.large-hero { background: var(--hero-green); border-radius:16px; padding:24px; color:#fff; display:flex; align-items:center; gap:20px; box-shadow: 0 12px 30px rgba(34,139,79,0.08); }
+.hero-content-left { flex:1; }
+.dash-welcome { margin:0 0 6px 0; font-size:1.4rem; font-weight:800; }
+.dash-text { margin:0 0 12px 0; opacity:0.95; }
+.hero-actions { display:flex; gap:12px; }
+.btn-cta { background: #fff; color:#1b6b3f; border: none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; }
+.btn-cta.outline { background: rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.12); }
+.hero-visual { width:120px; height:64px; border-radius:12px; background: rgba(255,255,255,0.06); }
+
+/* STATS ROW */
+.stats-row { display:flex; gap:16px; margin-top:18px; }
+.stat-card { background: var(--card-bg); border-radius:12px; padding:18px; flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; box-shadow: 0 8px 16px rgba(0,0,0,0.04); }
+.stat-icon { font-size:20px; }
+.stat-value { font-weight:800; font-size:1.25rem; }
+.stat-label { color:var(--muted); font-size:.9rem; }
+
+/* Advisory */
+.advisory { margin-top:12px; background: var(--soft-blue); padding:12px 16px; border-radius:10px; color:#0b4a6c; box-shadow: 0 6px 12px rgba(0,0,0,0.03); }
+
+/* GRID - recent scans + weather */
+.dash-grid.two-cols { display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:18px; }
+.card { background: var(--card-contrast); border-radius:12px; padding:16px; box-shadow: 0 8px 20px rgba(0,0,0,0.03); }
+.card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.link-arrow { background:transparent; border:0; color:var(--accent-deep); font-weight:700; cursor:pointer; }
+
+.dash-container { min-height: 100vh; background: linear-gradient(180deg, var(--dash-bg-1), var(--dash-bg-2)); color: #043124; padding: 24px; }
 .dash-header { display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto 18px; }
 .dash-title { margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--dash-accent-deep); }
 .dash-signout { background: transparent; border: 0; color: var(--dash-accent-deep); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
 .dash-card { max-width: 1100px; margin: 0 auto; background: transparent; border-radius: 14px; padding: 0; }
 
-/* Hero banner */
-.dash-hero { background: linear-gradient(90deg, rgba(47,180,106,0.15), rgba(30,160,85,0.18)); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 8px 20px rgba(34,139,79,0.06); }
-.dash-welcome { margin: 0; font-size: 1.35rem; font-weight: 800; color: #06402a; }
-.dash-text { margin: 0; color: var(--muted); }
+/* Weather */
+.weather-cards { display:flex; gap:10px; }
+.weather-card { background: rgba(255,255,255,0.9); padding:12px; border-radius:10px; width:120px; text-align:center; }
+.w-temp { font-weight:800; }
+.w-desc { color:var(--muted); font-size:.9rem; }
 
-/* Quick stats row */
-.dash-stats { display: flex; gap: 14px; margin-top: 6px; flex-wrap: wrap; }
-.stat { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 14px 16px; min-width: 140px; box-shadow: 0 6px 18px rgba(50,115,70,0.04); }
-.stat .value { font-weight: 800; font-size: 1.1rem; color: #052e22; }
-.stat .label { color: var(--muted); font-size: .85rem; }
+/* Market prices */
+.market-prices { margin-top:18px; }
+.market-row { display:flex; gap:12px; }
+.price-summary { flex:1; background: var(--card-contrast); padding:12px; border-radius:10px; display:flex; flex-direction:column; gap:6px; }
+.p-name { color:var(--muted); font-weight:700; }
+.p-value { font-weight:800; font-size:1.25rem; }
+.p-change.pos { color:#16a34a; font-weight:700; }
+.p-change.neg { color:#d44; font-weight:700; }
 
-/* Content grid under hero */
-.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; max-width: 1100px; margin-left: auto; margin-right: auto; }
-.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; box-shadow: 0 6px 18px rgba(50,115,70,0.03); }
-.card-note { margin-top: 8px; color: var(--muted); font-size: .95rem; }
+.card-chart { margin-top:12px; height:220px; border-radius:8px; background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,255,249,0.98)); }
 
 /* Responsive */
-@media (max-width: 900px) {
-  .dash-grid { grid-template-columns: 1fr; }
-  .dash-stats { justify-content: center; }
-  .dash-layout { flex-direction: column; }
-  .dash-main { width: 100%; }
-  .dash-card { padding: 0 12px; }
-  .dash-hero { padding: 18px; border-radius: 12px; }
-  .dash-stats { gap: 10px; }
-  .stat { flex: 1 1 45%; min-width: auto; }
-}
-
-@media (max-width: 420px) {
-  .dash-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .dash-hero { padding: 14px; }
-  .dash-welcome { font-size: 1.05rem; }
+@media (max-width: 1000px) {
+  .dash-grid.two-cols { grid-template-columns: 1fr; }
+  .stats-row { flex-direction:column; }
+  .market-row { flex-direction:column; }
 }
