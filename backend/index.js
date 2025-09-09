@@ -55,10 +55,12 @@ app.get("/api/health", (req, res) => {
 // Import routes
 const authRoutes = require('./routes/auth');
 const diseaseRoutes = require('./routes/disease');
+const farmersRoutes = require('./routes/farmers');
 
 // API Routes - keep them together and before error handlers
 app.use('/api/auth', authRoutes);
 app.use('/api/disease', diseaseRoutes);
+app.use('/api/farmers', farmersRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
