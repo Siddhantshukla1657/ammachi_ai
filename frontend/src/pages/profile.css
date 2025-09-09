@@ -245,15 +245,100 @@
 
 /* keep the language select appearance but avoid shifting layout on focus */
 .language-select {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.language-select:focus {
+  transform: none;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.save-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.save-btn:hover {
+  background: #45a049;
+}
+
+.cancel-btn {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #e9ecef;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+/* Settings */
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.settings-icon {
+  width: 40px;
+  height: 40px;
+  background: #e8f5e8;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4CAF50;
+  flex-shrink: 0;
+}
+
+.settings-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.settings-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.settings-value {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.language-select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-
   display: inline-block;
-  min-width: 200px;
+  min-width: 180px;
   height: 44px;
-  padding: 8px 44px 8px 16px;
-  border-radius: 12px;
+  padding: 8px 44px 8px 14px; /* left padding for text, right padding for custom arrow */
+  border-radius: 12px !important;
   border: 1px solid #cde6d5;
   background-color: #ffffff;
   color: #0f5132;
@@ -262,30 +347,15 @@
   line-height: 1;
   cursor: pointer;
 
-  /* custom arrow matching theme */
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%230f5132" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+  /* custom arrow in mediumseagreen */
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%233CB371" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 18px;
 
-  box-shadow: 0 2px 10px rgba(15,81,50,0.06);
+  box-shadow: 0 2px 10px var(--msg-rgba-06);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.06s ease;
   outline: none;
-}
-
-/* bring select above surrounding elements while focused */
-.language-select:focus {
-  z-index: 10;
-  border-color: #2fb46a;
-  box-shadow: 0 8px 28px rgba(47,180,106,0.12);
-  transform: none;
-  outline: none;
-}
-
-/* keyboard-visible focus ring */
-.language-select:focus-visible {
-  box-shadow: 0 8px 28px rgba(47,180,106,0.14), 0 0 0 3px rgba(47,180,106,0.08);
-  border-color: #2fb46a;
 }
 
 /* hide IE/Edge native dropdown arrow */
@@ -296,7 +366,7 @@
 /* option styling (browser-limited) */
 .language-select option {
   background: #ffffff;
-  color: #0f5132;
+  color: var(--msg);
   padding: 8px 10px;
 }
 
@@ -304,8 +374,8 @@
 .language-select option:hover,
 .language-select option:active,
 .language-select option:checked {
-  background: #e6fff3;
-  color: #0f5132;
+  background: var(--msg-rgba-06);
+  color: var(--msg);
 }
 
 /* avoid autofill turning the control a different color */
@@ -324,7 +394,7 @@
 
 /* Activity Card */
 .activity-card {
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  background: linear-gradient(135deg, var(--msg-rgba-06) 0%, var(--msg-rgba-03) 100%);
   border-radius: 16px;
   padding: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -348,7 +418,7 @@
   padding: 1rem;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--msg-rgba-06);
 }
 
 .stat-number {
