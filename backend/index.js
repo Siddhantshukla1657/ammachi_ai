@@ -66,12 +66,12 @@ const authRoutes = require('./routes/auth');
 const diseaseRoutes = require('./routes/disease');
 const farmersRoutes = require('./routes/farmers');
 const marketRoutes = require('./routes/market');
+const weatherRoutes = require('./routes/weather');
 
 // API Routes - keep them together and before error handlers
 app.use('/api/auth', authRoutes);
 app.use('/api/disease', diseaseRoutes);
 app.use('/api/farmers', farmersRoutes);
-app.use('/api/market', marketRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

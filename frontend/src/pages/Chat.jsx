@@ -7,17 +7,28 @@ export default function Chat(){
     { id: 1, from: 'bot', text: 'Hello! I am Ammachi AI, your farming assistant. How can I help you today?\n\nസ്വാഗതം! എനിക്ക് സഹായം വേണോ?' , time: '2:26:16 PM' }
   ]);
   const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function sendMessage(e){
+  async function sendMessage(e){
     e.preventDefault();
     if(!query.trim()) return;
     const m = { id: Date.now(), from: 'user', text: query.trim(), time: new Date().toLocaleTimeString() };
     setMessages(prev => [...prev, m]);
     setQuery('');
-    // mock bot reply
-    setTimeout(()=>{
-      setMessages(prev => [...prev, { id: Date.now()+1, from: 'bot', text: 'Thanks, I will look into that and get back to you.', time: new Date().toLocaleTimeString() }]);
-    }, 700);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/chatbot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: m.text })
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, { id: Date.now()+1, from: 'bot', text: data.reply || 'Sorry, I could not understand that.', time: new Date().toLocaleTimeString() }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { id: Date.now()+2, from: 'bot', text: 'Sorry, there was a problem connecting to the AI.', time: new Date().toLocaleTimeString() }]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const quick = ['How to identify rice blast disease?', 'Best time to plant coconut?', 'Organic pest control methods', 'Monsoon farming tips'];
@@ -46,6 +57,7 @@ export default function Chat(){
                 </div>
               </div>
             ))}
+            {loading && <div className="msg-row bot"><div className="msg-bubble">Ammachi AI is typing...</div></div>}
           </section>
 
           <div className="chat-quick">
