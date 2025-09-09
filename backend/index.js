@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 // Import Firebase config (keeps side-effects/init if any)
 const { admin } = require('./config/firebase');
@@ -42,6 +43,14 @@ app.get("/", (req, res) => {
     status: "healthy",
     timestamp: new Date().toISOString(),
   });
+});
+
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
+
+// Special route for weather API testing
+app.get('/test-weather', (req, res) => {
+  res.sendFile(path.join(__dirname, 'testapis', 'public', 'weather-test.html'));
 });
 
 app.get("/api/health", (req, res) => {
