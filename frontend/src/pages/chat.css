@@ -2,7 +2,7 @@
 
 .chat-layout { display:flex; gap:20px; }
 .chat-main { flex:1; }
-.chat-container { max-width:1100px; margin:0 auto; padding:24px; min-height:100vh; background: linear-gradient(180deg, #e6f7ee 0%, #c7edd9 50%, #9fe0ba 100%); display:flex; flex-direction:column; }
+.chat-container { max-width:1100px; margin:0 auto; padding:16px 16px 16px 0; min-height:100vh; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); display:flex; flex-direction:column; }
 .chat-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
 .chat-header-left { display:flex; flex-direction:column; }
 .assistant-badge { font-weight:800; color:#064e3b; }
