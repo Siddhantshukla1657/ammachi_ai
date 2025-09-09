@@ -1,5 +1,6 @@
 ::root { --bg-1: #f4fbf6; --bg-2: #eaf7ee; --accent: #2fb46a; --muted: #365a49; --card-bg: #f7fff7; --card-border: rgba(37,147,93,0.06); --card-contrast: #ffffff; --panel-blue: linear-gradient(90deg,#2b9ee6,#2b7df0); }
 
+
 .weather-layout { display: flex; gap: 20px; }
 .weather-main { flex: 1; }
 .weather-container { max-width: 1100px; margin: 0 auto; padding: 20px 20px 16px 0; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); min-height: 100vh; border-radius: 18px; }
@@ -13,7 +14,8 @@
 .current-weather { flex: 1; min-width: 340px; }
 .cw-head { font-weight: 700; margin-bottom: 8px; color: #fff; background: linear-gradient(90deg,#2b9ee6,#2b7df0); padding: 14px; border-radius: 10px; font-size: 1.15rem; }
 .cw-body { display:flex; gap:18px; align-items:center; padding:18px; background: linear-gradient(90deg,#2b9ee6,#2b7df0); border-radius: 10px; color: #fff; }
-.cw-left { flex: 1; }
+.cw-left { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+.cw-icon { font-size: 2.5rem; margin-bottom: 5px; }
 .cw-temp { font-size: 2.6rem; font-weight: 800; color: #fff; }
 .cw-cond { color: rgba(255,255,255,0.95); font-size: 1.1rem; }
 .cw-right { display: grid; grid-template-columns: repeat(2, 1fr); gap:12px; }
@@ -29,11 +31,51 @@
 .day-card { background: #fff; border-radius:12px; padding:14px 12px; min-width:100px; text-align:center; border:1px solid #e0f2e9; box-shadow: 0 2px 8px rgba(47,180,106,0.03); transition: background 0.15s; }
 .day-card.active { background: #e9fff1; border:1px solid #2fb46a; }
 .day-name { font-weight:700; color:#064e3b; font-size: 1.01rem; }
-.day-temp { font-weight:800; margin-top:6px; font-size: 1.18rem; }
+.day-icon { font-size: 1.8rem; margin: 5px 0; }
+.day-temp { font-weight:800; margin-top:6px; font-size: 1.18rem; color: #2fb46a; }
 .day-cond.muted { color: #365a49; font-size: .98rem; }
 .day-pop.muted { color: #2fb46a; font-size: .98rem; font-weight: 600; }
+
+
+/* Hourly forecast styles */
+.hourly-forecast { margin-top: 18px; }
+.hourly-forecast h3 { font-size: 1.13rem; font-weight: 700; color: #063f2d; margin-bottom: 10px; }
+.hour-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+.hour-card { background: #fff; border-radius: 10px; padding: 12px 10px; min-width: 80px; text-align: center; border: 1px solid #e0f2e9; box-shadow: 0 2px 8px rgba(47,180,106,0.03); }
+.hour-time { font-weight: 700; color: #064e3b; font-size: 0.9rem; }
+.hour-icon { font-size: 1.5rem; margin: 5px 0; }
+.hour-temp { font-weight:800; margin-top:6px; font-size: 1.18rem; color: #2fb46a; }
+.hour-cond.muted { color: #365a49; font-size: 0.85rem; }
+.hour-pop.muted { color: #2fb46a; font-size: 0.85rem; font-weight: 600; }
+
+
+/* Tab styles */
+.forecast-tabs { display: flex; gap: 10px; margin: 20px 0 10px; }
+.tab-button { padding: 10px 16px; background: #fff; border: 1px solid #d2e7d6; border-radius: 8px; font-size: 1rem; font-weight: 600; color: #063f2d; cursor: pointer; transition: all 0.2s; }
+.tab-button.active { background: #2fb46a; color: white; border-color: #2fb46a; }
 .muted { color: #bfa800; font-size: .98rem; }
-.weather-loading, .weather-error { margin: 18px 0; color: #b80b3a; font-weight: 600; }
+
+
+/* Loading and error states */
+.weather-loading { margin: 18px 0; display: flex; align-items: center; gap: 15px; }
+.loading-spinner { width: 30px; height: 30px; border: 3px solid rgba(47,180,106,0.2); border-radius: 50%; border-top-color: #2fb46a; animation: spin 1s linear infinite; }
+.loading-text { color: #063f2d; font-weight: 600; }
+
+
+.weather-error { margin: 18px 0; background: #fff1f2; border-left: 4px solid #f31260; padding: 15px; border-radius: 8px; display: flex; align-items: flex-start; gap: 15px; }
+.error-icon { font-size: 24px; }
+.error-message { flex: 1; }
+.error-message strong { color: #b80b3a; }
+.error-help { margin-top: 10px; font-size: 0.9rem; color: #555; }
+.error-help ul { margin: 5px 0; padding-left: 20px; }
+.retry-button { margin-top: 10px; padding: 8px 16px; background: #2fb46a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+.retry-button:hover { background: #27a35b; }
+
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .page-scroll { overflow-y: auto; height: 100vh; padding-left: 220px; box-sizing: border-box; }
 @media (max-width: 1200px) {
   .weather-container { padding: 16px; }
@@ -51,10 +93,13 @@
 @media (max-width: 600px) {
   .weather-container { padding: 2px; }
   .weather-title { font-size: 1.2rem; }
+  .cw-icon { font-size: 1.8rem; }
   .cw-temp { font-size: 1.3rem; }
   .cw-body { flex-direction: column; gap: 8px; padding: 8px; }
   .cw-right { grid-template-columns: 1fr; gap: 6px; }
   .advisories { padding: 8px; }
   .seven-day { margin-top: 8px; }
   .day-card { padding: 8px 4px; font-size: 0.95rem; }
+  .hour-card { min-width: 70px; padding: 8px 4px; }
+  .forecast-tabs { flex-direction: column; gap: 5px; }
 }
