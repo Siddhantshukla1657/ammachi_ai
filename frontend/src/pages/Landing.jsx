@@ -2,7 +2,7 @@ import React from 'react';
 import './landing.css';
 
 const bgUrl =
-  'https://cdn.builder.io/api/v1/image/assets%2Fc21b63e7074b4525a6e3164505c4a230%2Ffcc6827670244419818678eb20abc5a5?format=webp&width=1600';
+  'https://cdn.builder.io/api/v1/image/assets%2Fc21b63e7074b4525a6e3164505c4a230%2F401d2f7b28154cf0b2a4cd55fdd51056?format=webp&width=800';
 const logoUrl =
   'https://cdn.builder.io/api/v1/image/assets%2Fc21b63e7074b4525a6e3164505c4a230%2Fac56160c2de4493283652bdd34caa4b0?format=webp&width=300';
 
