@@ -1,0 +1,31 @@
+:root { --bg-1: #f4fbf6; --bg-2: #eaf7ee; --accent: #2fb46a; --muted: #6b8a78; --card-bg: #ffffff; --card-border: rgba(37,147,93,0.06); }
+
+.detect-layout { display:flex; gap:20px; }
+.detect-main { flex:1; }
+.detect-container { max-width:1100px; margin:0 auto; padding:24px; background: linear-gradient(180deg,var(--bg-1),var(--bg-2)); min-height:100vh; }
+.detect-title { margin:0; color:#064e3b; font-size:1.6rem; }
+.detect-sub { margin:4px 0 18px; color:var(--muted); }
+
+.upload-card { border:2px dashed rgba(37,147,93,0.18); border-radius:12px; padding:40px; display:flex; align-items:center; justify-content:center; }
+.upload-inner { text-align:center; }
+.upload-icon { font-size:36px; margin-bottom:8px; }
+.upload-note { color:var(--muted); margin-bottom:12px; }
+.upload-actions { display:flex; gap:12px; justify-content:center; margin-top:12px; }
+.choose-btn { background:var(--accent); color:#063f2d; padding:10px 14px; border-radius:8px; cursor:pointer; position:relative; }
+.choose-btn input { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+.camera-btn { background:transparent; border:1px solid rgba(6,78,59,0.06); padding:10px 12px; border-radius:8px; cursor:pointer; }
+.formats { margin-top:10px; color:var(--muted); }
+
+.preview-section { display:flex; gap:14px; align-items:center; margin-top:18px; }
+.preview-img { max-width:220px; border-radius:8px; border:1px solid rgba(6,78,59,0.04); }
+.preview-actions { display:flex; gap:8px; }
+.btn-outline { background:transparent; border:1px solid rgba(6,78,59,0.08); padding:8px 12px; border-radius:8px; color:#063f2d; }
+.btn-submit { background:#a7f3d0; color:#063f2d; border:none; padding:10px 14px; border-radius:8px; }
+
+.result-card { margin-top:16px; }
+.result-item { margin-top:8px; }
+.result-note { margin-top:10px; color:var(--muted); }
+
+.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; box-shadow: 0 6px 18px rgba(50,115,70,0.03); }
+
+@media (max-width:900px){ .preview-section{ flex-direction:column; } .detect-container{ padding:16px; } }

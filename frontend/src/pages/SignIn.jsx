@@ -62,8 +62,10 @@ export default function SignIn() {
 
   async function onSubmit(e) {
     e.preventDefault();
+    if (isProcessing) return;
     setError('');
     if (!form.identifier || !form.password) { setError('Please enter your email or phone and password.'); return; }
+    setIsProcessing(true);
 
     try {
       // Call backend login
@@ -90,12 +92,15 @@ export default function SignIn() {
         return;
       }
 
+      // Read response body once for debugging
       const text = await res.text();
       console.warn('Backend login failed', res.status, text);
       setError('No account found. Please sign up first.');
     } catch (err) {
       console.error(err);
       setError('Failed to sign in. Please try again later.');
+    } finally {
+      setIsProcessing(false);
     }
   }
 
@@ -170,7 +175,7 @@ export default function SignIn() {
             <span className="label-text">Password</span>
             <input className="auth-input" type="password" name="password" value={form.password} onChange={onChange} autoComplete="current-password" />
           </label>
-          <button className="btn-submit" type="submit" onClick={(e)=>onSubmit(e)}>Login</button>
+          <button className="btn-submit" type="submit" disabled={isProcessing}>{isProcessing ? 'Signing in...' : 'Login'}</button>
         </form>
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 12 }}>

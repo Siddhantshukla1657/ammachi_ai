@@ -1,4 +1,4 @@
-:root {
+::root {
   --brand-pastel: #bff3d6;
   --brand-pastel-deep: #9fe8bf;
   --text-dark: #063f2d;
@@ -82,4 +82,20 @@
 .feature strong {
   font-size: 0.95rem;
   margin-bottom: 0.25rem;
+}
+
+/* Mobile tweaks */
+@media (max-width: 900px) {
+  .hero-content { padding: 1.25rem; max-width: 640px; }
+  .brand-emblem { width: 120px; }
+}
+
+@media (max-width: 420px) {
+  .hero-content { padding: 0.9rem; }
+  .brand-emblem { width: 80px; margin-bottom: 1rem; }
+  .hero-title { font-size: 1.4rem; }
+  .cta-row { flex-direction: column; gap: 10px; }
+  .btn { width: 100%; justify-content: center; }
+  .features-strip { flex-wrap: wrap; justify-content: center; }
+  .feature { width: 46%; }
 }
