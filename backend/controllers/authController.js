@@ -61,7 +61,7 @@ class AuthController {
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { email, password, displayName } = req.body;
+      const { email, password, displayName, ...farmerData } = req.body;
 
       // Check if user already exists
       const existingUser = await User.findByEmail(email);
@@ -76,13 +76,21 @@ class AuthController {
         displayName: displayName || email.split('@')[0]
       });
 
-      // Create user in our database (MongoDB or mock)
+      // Create user in our database (MongoDB or mock) with farmer data
       const user = await User.create({
         email,
         displayName: displayName || email.split('@')[0],
         provider: 'email',
         isEmailVerified: false,
-        firebaseUid: firebaseUser.uid
+        firebaseUid: firebaseUser.uid,
+        // Include farmer-specific fields
+        experience: farmerData.experience || 0,
+        farmSize: farmerData.farmSize || '',
+        district: farmerData.district || '',
+        phoneNumber: farmerData.phone || '',
+        primaryCrops: farmerData.crops || [],
+        language: farmerData.language || 'english',
+        role: 'farmer'
       });
 
       // Also persist to MongoDB if connected
@@ -94,7 +102,16 @@ class AuthController {
             firebaseUid: firebaseUser.uid,
             email,
             displayName: displayName || email.split('@')[0],
-            provider: 'email'
+            provider: 'email',
+            // Store farmer-specific data in MongoDB
+            experience: farmerData.experience || 0,
+            farmSize: farmerData.farmSize || '',
+            district: farmerData.district || '',
+            phoneNumber: farmerData.phone || '',
+            primaryCrops: farmerData.crops || [],
+            language: farmerData.language || 'english',
+            role: 'farmer',
+            farms: farmerData.farms || []
           });
           console.log('✅ User saved to MongoDB');
         }
@@ -111,7 +128,13 @@ class AuthController {
           id: user.id,
           email: user.email,
           displayName: user.displayName,
-          role: user.role
+          role: user.role,
+          experience: user.experience,
+          farmSize: user.farmSize,
+          district: user.district,
+          phoneNumber: user.phoneNumber,
+          primaryCrops: user.primaryCrops,
+          language: user.language
         },
         token: customToken
       });
@@ -197,7 +220,9 @@ class AuthController {
                 firebaseUid: firebaseUser.uid,
                 email: firebaseUser.email,
                 displayName: firebaseUser.displayName || email.split('@')[0],
-                provider: 'email'
+                provider: 'email',
+                role: 'farmer',
+                lastLoginAt: new Date()
               });
               console.log('✅ User saved to MongoDB');
             } else {
@@ -207,7 +232,8 @@ class AuthController {
                 { 
                   email: firebaseUser.email,
                   displayName: firebaseUser.displayName || email.split('@')[0],
-                  provider: 'email'
+                  provider: 'email',
+                  lastLoginAt: new Date()
                 }
               );
               console.log('✅ User updated in MongoDB');
@@ -348,6 +374,18 @@ class AuthController {
       // Get user from database - try by email first
       let user = await User.findByEmail(decodedUserId);
       
+      // Also try to get from MongoDB for more complete data
+      let mongoUser = null;
+      try {
+        const mongoose = require('mongoose');
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          const MongoUser = require('../models/MongoUser');
+          mongoUser = await MongoUser.findOne({ email: decodedUserId });
+        }
+      } catch (e) {
+        console.warn('Could not fetch from MongoDB:', e.message);
+      }
+      
       // If not found by email, try by ID
       if (!user && !decodedUserId.includes('@')) {
         user = await User.findById(decodedUserId);
@@ -377,25 +415,32 @@ class AuthController {
         });
       }
 
-      // Return user profile data
+      // Return user profile data (merge MongoDB data if available)
+      const profileData = {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        role: user.role || 'farmer',
+        
+        // Use MongoDB data if available, otherwise defaults
+        experience: mongoUser?.experience || user.experience || 0,
+        farmSize: mongoUser?.farmSize || user.farmSize || '',
+        district: mongoUser?.district || user.district || '',
+        phoneNumber: mongoUser?.phoneNumber || user.phoneNumber || '',
+        primaryCrops: mongoUser?.primaryCrops || user.primaryCrops || [],
+        language: mongoUser?.language || user.language || 'english',
+        farms: mongoUser?.farms || [],
+        
+        // Activity data from MongoDB
+        cropsScanned: mongoUser?.cropsScanned || 0,
+        questionsAsked: mongoUser?.questionsAsked || 0,
+        daysActive: mongoUser?.daysActive || 0
+      };
+      
       res.json({
         success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          role: user.role || 'farmer',
-          experience: user.experience || 15,
-          farmSize: user.farmSize || '3.5 acres',
-          district: user.district || 'Wayanad',
-          phoneNumber: user.phoneNumber || '',
-          primaryCrops: user.primaryCrops || ['Coconut', 'Pepper', 'Cardamom'],
-          cropsScanned: user.cropsScanned || 12,
-          questionsAsked: user.questionsAsked || 8,
-          daysActive: user.daysActive || 25,
-          language: user.language || 'English'
-        }
+        user: profileData
       });
     } catch (error) {
       console.error('Profile fetch error:', error);
@@ -424,7 +469,7 @@ class AuthController {
       }
 
       // Whitelist updatable fields
-      const allowed = ['displayName', 'experience', 'farmSize', 'district', 'phoneNumber', 'primaryCrops', 'language'];
+      const allowed = ['displayName', 'experience', 'farmSize', 'district', 'phoneNumber', 'primaryCrops', 'language', 'farms'];
       const sanitized = {};
       for (const key of allowed) {
         if (Object.prototype.hasOwnProperty.call(updateData, key)) {
@@ -432,8 +477,28 @@ class AuthController {
         }
       }
 
+      // Update in primary database
       const updatedUser = await User.update(targetId, sanitized);
       if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+
+      // Also update in MongoDB if connected
+      try {
+        const mongoose = require('mongoose');
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          const MongoUser = require('../models/MongoUser');
+          await MongoUser.updateOne(
+            { email: updatedUser.email },
+            { 
+              ...sanitized,
+              updatedAt: new Date()
+            },
+            { upsert: false }
+          );
+          console.log('✅ Profile updated in MongoDB');
+        }
+      } catch (e) {
+        console.warn('Could not update MongoDB profile:', e.message);
+      }
 
       res.json({
         success: true,

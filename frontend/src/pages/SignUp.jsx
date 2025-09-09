@@ -143,45 +143,47 @@ export default function SignUp() {
     if (v) { setError(v); return; }
 
     try {
-      // Backend API
-      const res = await fetch('/api/farmers/register', {
+      // Use Firebase/MongoDB authentication API
+      const authPayload = {
+        email: payload.email,
+        password: payload.password,
+        displayName: payload.name
+      };
+
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(authPayload)
       });
 
       if (res.ok) {
         const data = await res.json();
-        const profile = data.profile || payload;
-        localStorage.setItem('ammachi_profile', JSON.stringify(profile));
-        localStorage.setItem('ammachi_session', JSON.stringify({ id: profile.farmerId || profile._id || payload.farmerId, name: profile.name }));
+        // Store Firebase auth data
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('ammachi_profile', JSON.stringify({
+          email: data.user.email,
+          displayName: data.user.displayName,
+          id: data.user.id,
+          ...payload // Include farmer-specific data
+        }));
+        localStorage.setItem('ammachi_session', JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.displayName
+        }));
+        
+        setInfo('Account created successfully! You are now signed in.');
         navigateToDashboard();
         return;
       }
 
-      const text = await res.text();
-      console.warn('Backend register failed', res.status, text);
+      const errorData = await res.json();
+      console.warn('Auth register failed', res.status, errorData);
+      setError(errorData.error || 'Registration failed. Please try again.');
 
-
-      const ok = saveLocalFarm(payload);
-      localStorage.setItem('ammachi_profile', JSON.stringify(payload));
-      localStorage.setItem('ammachi_session', JSON.stringify({ id: payload.farmerId, name: payload.name }));
-      setInfo('Saved locally (backend unavailable). You are signed in for this browser.');
-      if (ok) { navigateToDashboard(); return; }
-      setError('Failed to save locally after backend error.');
     } catch (err) {
-      console.warn('Backend save failed; falling back to localStorage', err);
-      try {
-        const ok = saveLocalFarm(payload);
-        localStorage.setItem('ammachi_profile', JSON.stringify(payload));
-        localStorage.setItem('ammachi_session', JSON.stringify({ id: payload.farmerId, name: payload.name }));
-        setInfo('Saved locally (network error). You are signed in for this browser.');
-        if (ok) { navigateToDashboard(); return; }
-        setError('Failed to save locally after network error.');
-      } catch (e) {
-        console.error('Local save failed', e);
-        setError('Failed to create account. Please try again later.');
-      }
+      console.error('Registration failed', err);
+      setError('Failed to create account. Please check your connection and try again.');
     }
   }
 
