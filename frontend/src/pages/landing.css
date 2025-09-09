@@ -38,3 +38,42 @@
   .brand-emblem { width: 64px; height: 64px; font-size: 30px; }
   .cta-row { gap: .6rem; }
 }
+.features-strip {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap; /* allows wrapping on smaller screens */
+}
+
+.feature {
+  flex: 1 1 200px; /* ensures equal growth/shrink with min width */
+  max-width: 220px; /* keeps them balanced */
+  min-height: 120px;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  background: rgba(255, 255, 255, 0.12);
+  padding: 1rem;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.feature strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: #fff;
+}
