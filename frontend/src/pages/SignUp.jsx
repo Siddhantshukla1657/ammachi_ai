@@ -201,7 +201,14 @@ export default function SignUp() {
 
         {error && <div className="auth-error" role="alert">{error}</div>}
         {info && (
-          <div style={{ background: 'rgba(34,197,94,0.06)', padding: 10, borderRadius: 8, color: '#064e3b', marginBottom: 12 }}>
+          <div style={{ 
+            background: 'rgba(45, 90, 71, 0.06)', 
+            padding: 10, 
+            borderRadius: 8, 
+            color: '#2d5a47', 
+            marginBottom: 12,
+            border: '2px solid rgba(45, 90, 71, 0.2)'
+          }}>
             {info}
           </div>
         )}
@@ -263,20 +270,13 @@ export default function SignUp() {
               </select>
             </label>
             <label className="auth-label">
-              <span className="label-text">Farms to create</span>
-              <input className="auth-input" name="numFarmsDisplay" value={String(form.numFarms)} readOnly />
-            </label>
-          </div>
-
-          <div className="field-row">
-            <label className="auth-label">
               <span className="label-text">District</span>
               <input className="auth-input" name="district" value={form.district} onChange={onChange} />
             </label>
           </div>
 
           <div style={{ marginTop: 8 }}>
-            <h4 style={{ margin: '8px 0', color: '#064e3b' }}>Farms</h4>
+            <h4 style={{ margin: '8px 0', color: '#2d5a47' }}>Farms</h4>
             {form.farms.map((f, idx) => (
               <div key={idx} className="field-row farm-row" style={{ marginBottom: 8 }}>
                 <label className="auth-label">
