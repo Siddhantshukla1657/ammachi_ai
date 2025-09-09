@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const FarmerSchema = new mongoose.Schema({
   farmerId: { type: String, required: true, unique: true, index: true }, 
