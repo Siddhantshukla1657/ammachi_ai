@@ -1,9 +1,9 @@
 ::root { --bg-1: #f4fbf6; --bg-2: #eaf7ee; --accent: #2fb46a; --muted: #365a49; --card-bg: #f7fff7; --card-border: rgba(37,147,93,0.06); --card-contrast: #ffffff; --panel-blue: linear-gradient(90deg,#2b9ee6,#2b7df0); }
 
 
-.weather-layout { display: flex; gap: 20px; }
-.weather-main { flex: 1; }
-.weather-container { max-width: 1100px; margin: 0 auto; padding: 20px 20px 16px 0; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); min-height: 100vh; border-radius: 18px; }
+.weather-layout { display: flex; gap: 20px; width: 100vw; min-height: 100vh; }
+.weather-main { flex: 1; width: 100%; overflow-x: hidden; }
+.weather-container { width: 100%; margin: 0; padding: 20px; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); min-height: 100vh; border-radius: 0; }
 .weather-title { margin: 0; color: #064e3b; font-size: 2rem; font-weight: 800; }
 .weather-sub { margin: 4px 0 18px; color: #365a49; font-size: 1.08rem; }
 .weather-controls { display:flex; gap:16px; align-items:center; margin-bottom: 18px; }
@@ -90,8 +90,14 @@
   .day-row { overflow-x: auto; gap: 8px; }
   .day-card { min-width: 90px; }
 }
+@media (max-width: 768px) {
+  .weather-layout { flex-direction: column; gap: 10px; }
+  .weather-top { flex-direction: column; }
+  .advisories { width: 100%; }
+}
+
 @media (max-width: 600px) {
-  .weather-container { padding: 2px; }
+  .weather-container { padding: 10px; }
   .weather-title { font-size: 1.2rem; }
   .cw-icon { font-size: 1.8rem; }
   .cw-temp { font-size: 1.3rem; }
