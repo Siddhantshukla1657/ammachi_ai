@@ -1,0 +1,10 @@
+:root { --surface: #0b0f10; --muted: #889096; --card: rgba(255,255,255,.05); --border: rgba(255,255,255,.12); }
+
+.dash-container { min-height: 100vh; background: linear-gradient(180deg, #0b0f10, #0e1415); color: #e6e6e6; padding: 24px; }
+.dash-header { display: flex; align-items: center; justify-content: space-between; max-width: 1024px; margin: 0 auto 16px; }
+.dash-title { margin: 0; font-size: 1.6rem; font-weight: 800; }
+.dash-signout { background: transparent; border: 1px solid var(--border); color: #e6e6e6; padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+.dash-signout:hover { background: var(--card); }
+.dash-card { max-width: 1024px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+.dash-welcome { margin: 0 0 6px; }
+.dash-text { margin: 0; color: var(--muted); }
