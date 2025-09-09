@@ -111,21 +111,34 @@ export default function SignIn() {
 
     setIsProcessing(true);
     try {
-      // Backend login
-      const res = await fetch('/api/farmers/login', {
+      // Use Firebase/MongoDB authentication API
+      const authPayload = {
+        email: form.identifier,
+        password: form.password
+      };
+
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: form.identifier, password: form.password }),
+        body: JSON.stringify(authPayload)
       });
 
       if (res.ok) {
         const data = await res.json();
-        const profile = data.profile;
-        localStorage.setItem('ammachi_profile', JSON.stringify(profile));
-        localStorage.setItem(
-          'ammachi_session',
-          JSON.stringify({ id: profile.farmerId || profile._id, name: profile.name })
-        );
+        // Store Firebase auth data
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('ammachi_profile', JSON.stringify({
+          email: data.user.email,
+          displayName: data.user.displayName,
+          id: data.user.id,
+          firebaseUid: data.user.firebaseUid
+        }));
+        localStorage.setItem('ammachi_session', JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.displayName
+        }));
+        
         try {
           window.location.hash = '#/dashboard';
           window.dispatchEvent(new HashChangeEvent('hashchange'));
@@ -133,31 +146,13 @@ export default function SignIn() {
         return;
       }
 
-      // Fallback: local
-      const local = findLocalProfile(form.identifier);
-      if (local) {
-        if (local.password && form.password !== local.password) {
-          setError('Incorrect password.');
-          return;
-        }
-        localStorage.setItem('ammachi_profile', JSON.stringify(local));
-        localStorage.setItem(
-          'ammachi_session',
-          JSON.stringify({ id: local.farmerId, name: local.name })
-        );
-        try {
-          window.location.hash = '#/dashboard';
-          window.dispatchEvent(new HashChangeEvent('hashchange'));
-        } catch {}
-        return;
-      }
+      const errorData = await res.json();
+      console.warn('Auth login failed', res.status, errorData);
+      setError(errorData.error || 'Invalid email or password.');
 
-      const text = await res.text();
-      console.warn('Backend login failed', res.status, text);
-      setError('No account found. Please sign up first.');
     } catch (err) {
-      console.error(err);
-      setError('Failed to sign in. Please try again later.');
+      console.error('Login failed', err);
+      setError('Failed to sign in. Please check your connection and try again.');
     } finally {
       setIsProcessing(false);
     }
