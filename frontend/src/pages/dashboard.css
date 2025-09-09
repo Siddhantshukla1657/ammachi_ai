@@ -1,4 +1,14 @@
-:root {
+/* =========================================================
+   Ammachi Dashboard – Clean Edge-to-Edge with Small Gutters
+   Assumptions:
+   - <Dashboard/> wraps: <div class="dash-layout"><Sidebar/><main class="dashboard-main page-scroll dash-container">...</main></div>
+   - We don’t edit Sidebar internals.
+   - We reserve space for a fixed sidebar and add small gutters.
+   ========================================================= */
+
+:root{
+  --sidebar-w: 260px;   /* actual sidebar width */
+  --gutter: 12px;       /* small gap both sides */
   --bg-1: #ebfdf2;
   --bg-2: #dff6e8;
   --hero-green: linear-gradient(90deg,#2fb46a,#1ea055);
@@ -9,70 +19,285 @@
   --soft-blue: rgba(225,241,255,0.9);
 }
 
-.dash-layout { display:flex; gap:20px; }
-.dash-main { flex:1; }
-.dash-container { min-height:100vh; padding:16px 16px 16px 0; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); color: #042619; }
-.dash-header { display:flex; align-items:center; justify-content:space-between; max-width:1200px; margin:0 auto 12px; }
-.dash-title { margin:0; font-weight:800; color:var(--accent-deep); }
-.dash-signout { background:transparent; border:0; color:var(--accent-deep); padding:8px 12px; border-radius:8px; cursor:pointer; }
+/* --------- LAYOUT (no overlap, small gutters) --------- */
 
-/* HERO */
-.dash-card { max-width:1200px; margin:0 auto; }
-.dash-hero.large-hero { background: var(--hero-green); border-radius:12px; padding:20px; color:#fff; display:flex; align-items:center; gap:16px; box-shadow: 0 8px 20px rgba(34,139,79,0.08); }
-.hero-content-left { flex:1; }
-.dash-welcome { margin:0 0 4px 0; font-size:1.3rem; font-weight:800; }
-.dash-text { margin:0 0 8px 0; opacity:0.95; }
-.hero-actions { display:flex; gap:10px; }
-.btn-cta { background: #fff; color:#1b6b3f; border: none; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.95rem; }
-.btn-cta.outline { background: rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.12); }
-.hero-visual { width:120px; height:64px; border-radius:12px; background: rgba(255,255,255,0.06); }
+/* Outer wrapper: reserve space for the fixed sidebar + gap */
+.dash-layout{
+  display:block;
+  width:100%;
+  margin:0;
+  padding-left: calc(var(--sidebar-w) + var(--gutter));  /* sidebar + small gap */
+  padding-right: var(--gutter);                          /* small right gutter */
+  background: linear-gradient(180deg,#f4fbf6 0%,#eaf7ee 100%);
+}
 
-/* STATS ROW */
-.stats-row { display:flex; gap:12px; margin-top:12px; }
-.stat-card { background: var(--card-bg); border-radius:10px; padding:14px; flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow: 0 6px 12px rgba(0,0,0,0.04); }
-.stat-icon { font-size:18px; }
-.stat-value { font-weight:800; font-size:1.15rem; }
-.stat-label { color:var(--muted); font-size:.85rem; }
+/* Treat the first child as the sidebar; pin it with the left gutter */
+.dash-layout > :first-child{
+  position:fixed;
+  top: var(--gutter);
+  bottom: var(--gutter);
+  left: var(--gutter);
+  width: var(--sidebar-w);
+  max-width: var(--sidebar-w);
+  z-index: 10;
+}
 
-/* Advisory */
-.advisory { margin-top:8px; background: var(--soft-blue); padding:10px 14px; border-radius:8px; color:#0b4a6c; box-shadow: 0 4px 8px rgba(0,0,0,0.03); }
+/* Main fills remaining space; tiny internal padding for breathing room */
+.dashboard-main{
+  margin:0 !important;
+  padding: var(--gutter) !important;   /* inner padding, still looks full-bleed */
+  min-width:0;
+}
 
-/* GRID - recent scans + weather */
-.dash-grid.two-cols { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px; }
-.card { background: var(--card-contrast); border-radius:10px; padding:14px; box-shadow: 0 6px 15px rgba(0,0,0,0.03); }
-.card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.link-arrow { background:transparent; border:0; color:var(--accent-deep); font-weight:700; cursor:pointer; }
+/* Keep container full height; no extra side padding */
+.dash-container{ min-height:100vh; }
+
+/* Make inner wrappers span full available width */
+.dash-card, .dash-header{
+  max-width:none;
+  width:100%;
+  margin:0;
+}
+
+/* Nuke any generic paddings some global styles might add */
+.page-scroll, .content, .page, .app-content, main{
+  padding-left:0;
+  padding-right:0;
+}
+
+/* --------- HEADER / BUTTONS / HERO --------- */
+
+.dash-title{ margin:0; font-weight:800; color:var(--accent-deep); }
+.dash-signout{
+  background:transparent; border:0; color:var(--accent-deep);
+  padding:8px 12px; border-radius:8px; cursor:pointer;
+}
+
+.dash-hero.large-hero{
+  background:var(--hero-green);
+  border-radius:12px;
+  padding:20px;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  box-shadow:0 8px 20px rgba(34,139,79,0.08);
+}
+.hero-content-left{ flex:1; }
+.dash-welcome{ margin:0 0 4px 0; font-size:1.3rem; font-weight:800; }
+.dash-text{ margin:0 0 8px 0; opacity:0.95; }
+.hero-actions{ display:flex; gap:10px; }
+.btn-cta{
+  background:#fff; color:#1b6b3f; border:none; padding:8px 12px;
+  border-radius:8px; font-weight:700; cursor:pointer; font-size:0.95rem;
+}
+.btn-cta.outline{
+  background:rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.12);
+}
+.hero-visual{ width:120px; height:64px; border-radius:12px; background:rgba(255,255,255,0.06); }
+
+/* --------- STATS ROW --------- */
+
+.stats-row{ display:flex; gap:12px; margin-top:12px; }
+.stat-card{
+  background:var(--card-bg); border-radius:10px; padding:14px; flex:1;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  box-shadow:0 6px 12px rgba(0,0,0,0.04);
+}
+.stat-icon{ font-size:18px; }
+.stat-value{ font-weight:800; font-size:1.15rem; }
+.stat-label{ color:var(--muted); font-size:.85rem; }
+
+/* --------- ADVISORY --------- */
+
+.advisory{
+  margin-top:8px; background:var(--soft-blue); padding:10px 14px;
+  border-radius:8px; color:#0b4a6c; box-shadow:0 4px 8px rgba(0,0,0,0.03);
+}
+
+/* --------- GRID (Recent Scans + Weather) --------- */
+
+.dash-grid.two-cols{
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; margin-top:12px;
+}
+.card{
+  background:var(--card-contrast); border-radius:10px; padding:14px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.03);
+}
+.card-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.link-arrow{ background:transparent; border:0; color:var(--accent-deep); font-weight:700; cursor:pointer; }
 
 /* Recent scans */
-.scan-list { display:flex; flex-direction:column; gap:8px; }
-.scan-entry { display:flex; gap:10px; align-items:center; }
-.scan-thumb-image { width:40px; height:40px; border-radius:6px; object-fit:cover; }
-.scan-thumb-placeholder { width:40px; height:40px; border-radius:6px; background:linear-gradient(180deg,#eef9f0,#e0f6e6); }
-.scan-title { font-weight:700; font-size:0.95rem; }
-.warn { color:#c44; margin-left:8px; font-weight:700; }
-.ok { color:#1ea055; margin-left:8px; font-weight:700; }
-.scan-sub { color:var(--muted); font-size:.85rem; }
+.scan-list{ display:flex; flex-direction:column; gap:8px; }
+.scan-entry{ display:flex; gap:10px; align-items:center; }
+.scan-thumb-image{ width:40px; height:40px; border-radius:6px; object-fit:cover; }
+.scan-thumb-placeholder{ width:40px; height:40px; border-radius:6px; background:linear-gradient(180deg,#eef9f0,#e0f6e6); }
+.scan-title{ font-weight:700; font-size:0.95rem; }
+.warn{ color:#c44; margin-left:8px; font-weight:700; }
+.ok{ color:#1ea055; margin-left:8px; font-weight:700; }
+.scan-sub{ color:var(--muted); font-size:.85rem; }
 
 /* Weather */
-.weather-cards { display:flex; gap:8px; }
-.weather-card { background: rgba(255,255,255,0.9); padding:10px; border-radius:8px; width:100px; text-align:center; }
-.w-temp { font-weight:800; font-size:0.95rem; }
-.w-desc { color:var(--muted); font-size:.8rem; }
+.weather-cards{ display:flex; gap:8px; }
+.weather-card{
+  background:rgba(255,255,255,0.9); padding:10px; border-radius:8px;
+  width:100px; text-align:center;
+}
+.w-temp{ font-weight:800; font-size:0.95rem; }
+.w-desc{ color:var(--muted); font-size:.8rem; }
 
-/* Market prices */
-.market-prices { margin-top:12px; }
-.market-row { display:flex; gap:10px; }
-.price-summary { flex:1; background: var(--card-contrast); padding:10px; border-radius:8px; display:flex; flex-direction:column; gap:4px; }
-.p-name { color:var(--muted); font-weight:700; font-size:0.9rem; }
-.p-value { font-weight:800; font-size:1.1rem; }
-.p-change.pos { color:#16a34a; font-weight:700; font-size:0.9rem; }
-.p-change.neg { color:#d44; font-weight:700; font-size:0.9rem; }
+/* --------- MARKET PRICES --------- */
 
-.card-chart { margin-top:8px; height:200px; border-radius:6px; background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,255,249,0.98)); }
+.market-prices{ margin-top:12px; }
+.market-row{ display:flex; gap:10px; }
+.price-summary{
+  flex:1; background:var(--card-contrast); padding:10px; border-radius:8px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.p-name{ color:var(--muted); font-weight:700; font-size:0.9rem; }
+.p-value{ font-weight:800; font-size:1.1rem; }
+.p-change.pos{ color:#16a34a; font-weight:700; font-size:0.9rem; }
+.p-change.neg{ color:#d44; font-weight:700; font-size:0.9rem; }
 
-/* Responsive */
+.card-chart{
+  margin-top:8px; height:200px; border-radius:6px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,255,249,0.98));
+}
+
+/* --------- RESPONSIVE --------- */
+
+@media (max-width: 1000px){
+  :root{ --sidebar-w: 240px; --gutter: 10px; }
+  .dash-layout{
+    padding-left: var(--gutter);          /* sidebar goes stacked on small screens */
+  }
+  .dash-layout > :first-child{
+    position:static;
+    width:100%;
+    max-width:none;
+    height:auto;
+    margin-bottom: var(--gutter);
+  }
+  .dashboard-main{ padding: var(--gutter); }
+  .dash-grid.two-cols{ grid-template-columns:1fr; }
+  .stats-row{ flex-direction:column; }
+  .market-row{ flex-direction:column; }
+}
+/* --- fix stat tiles getting cut off --- */
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;                 /* allow wrapping onto the next line */
+}
+
+.stat-card {
+  /* allow shrinking but never below a readable width */
+  flex: 1 1 240px;                 /* grow:1, shrink:1, basis:240px */
+  min-width: 220px;                /* hard floor so content fits */
+}
+
+/* --- prevent grid overflow in the two-column section --- */
+.dash-grid.two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));  /* avoid min-content overflow */
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* --- safety: if some global style hides horizontal overflow on main, undo it --- */
+.dashboard-main {
+  overflow-x: visible;  /* ensure right edges and shadows show */
+}
+/* optional: tighter 1-line preference on big screens */
+@media (min-width: 1300px) {
+  .stat-card { flex-basis: 260px; }
+}
+/* --- Stats Row: Force 4 columns in one line --- */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);  /* exactly 4 equal columns */
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.stat-card {
+  min-width: 0;        /* allow shrinking instead of forcing overflow */
+  flex: none;          /* disable flex growth/shrink from before */
+}
 @media (max-width: 1000px) {
-  .dash-grid.two-cols { grid-template-columns: 1fr; }
-  .stats-row { flex-direction:column; }
-  .market-row { flex-direction:column; }
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);  /* 2 per row */
+  }
+}
+@media (max-width: 600px) {
+  .stats-row {
+    grid-template-columns: 1fr;             /* stack vertically */
+  }
+}
+/* ---------- hard normalize so nothing pushes width ---------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+html, body { width: 100%; overflow-x: hidden; }           /* safety */
+.dash-layout, .dashboard-main, .dash-container { max-width: 100%; }
+
+/* ---------- small, even gutters (keep what you liked) ---------- */
+:root { --sidebar-w: 260px; --gutter: 12px; }
+
+.dash-layout{
+  display:block;
+  width:100%;
+  padding-left: calc(var(--sidebar-w) + var(--gutter));
+  padding-right: var(--gutter);
+}
+
+.dash-layout > :first-child{
+  position:fixed; left: var(--gutter); top: var(--gutter); bottom: var(--gutter);
+  width: var(--sidebar-w); max-width: var(--sidebar-w);
+}
+
+/* ---------- STATS ROW: always one line, no clipping ---------- */
+.stats-row{
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));  /* 4 equal columns */
+  gap: 12px;
+  margin-top: 12px;
+}
+.stat-card{
+  min-width: 0;            /* allow to shrink inside the grid */
+  padding: 12px;           /* slightly tighter so 4 fit comfortably */
+  flex: none !important;   /* disable old flex behavior */
+}
+
+/* Responsive fallbacks (optional, but prevents squish on narrow screens) */
+@media (max-width: 1200px){
+  .stats-row{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 1000px){
+  .stats-row{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px){
+  .stats-row{ grid-template-columns: 1fr; }
+}
+
+/* ---------- Two-column section: no overflow ---------- */
+.dash-grid.two-cols{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));   /* prevents min-content overflow */
+  gap: 12px;
+}
+.card, .dash-card, .dash-header{ max-width: 100%; width: 100%; }
+
+/* ---------- Misc width safeties ---------- */
+.hero-visual, .weather-card, .price-summary, .market-chart, .card-chart { max-width: 100%; }
+.market-chart, .card-chart { width: 100%; }
+
+/* ---------- If your Sidebar ever becomes non-fixed on small screens ---------- */
+@media (max-width: 900px){
+  .dash-layout{ padding-left: var(--gutter); }
+  .dash-layout > :first-child{
+    position: static; width: 100%; max-width: none; height: auto; margin-bottom: var(--gutter);
+  }
 }

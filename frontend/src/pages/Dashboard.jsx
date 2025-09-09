@@ -100,7 +100,7 @@ export default function Dashboard() {
         <div className="dash-card">
           <div className="dash-hero large-hero">
             <div className="hero-content-left">
-              <h2 className="dash-welcome">Welcome back, {profile.name || session.name || 'Yashasvi'}! 🌿</h2>
+              <h2 className="dash-welcome">Welcome  {profile.name || session.name || 'Yashasvi'}! 🌿</h2>
               <p className="dash-text">Your crops are looking healthy today</p>
 
               <div className="hero-actions">
