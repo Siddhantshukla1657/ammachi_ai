@@ -16,9 +16,11 @@ export default function Profile() {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      // Resolve logged-in user from existing session storage
+      // Get user email from stored session/profile
       const storedProfileRaw = localStorage.getItem('ammachi_profile');
       const storedSessionRaw = localStorage.getItem('ammachi_session');
+      const authToken = localStorage.getItem('authToken');
+      
       const storedProfile = storedProfileRaw ? JSON.parse(storedProfileRaw) : null;
       const storedSession = storedSessionRaw ? JSON.parse(storedSessionRaw) : null;
       const userEmail = (storedProfile?.email || storedSession?.email || '').trim().toLowerCase();
@@ -27,39 +29,60 @@ export default function Profile() {
         throw new Error('No logged-in user found in local storage');
       }
       
-      const response = await fetch(`http://localhost:5000/api/auth/profile/${encodeURIComponent(userEmail)}`);
+      // First try to get profile from auth API
+      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`);
       const data = await response.json();
       
-      if (data.success) {
+      if (data.success && data.user) {
         setUser(data.user);
         setFormData(data.user);
-      } else {
-        // If user not found, try to get from auth token only; do not fabricate data
-        const authToken = localStorage.getItem('authToken');
-        if (authToken) {
-          try {
-            const tokenResponse = await fetch('http://localhost:5000/api/auth/verify-token', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken: authToken })
-            });
-            const tokenData = await tokenResponse.json();
-            if (tokenData.user) {
-              setUser(tokenData.user);
-              setFormData(tokenData.user);
-              return;
-            }
-          } catch {}
+        return;
+      }
+
+      // If auth API fails but we have a token, try token verification
+      if (authToken) {
+        try {
+          const tokenResponse = await fetch('/api/auth/verify-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken: authToken })
+          });
+          const tokenData = await tokenResponse.json();
+          if (tokenData.user) {
+            // Merge token data with stored profile data
+            const mergedUser = {
+              ...tokenData.user,
+              ...storedProfile, // Include farmer-specific data from signup
+              email: tokenData.user.email || userEmail
+            };
+            setUser(mergedUser);
+            setFormData(mergedUser);
+            return;
+          }
+        } catch (tokenError) {
+          console.warn('Token verification failed:', tokenError);
         }
-        // If still nothing, show minimal profile from email only
-        setUser({ email: userEmail, displayName: userEmail.split('@')[0] });
-        setFormData({ email: userEmail, displayName: userEmail.split('@')[0] });
+      }
+      
+      // Fallback: use stored profile data only
+      if (storedProfile) {
+        setUser(storedProfile);
+        setFormData(storedProfile);
+      } else {
+        // Last resort: minimal profile
+        const minimalUser = { 
+          email: userEmail, 
+          displayName: userEmail.split('@')[0],
+          role: 'farmer'
+        };
+        setUser(minimalUser);
+        setFormData(minimalUser);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
-      // Fallback to minimal profile only; no fake values
-      setUser({ email: 'unknown', displayName: 'User' });
-      setFormData({ email: 'unknown', displayName: 'User' });
+      // Fallback to minimal profile
+      setUser({ email: 'unknown', displayName: 'User', role: 'farmer' });
+      setFormData({ email: 'unknown', displayName: 'User', role: 'farmer' });
     } finally {
       setLoading(false);
     }
@@ -75,7 +98,13 @@ export default function Profile() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/profile/${user.email}`, {
+      const userEmail = user?.email;
+      if (!userEmail) {
+        setMessage('Unable to update profile: no user email found');
+        return;
+      }
+
+      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -89,19 +118,28 @@ export default function Profile() {
         setUser(formData);
         setEditing(false);
         setMessage('Profile updated successfully!');
+        
+        // Update local storage with new data
+        const currentProfile = JSON.parse(localStorage.getItem('ammachi_profile') || '{}');
+        const updatedProfile = { ...currentProfile, ...formData };
+        localStorage.setItem('ammachi_profile', JSON.stringify(updatedProfile));
+        
         setTimeout(() => setMessage(''), 3000);
       } else {
-        setMessage('Failed to update profile');
+        setMessage('Failed to update profile: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      setMessage('Failed to update profile');
+      setMessage('Failed to update profile: Network error');
     }
   };
 
   const handleLogout = () => {
+    // Clear all authentication data
     localStorage.removeItem('userEmail');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('ammachi_profile');
+    localStorage.removeItem('ammachi_session');
     window.location.href = '/';
   };
 

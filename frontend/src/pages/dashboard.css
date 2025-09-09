@@ -1,14 +1,18 @@
 :root{
   --sidebar-w: 260px;   /* actual sidebar width */
   --gutter: 12px;       /* small gap both sides */
-  --bg-1: #ebfdf2;
-  --bg-2: #dff6e8;
-  --hero-green: linear-gradient(90deg,#2fb46a,#1ea055);
-  --accent-deep: #1a7f3f;
+  --mediumseagreen: #3CB371;
+  --mediumseagreen-light: #66CDAA;
+  --mediumseagreen-dark: #2E8B57;
+  --mediumseagreen-darker: #228B22;
+  --bg-1: #F0FFF0;
+  --bg-2: #F5FFFA;
+  --hero-green: linear-gradient(90deg, var(--mediumseagreen), var(--mediumseagreen-dark));
+  --accent-deep: var(--mediumseagreen-dark);
   --card-bg: #ffffff;
   --card-contrast: #f7fff7;
-  --muted: #5a7a68;
-  --soft-blue: rgba(225,241,255,0.9);
+  --muted: #5F8A5F;
+  --soft-blue: rgba(60,179,113,0.1);
 }
 /* =======================
    THEME VARIABLES
@@ -16,17 +20,17 @@
 
 /* Light mode defaults */
 :root {
-  --bg-1: #ebfdf2;
-  --bg-2: #dff6e8;
-  --hero-green: linear-gradient(90deg,#2fb46a,#1ea055);
+  --bg-1: #F0FFF0;
+  --bg-2: #F5FFFA;
+  --hero-green: linear-gradient(90deg, var(--mediumseagreen), var(--mediumseagreen-dark));
 
-  --accent-deep: #1a7f3f;
-  --text-main: #042619;      /* text color */
-  --text-muted: #5a7a68;     /* muted text */
+  --accent-deep: var(--mediumseagreen-dark);
+  --text-main: var(--mediumseagreen-darker);      /* text color */
+  --text-muted: #5F8A5F;     /* muted text */
 
   --card-bg: #ffffff;
   --card-contrast: #f7fff7;
-  --soft-blue: rgba(225,241,255,0.9);
+  --soft-blue: rgba(60,179,113,0.1);
 }
 
 /* Dark mode overrides */
