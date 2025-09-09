@@ -107,7 +107,7 @@ export default function Dashboard() {
     <div className="dash-layout">
       <Sidebar />
       <main className="dashboard-main page-scroll dash-container">
-        {/* Welcome/Hero Section */}
+        <div className="dashboard-content-wrapper">
         <div className="dash-card">
           <div className="dash-hero large-hero">
             <div className="hero-content-left">
@@ -222,7 +222,9 @@ export default function Dashboard() {
           </div>
           <div className="market-chart card-chart" ref={chartRef} />
         </div>
+        </div>
       </main>
     </div>
+    
   );
 }
