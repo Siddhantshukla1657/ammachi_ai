@@ -143,17 +143,26 @@ export default function SignUp() {
     if (v) { setError(v); return; }
 
     try {
-      // Use Firebase/MongoDB authentication API
-      const authPayload = {
+      // Prepare complete farmer data payload
+      const farmerPayload = {
         email: payload.email,
         password: payload.password,
-        displayName: payload.name
+        displayName: payload.name,
+        name: payload.name,
+        phone: payload.phone,
+        language: payload.language,
+        experience: payload.experience,
+        farmSize: payload.farmSize,
+        state: payload.state,
+        district: payload.district,
+        farms: payload.farms,
+        crops: payload.crops
       };
 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authPayload)
+        body: JSON.stringify(farmerPayload)
       });
 
       if (res.ok) {

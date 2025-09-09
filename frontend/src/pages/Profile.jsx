@@ -30,7 +30,7 @@ export default function Profile() {
       }
       
       // First try to get profile from auth API
-      const response = await fetch(`http://localhost:5000/api/auth/profile/${encodeURIComponent(userEmail)}`);
+      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`);
       const data = await response.json();
       
       if (data.success && data.user) {
@@ -42,7 +42,7 @@ export default function Profile() {
       // If auth API fails but we have a token, try token verification
       if (authToken) {
         try {
-          const tokenResponse = await fetch('http://localhost:5000/api/auth/verify-token', {
+          const tokenResponse = await fetch('/api/auth/verify-token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ idToken: authToken })
@@ -104,7 +104,7 @@ export default function Profile() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/auth/profile/${encodeURIComponent(userEmail)}`, {
+      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
