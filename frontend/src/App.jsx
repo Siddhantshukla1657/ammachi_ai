@@ -4,12 +4,21 @@ import SignIn from './pages/SignIn.jsx';
 import SignUp from './pages/SignUp.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Profile from './pages/Profile.jsx';
+import Market from './pages/Market.jsx';
+import Weather from './pages/Weather.jsx';
+import Detect from './pages/Detect.jsx';
+import Chat from './pages/Chat.jsx';
+import MobileNav from './components/MobileNav.jsx';
 
 function getRoute() {
   const h = window.location.hash.replace('#', '');
   if (h.startsWith('/login')) return '/login';
   if (h.startsWith('/signup')) return '/signup';
   if (h.startsWith('/dashboard')) return '/dashboard';
+  if (h.startsWith('/chat')) return '/chat';
+  if (h.startsWith('/market')) return '/market';
+  if (h.startsWith('/weather')) return '/weather';
+  if (h.startsWith('/detect')) return '/detect';
   if (h.startsWith('/profile')) return '/profile';
   return '/';
 }
@@ -32,16 +41,32 @@ export default function App() {
     return null;
   }
 
+  let page = null;
   switch (route) {
     case '/login':
-      return <SignIn />;
+      page = <SignIn />; break;
     case '/signup':
-      return <SignUp />;
+      page = <SignUp />; break;
     case '/dashboard':
-      return <Dashboard />;
+      page = <Dashboard />; break;
+    case '/market':
+      page = <Market />; break;
+    case '/weather':
+      page = <Weather />; break;
+    case '/detect':
+      page = <Detect />; break;
+    case '/chat':
+      page = <Chat />; break;
     case '/profile':
-      return <Profile />;
+      page = <Profile />; break;
     default:
-      return <Landing />;
+      page = <Landing />; break;
   }
+
+  return (
+    <>
+      {page}
+      <MobileNav />
+    </>
+  );
 }

@@ -1,0 +1,7 @@
+:root { --mn-bg: rgba(255,255,255,0.95); --mn-border: rgba(6,78,59,0.06); --mn-accent: #2fb46a; }
+.mobile-nav { display:none; position:fixed; left:12px; right:12px; bottom:12px; z-index:1200; background:var(--mn-bg); border-radius:12px; padding:8px; box-shadow:0 10px 30px rgba(8,40,20,0.06); border:1px solid var(--mn-border); justify-content:space-around; align-items:center; }
+.mobile-nav .mn-item { background:transparent; border:none; display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center; padding:8px 12px; color:#064e3b; font-weight:700; cursor:pointer; }
+.mobile-nav .mn-item span { font-size:12px; }
+
+@media (max-width: 900px) { .mobile-nav { display:flex; } }
+@media (min-width: 901px) { .mobile-nav { display:none; } }
