@@ -89,11 +89,13 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <div className="sidebar-user">
+        {/* <div className="sidebar-user">
           <div className="user-avatar">{profile && profile.name ? profile.name[0] : 'A'}</div>
           <div className="user-name">{profile ? (profile.name || 'Farmer') : 'Guest'}</div>
-        </div>
-        <button className="sidebar-signout" onClick={signOut}><span className="sidebar-icon">{icons.logout}</span>Logout</button>
+        </div> */}
+        <button className="sidebar-signout" onClick={signOut}>
+          {/* <span className="sidebar-icon">{icons.logout}</span> */}
+          Logout</button>
       </div>
     </aside>
   );
