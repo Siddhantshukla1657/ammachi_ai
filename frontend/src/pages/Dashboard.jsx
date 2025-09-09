@@ -96,16 +96,11 @@ export default function Dashboard() {
   return (
     <div className="dash-layout">
       <Sidebar />
-      <section className="dash-container dash-main">
-        <header className="dash-header">
-          <h1 className="dash-title">Dashboard</h1>
-          <button className="dash-signout" onClick={signOut}>Sign Out</button>
-        </header>
-
+      <main className="dashboard-main page-scroll dash-container">
         <div className="dash-card">
           <div className="dash-hero large-hero">
             <div className="hero-content-left">
-              <h2 className="dash-welcome">Welcome back, {profile.name || session.name || 'Yashasvi'}! 🌿</h2>
+              <h2 className="dash-welcome">Welcome  {profile.name || session.name || 'Yashasvi'}! 🌿</h2>
               <p className="dash-text">Your crops are looking healthy today</p>
 
               <div className="hero-actions">
@@ -214,7 +209,7 @@ export default function Dashboard() {
           </div>
 
         </div>
-      </section>
+      </main>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 :root { --card-bg: white; --muted: #6b7280; --accent: #a7f3d0; --brand: #064e3b; }
 :root { --card-bg: white; --muted: #6b7280; --accent: #a7f3d0; --brand: #064e3b; }
 .profile-layout { display: flex; gap: 20px; }
-.profile-page { padding: 28px; background: linear-gradient(180deg, #e6f7ee 0%, #c7edd9 50%, #9fe0ba 100%); min-height: 100vh; }
+.profile-page { padding: 16px 16px 16px 0; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); min-height: 100vh; }
 .profile-container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
 .profile-side .card, .profile-details.card { padding: 18px; border-radius: 12px; background: var(--card-bg); box-shadow: 0 8px 18px rgba(6,78,59,0.04); }
 .profile-avatar { width: 84px; height: 84px; border-radius: 999px; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; color: var(--brand); font-weight: 800; font-size: 30px; margin: 0 auto 10px; }

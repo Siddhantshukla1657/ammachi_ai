@@ -1,20 +1,43 @@
 :root { --sidebar-bg: #eafaf0; --sidebar-accent: #bff3d6; --text-dark: #063f2d; }
 
-.sidebar { width: 220px; min-width: 220px; background: var(--sidebar-bg); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 18px; height: calc(100vh - 48px); box-shadow: 0 6px 18px rgba(4,38,26,0.04); }
-.sidebar-header { display: flex; align-items: center; gap: 10px; }
-.sidebar-logo { width: 46px; height: 46px; object-fit: contain; border-radius: 8px; background: white; padding: 6px; }
-.sidebar-title { font-weight: 800; color: var(--text-dark); }
-.sidebar-subtitle { font-size: 0.85rem; color: rgba(6,63,45,0.6); }
-.sidebar-nav { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-.sidebar-nav-item { display:flex; gap:10px; align-items:center; background: transparent; border: none; text-align: left; padding: 10px 12px; border-radius: 12px; color: var(--text-dark); cursor: pointer; font-weight: 600; }
-.sidebar-nav-item .sidebar-icon { width:26px; display:inline-flex; align-items:center; justify-content:center; font-size:18px; }
-.sidebar-nav-item .sidebar-label { flex:1; }
+.sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 270px; min-width: 270px; background: var(--sidebar-bg); box-shadow: 0 6px 18px rgba(4,38,26,0.04); display: flex; flex-direction: column; z-index: 100; border-radius: 0; transition: width 0.2s; padding: 20px 0 40px 0; }
+
+.main-content, .weather-main, .chat-main, .dashboard-main, .market-main, .profile-main, .detect-main { margin-left: 270px; transition: margin-left 0.2s; }
+
+.sidebar-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.sidebar-logo { width: 70px; height: 70px; object-fit: contain; border-radius: 14px; background: none; padding: 0; margin-left: 16px; }
+.sidebar-title { font-weight: 800; color: var(--text-dark); margin-left: 4px; }
+.sidebar-subtitle { font-size: 0.9rem; color: rgba(6,63,45,0.6); margin-left: 4px; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.sidebar-nav-item { display:flex; gap:12px; align-items:center; background: transparent; border: none; text-align: left; padding: 12px 16px 12px 20px; border-radius: 10px; color: var(--text-dark); cursor: pointer; font-weight: 600; font-size: 1.05rem; transition: background 0.15s; margin-left: 4px; }
+.sidebar-nav-item .sidebar-icon { width:26px; display:inline-flex; align-items:center; justify-content:center; font-size:22px; margin-left: 2px; }
+.sidebar-nav-item .sidebar-label { flex:1; margin-left: 2px; }
 .sidebar-nav-item:hover { background: var(--sidebar-accent); }
 .sidebar-nav-item.is-active { background: linear-gradient(90deg,#eafaf0,#f0fff4); box-shadow: inset 0 0 0 1px rgba(47,180,106,0.05); }
-.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
-.sidebar-user { display: flex; align-items: center; gap: 8px; }
-.user-avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--sidebar-accent); color: var(--text-dark); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
-.user-name { color: var(--text-dark); font-weight: 700; }
-.sidebar-signout { background: transparent; border: 1px solid rgba(6,78,59,0.06); padding: 8px 10px; border-radius: 8px; color: var(--text-dark); cursor: pointer; }
+.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+.sidebar-user { display: flex; align-items: center; gap: 10px; margin-left: 12px; }
+.user-avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--sidebar-accent); color: var(--text-dark); font-weight: 800; display: inline-flex; align-items: center; justify-content: center; font-size: 1.15rem; }
+.user-name { color: var(--text-dark); font-weight: 700; font-size: 1rem; }
+.sidebar-signout { background: transparent; border: none; display: flex; align-items: center; gap: 6px; color: #f31260; font-weight: 600; font-size: 1rem; cursor: pointer; padding: 8px 0 0 16px; transition: color 0.15s; margin-left: 4px; margin-top: 8px; }
+.sidebar-signout .sidebar-icon { font-size: 20px; }
+.sidebar-signout:hover { color: #b80b3a; }
 
-@media (max-width: 900px) { .sidebar { display: none; } }
+@media (max-width: 1200px) {
+  .sidebar { width: 220px; min-width: 220px; }
+  .main-content, .weather-main, .chat-main, .dashboard-main, .market-main, .profile-main, .detect-main { margin-left: 220px; }
+}
+@media (max-width: 900px) {
+  .sidebar { position: fixed; left: 0; top: 0; width: 100vw; height: 64px; min-width: 0; flex-direction: row; align-items: center; padding: 0 12px; gap: 0; border-radius: 0 0 12px 12px; }
+  .sidebar-header, .sidebar-footer { display: none; }
+  .sidebar-nav { flex-direction: row; gap: 2px; margin-top: 0; width: 100%; justify-content: space-around; }
+  .sidebar-nav-item { padding: 8px 8px; font-size: 1rem; border-radius: 8px; }
+  .sidebar-nav-item .sidebar-label { display: none; }
+  .sidebar-nav-item .sidebar-icon { font-size: 22px; }
+  .main-content, .weather-main, .chat-main, .dashboard-main, .market-main, .profile-main, .detect-main { margin-left: 0; margin-top: 64px; }
+  .sidebar { display: none; }
+}
+@media (max-width: 600px) {
+  .sidebar { height: 56px; padding: 0 4px; }
+  .sidebar-nav-item { font-size: 0.95rem; padding: 6px 4px; }
+  .main-content, .weather-main, .chat-main, .dashboard-main, .market-main, .profile-main, .detect-main { margin-top: 56px; }
+}

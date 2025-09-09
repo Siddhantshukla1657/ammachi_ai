@@ -40,7 +40,7 @@ export default function Detect(){
   return (
     <div className="detect-layout">
       <Sidebar />
-      <main className="detect-main">
+      <main className="detect-main page-scroll">
         <div className="detect-container">
           <header className="detect-header">
             <h1 className="detect-title">Disease Detection</h1>

@@ -101,8 +101,7 @@
   .auth-input{
     appearance: none;
     background: #f8fafc;       
-    border: 1.5px solid #94a3b8;
-    border-color: #0f1720;
+    border: 1.5px solid #064e3b; /* changed from #0f1720 to #064e3b */
     border-radius: 10px;
     padding: 12px 14px;
     color: var(--text-dark);
