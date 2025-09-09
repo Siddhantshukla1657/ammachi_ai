@@ -10,35 +10,14 @@ This guide explains how to set up the Firebase authentication system for email/p
 
 ## 🔧 Step 1: Firebase Setup
 
-### 1.1 Create Firebase Project
+### ✅ Service Account Key File (Current Setup)
+Your Firebase service account key has already been added as `serviceAccountKey.json` in the backend directory. No additional Firebase configuration is needed!
+
+### 1.1 Enable Firebase Authentication (If Not Done)
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Click "Create a project" or use existing
-3. Enable **Authentication** service
+2. Select your project
+3. Go to **Authentication** → **Sign-in method**
 4. Enable **Email/Password** and **Google** sign-in methods
-
-### 1.2 Generate Service Account Key
-1. Go to Project Settings → Service Accounts
-2. Click "Generate new private key"
-3. Download the JSON file
-4. Copy the values to your `.env` file
-
-### 1.3 Replace Firebase Configuration
-
-**In your `.env` file, replace these placeholders:**
-
-```bash
-# Firebase Configuration (from service account JSON)
-FIREBASE_TYPE=service_account
-FIREBASE_PROJECT_ID=your_actual_project_id
-FIREBASE_PRIVATE_KEY_ID=your_actual_private_key_id
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour_actual_private_key_here\n-----END PRIVATE KEY-----\n"
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your_project.iam.gserviceaccount.com
-FIREBASE_CLIENT_ID=your_actual_client_id
-FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
-FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
-FIREBASE_AUTH_PROVIDER_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
-FIREBASE_CLIENT_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxxxx%40your_project.iam.gserviceaccount.com
-```
 
 ## 🔧 Step 2: Google OAuth Setup
 
@@ -168,15 +147,12 @@ curl -X POST http://localhost:5000/api/auth/google \
 
 Copy this checklist to ensure all variables are set:
 
-- [ ] `FIREBASE_PROJECT_ID`
-- [ ] `FIREBASE_PRIVATE_KEY_ID`
-- [ ] `FIREBASE_PRIVATE_KEY`
-- [ ] `FIREBASE_CLIENT_EMAIL`
-- [ ] `FIREBASE_CLIENT_ID`
+- [ ] `JWT_SECRET` (generate new one)
 - [ ] `GOOGLE_CLIENT_ID`
 - [ ] `GOOGLE_CLIENT_SECRET`
-- [ ] `JWT_SECRET` (generate new one)
 - [ ] `ALLOWED_ORIGINS` (update for your frontend)
+
+Note: Firebase configuration variables are not needed as the service account key file (`serviceAccountKey.json`) is used directly.
 
 ## 🎯 Next Steps
 
