@@ -56,6 +56,23 @@ npm start
 ### Root
 - **GET** `/` - Returns basic server information
 
+### Weather API
+- **GET** `/api/weather/current` - Get current weather data
+  - Query Parameters: `lat` (latitude), `lon` (longitude)
+  - Example: `/api/weather/current?lat=12.9716&lon=77.5946`
+
+- **GET** `/api/weather/hourly` - Get hourly forecast for the next 48 hours
+  - Query Parameters: `lat` (latitude), `lon` (longitude)
+  - Example: `/api/weather/hourly?lat=12.9716&lon=77.5946`
+
+- **GET** `/api/weather/daily` - Get daily forecast for the next 7 days
+  - Query Parameters: `lat` (latitude), `lon` (longitude)
+  - Example: `/api/weather/daily?lat=12.9716&lon=77.5946`
+
+- **GET** `/api/weather/historical` - Get historical weather data for the last 7 days
+  - Query Parameters: `lat` (latitude), `lon` (longitude)
+  - Example: `/api/weather/historical?lat=12.9716&lon=77.5946`
+
 ## Environment Variables
 
 See `.env.example` for all available environment variables.
@@ -63,16 +80,27 @@ See `.env.example` for all available environment variables.
 Key variables:
 - `PORT` - Server port (default: 5000)
 - `NODE_ENV` - Environment mode (development/production)
+- `OPENWEATHER_API_KEY` - API key for OpenWeather API (required for weather endpoints)
 
 ## Project Structure
 
 ```
 backend/
-├── index.js          # Main server file
-├── package.json      # Dependencies and scripts
-├── .env.example      # Environment variables template
-├── .gitignore        # Git ignore rules
-└── README.md         # This file
+├── index.js                      # Main server file
+├── package.json                  # Dependencies and scripts
+├── .env.example                  # Environment variables template
+├── .gitignore                    # Git ignore rules
+├── README.md                     # This file
+├── controllers/
+│   ├── authController.js         # Authentication controller
+│   ├── diseaseController.js      # Plant disease detection controller
+│   └── weatherController.js      # Weather data controller
+├── routes/
+│   ├── auth.js                   # Authentication routes
+│   ├── disease.js                # Disease detection routes
+│   └── weather.js                # Weather API routes
+└── middleware/
+    └── auth.js                   # Authentication middleware
 ```
 
 ## Dependencies
