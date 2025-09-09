@@ -18,6 +18,8 @@ export default function Profile() {
       setLoading(true);
       const storedProfileRaw = localStorage.getItem('ammachi_profile');
       const storedSessionRaw = localStorage.getItem('ammachi_session');
+      const authToken = localStorage.getItem('authToken');
+      
       const storedProfile = storedProfileRaw ? JSON.parse(storedProfileRaw) : null;
       const storedSession = storedSessionRaw ? JSON.parse(storedSessionRaw) : null;
       const userEmail = (storedProfile?.email || storedSession?.email || '').trim().toLowerCase();
@@ -26,7 +28,8 @@ export default function Profile() {
         throw new Error('No logged-in user found in local storage');
       }
       
-      const response = await fetch(`http://localhost:5000/api/auth/profile/${encodeURIComponent(userEmail)}`);
+      // First try to get profile from auth API
+      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`);
       const data = await response.json();
       
       if (data.success) {
@@ -99,7 +102,13 @@ export default function Profile() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/profile/${user.email}`, {
+      const userEmail = user?.email;
+      if (!userEmail) {
+        setMessage('Unable to update profile: no user email found');
+        return;
+      }
+
+      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -110,19 +119,28 @@ export default function Profile() {
         setUser(formData);
         setEditing(false);
         setMessage('Profile updated successfully!');
+        
+        // Update local storage with new data
+        const currentProfile = JSON.parse(localStorage.getItem('ammachi_profile') || '{}');
+        const updatedProfile = { ...currentProfile, ...formData };
+        localStorage.setItem('ammachi_profile', JSON.stringify(updatedProfile));
+        
         setTimeout(() => setMessage(''), 3000);
       } else {
-        setMessage('Failed to update profile');
+        setMessage('Failed to update profile: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      setMessage('Failed to update profile');
+      setMessage('Failed to update profile: Network error');
     }
   };
 
   const handleLogout = () => {
+    // Clear all authentication data
     localStorage.removeItem('userEmail');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('ammachi_profile');
+    localStorage.removeItem('ammachi_session');
     window.location.href = '/';
   };
 

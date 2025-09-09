@@ -143,45 +143,56 @@ export default function SignUp() {
     if (v) { setError(v); return; }
 
     try {
-      // Backend API
-      const res = await fetch('/api/farmers/register', {
+      // Prepare complete farmer data payload
+      const farmerPayload = {
+        email: payload.email,
+        password: payload.password,
+        displayName: payload.name,
+        name: payload.name,
+        phone: payload.phone,
+        language: payload.language,
+        experience: payload.experience,
+        farmSize: payload.farmSize,
+        state: payload.state,
+        district: payload.district,
+        farms: payload.farms,
+        crops: payload.crops
+      };
+
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(farmerPayload)
       });
 
       if (res.ok) {
         const data = await res.json();
-        const profile = data.profile || payload;
-        localStorage.setItem('ammachi_profile', JSON.stringify(profile));
-        localStorage.setItem('ammachi_session', JSON.stringify({ id: profile.farmerId || profile._id || payload.farmerId, name: profile.name }));
+        // Store Firebase auth data
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('ammachi_profile', JSON.stringify({
+          email: data.user.email,
+          displayName: data.user.displayName,
+          id: data.user.id,
+          ...payload // Include farmer-specific data
+        }));
+        localStorage.setItem('ammachi_session', JSON.stringify({
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.displayName
+        }));
+        
+        setInfo('Account created successfully! You are now signed in.');
         navigateToDashboard();
         return;
       }
 
-      const text = await res.text();
-      console.warn('Backend register failed', res.status, text);
+      const errorData = await res.json();
+      console.warn('Auth register failed', res.status, errorData);
+      setError(errorData.error || 'Registration failed. Please try again.');
 
-
-      const ok = saveLocalFarm(payload);
-      localStorage.setItem('ammachi_profile', JSON.stringify(payload));
-      localStorage.setItem('ammachi_session', JSON.stringify({ id: payload.farmerId, name: payload.name }));
-      setInfo('Saved locally (backend unavailable). You are signed in for this browser.');
-      if (ok) { navigateToDashboard(); return; }
-      setError('Failed to save locally after backend error.');
     } catch (err) {
-      console.warn('Backend save failed; falling back to localStorage', err);
-      try {
-        const ok = saveLocalFarm(payload);
-        localStorage.setItem('ammachi_profile', JSON.stringify(payload));
-        localStorage.setItem('ammachi_session', JSON.stringify({ id: payload.farmerId, name: payload.name }));
-        setInfo('Saved locally (network error). You are signed in for this browser.');
-        if (ok) { navigateToDashboard(); return; }
-        setError('Failed to save locally after network error.');
-      } catch (e) {
-        console.error('Local save failed', e);
-        setError('Failed to create account. Please try again later.');
-      }
+      console.error('Registration failed', err);
+      setError('Failed to create account. Please check your connection and try again.');
     }
   }
 
@@ -201,7 +212,14 @@ export default function SignUp() {
 
         {error && <div className="auth-error" role="alert">{error}</div>}
         {info && (
-          <div style={{ background: 'rgba(34,197,94,0.06)', padding: 10, borderRadius: 8, color: '#064e3b', marginBottom: 12 }}>
+          <div style={{ 
+            background: 'rgba(45, 90, 71, 0.06)', 
+            padding: 10, 
+            borderRadius: 8, 
+            color: '#2d5a47', 
+            marginBottom: 12,
+            border: '2px solid rgba(45, 90, 71, 0.2)'
+          }}>
             {info}
           </div>
         )}
@@ -272,7 +290,7 @@ export default function SignUp() {
           </div>
 
           <div style={{ marginTop: 8 }}>
-            <h4 style={{ margin: '8px 0', color: '#064e3b' }}>Farms</h4>
+            <h4 style={{ margin: '8px 0', color: '#2d5a47' }}>Farms</h4>
             {form.farms.map((f, idx) => (
               <div key={idx} className="field-row farm-row" style={{ marginBottom: 8 }}>
                 <label className="auth-label">

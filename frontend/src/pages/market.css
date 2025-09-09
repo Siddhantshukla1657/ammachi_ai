@@ -1,43 +1,159 @@
-::root { --bg-1: #f4fbf6; --bg-2: #eaf7ee; --accent: #2fb46a; --accent-dark: #1ea055; --muted: #6b8a78; --card-bg: #f7fff7; --card-border: rgba(37,147,93,0.06); }
+:root { 
+  /* MediumSeaGreen color theme */
+  --mediumseagreen: #3CB371;
+  --mediumseagreen-light: #66CDAA;
+  --mediumseagreen-lighter: #98FB98;
+  --mediumseagreen-dark: #2E8B57;
+  --mediumseagreen-darker: #228B22;
+  
+  /* Background colors based on mediumseagreen */
+  --bg-1: #F0FFF0; /* honeydew */
+  --bg-2: #F5FFFA; /* mint cream */
+  --accent: var(--mediumseagreen);
+  --accent-dark: var(--mediumseagreen-dark);
+  --muted: #5F8A5F;
+  --card-bg: #FFFFFF;
+  --card-border: rgba(60,179,113,0.15);
+  --success-color: var(--mediumseagreen);
+  --error-color: #DC143C;
+}
 
-.market-layout { display: flex; gap: 20px; }
+.market-layout { display: flex; gap: 20px; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
 .market-main { flex: 1; }
-.market-container { max-width: 1100px; margin: 0 auto; padding: 16px 16px 16px 0; background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); min-height: 100vh; }
+.market-container { max-width: 1100px; margin: 0 auto; padding: 16px 16px 16px 0; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
 .market-header { margin-bottom: 12px; }
-.market-title { margin: 0; color: var(--accent-dark); font-size: 1.6rem; }
-.market-sub { margin: 4px 0 18px; color: var(--muted); }
+.market-title { margin: 0; color: var(--mediumseagreen-dark); font-size: 1.8rem; font-weight: 800; }
+.market-sub { margin: 4px 0 18px; color: var(--muted); font-size: 1.1rem; }
 
-.market-controls { display: flex; gap: 14px; align-items: flex-start; }
-.control-card { background: var(--card-bg); border: 1px solid var(--card-border); padding: 14px; border-radius: 12px; flex: 1; box-shadow: 0 6px 16px rgba(50,115,70,0.03); }
-.status-card { max-width: 260px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.control-label { font-weight: 700; color: var(--accent-dark); margin-bottom: 8px; }
-.control-select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(6,78,59,0.06); background: #fff; color: #043124; }
-.control-note { margin-top: 8px; color: var(--muted); font-size: .95rem; }
-.updated-time { color: var(--muted); }
-.refresh-btn { background: transparent; border: 1px solid rgba(6,78,59,0.06); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.market-controls { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+.control-card { background: var(--card-bg); border: 2px solid var(--card-border); padding: 16px; border-radius: 12px; flex: 1; min-width: 200px; box-shadow: 0 6px 20px rgba(60,179,113,0.08); transition: all 0.3s ease; }
+.control-card:hover { border-color: var(--mediumseagreen); box-shadow: 0 8px 25px rgba(60,179,113,0.15); }
+.status-card { max-width: 280px; display: flex; flex-direction: column; gap: 8px; }
+.control-label { font-weight: 700; color: var(--mediumseagreen-dark); margin-bottom: 10px; font-size: 1rem; }
+.control-select { width: 100%; padding: 12px 14px; border-radius: 8px; border: 2px solid var(--card-border); background: #fff; color: var(--mediumseagreen-darker); font-weight: 600; transition: border-color 0.3s ease; }
+.control-select:focus { outline: none; border-color: var(--mediumseagreen); }
+.control-select:disabled { opacity: 0.6; cursor: not-allowed; }
+.control-note { margin-top: 8px; color: var(--muted); font-size: .95rem; font-weight: 500; }
+.updated-time { color: var(--muted); font-weight: 600; }
+.refresh-btn { background: var(--mediumseagreen); color: white; border: none; border-radius: 8px; padding: 10px 12px; cursor: pointer; font-weight: 600; transition: background-color 0.3s ease; }
+.refresh-btn:hover { background: var(--mediumseagreen-dark); }
+.refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.prices-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
-.price-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; box-shadow: 0 6px 18px rgba(50,115,70,0.03); }
-.price-card-head { display: flex; align-items: center; justify-content: space-between; }
-.price-name { font-weight: 700; color: #04402a; }
-.price-change.pos { color: #1a7f3f; }
-.price-change.neg { color: #c44; }
-.price-amount { margin-top: 8px; font-size: 1.25rem; font-weight: 800; color: #052e22; }
-.price-unit { font-size: .9rem; font-weight: 600; color: var(--muted); margin-left: 6px; }
-.price-meta { margin-top: 12px; display: flex; justify-content: space-between; color: var(--muted); font-size: .95rem; }
-.meta-label { font-weight: 700; color: var(--accent-dark); margin-right: 6px; }
+/* Loading and Error States */
+.market-loading { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 12px; 
+  padding: 24px; 
+  background: var(--card-bg); 
+  border-radius: 12px; 
+  margin: 16px 0; 
+  border: 2px solid var(--card-border);
+}
+.loading-spinner { 
+  width: 24px; 
+  height: 24px; 
+  border: 3px solid var(--card-border); 
+  border-top: 3px solid var(--mediumseagreen); 
+  border-radius: 50%; 
+  animation: spin 1s linear infinite; 
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loading-text { color: var(--mediumseagreen-dark); font-weight: 600; }
 
-.market-lower { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-top: 18px; }
-.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; box-shadow: 0 6px 18px rgba(50,115,70,0.03); }
-.card-title { margin: 0 0 8px; color: var(--accent-dark); }
+.market-error { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  padding: 16px; 
+  background: #FFF5F5; 
+  border: 2px solid #FEB2B2; 
+  border-radius: 12px; 
+  margin: 16px 0; 
+}
+.error-icon { font-size: 24px; }
+.error-message { flex: 1; color: var(--error-color); font-weight: 600; }
+.retry-btn { 
+  background: var(--error-color); 
+  color: white; 
+  border: none; 
+  padding: 8px 16px; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  font-weight: 600; 
+}
+.retry-btn:hover { background: #B91C1C; }
+
+.prices-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 20px; }
+.price-card { 
+  background: var(--card-bg); 
+  border: 2px solid var(--card-border); 
+  border-radius: 12px; 
+  padding: 18px; 
+  box-shadow: 0 6px 20px rgba(60,179,113,0.08); 
+  transition: all 0.3s ease;
+}
+.price-card:hover { 
+  border-color: var(--mediumseagreen); 
+  box-shadow: 0 8px 25px rgba(60,179,113,0.15); 
+  transform: translateY(-2px);
+}
+.price-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.price-name { font-weight: 700; color: var(--mediumseagreen-darker); font-size: 1.1rem; }
+.price-change.pos { color: var(--success-color); font-weight: 700; background: rgba(60,179,113,0.1); padding: 4px 8px; border-radius: 6px; }
+.price-change.neg { color: var(--error-color); font-weight: 700; background: rgba(220,20,60,0.1); padding: 4px 8px; border-radius: 6px; }
+.price-amount { margin-top: 8px; font-size: 1.4rem; font-weight: 800; color: var(--mediumseagreen-dark); }
+.price-unit { font-size: 1rem; font-weight: 600; color: var(--muted); margin-left: 6px; }
+.price-meta { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: .95rem; }
+.meta-label { font-weight: 700; color: var(--mediumseagreen-dark); margin-right: 6px; }
+
+.market-lower { display: grid; grid-template-columns: 1fr 320px; gap: 18px; margin-top: 20px; }
+.card { 
+  background: var(--card-bg); 
+  border: 2px solid var(--card-border); 
+  border-radius: 12px; 
+  padding: 18px; 
+  box-shadow: 0 6px 20px rgba(60,179,113,0.08);
+  transition: all 0.3s ease;
+}
+.card:hover {
+  border-color: var(--mediumseagreen);
+  box-shadow: 0 8px 25px rgba(60,179,113,0.15);
+}
+.card-title { margin: 0 0 12px; color: var(--mediumseagreen-dark); font-weight: 800; font-size: 1.2rem; }
+.summary-stats { display: flex; flex-direction: column; gap: 8px; }
+.summary-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--card-border); }
+.summary-label { font-weight: 600; color: var(--muted); }
+.summary-value { font-weight: 700; color: var(--mediumseagreen-dark); }
 .trend-list { list-style: none; padding: 0; margin: 0; }
-.trend-list li { padding: 8px 0; border-bottom: 1px solid rgba(37,147,93,0.03); display: flex; justify-content: space-between; }
-.trend-count { color: var(--muted); }
-.tip { margin-bottom: 8px; }
+.trend-list li { padding: 10px 0; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; }
+.trend-count { color: var(--muted); font-weight: 600; background: rgba(60,179,113,0.1); padding: 2px 8px; border-radius: 4px; }
+.tip { margin-bottom: 10px; padding: 10px; background: rgba(60,179,113,0.05); border-radius: 8px; border-left: 4px solid var(--mediumseagreen); }
 .muted { color: var(--muted); }
 
-.chart-area { width: 100%; height: 260px; }
-.market-chart.card { padding: 8px; }
+.chart-area { width: 100%; height: 280px; }
+.market-chart.card { 
+  padding: 12px; 
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+}
+.market-chart.card:hover {
+  border-color: var(--mediumseagreen);
+}
 
-@media (max-width: 1000px) { .prices-grid { grid-template-columns: repeat(2, 1fr); } .market-lower { grid-template-columns: 1fr; } }
-@media (max-width: 640px) { .prices-grid { grid-template-columns: 1fr; } .market-controls { flex-direction: column; } }
+/* Responsive Design */
+@media (max-width: 1000px) { 
+  .prices-grid { grid-template-columns: repeat(2, 1fr); } 
+  .market-lower { grid-template-columns: 1fr; } 
+  .market-controls { flex-direction: column; }
+  .control-card { min-width: 100%; }
+}
+@media (max-width: 640px) { 
+  .prices-grid { grid-template-columns: 1fr; } 
+  .market-controls { flex-direction: column; } 
+  .market-container { padding: 12px; }
+  .control-card { padding: 12px; }
+  .price-card { padding: 14px; }
+  .card { padding: 14px; }
+}

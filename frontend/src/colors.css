@@ -1,0 +1,97 @@
+/* ================================
+   Ammachi AI - Color Palette
+   ================================ */
+
+:root {
+  /* Primary Green Palette - Based on your auth forms */
+  --primary-green: #2d5a47;           /* Main brand green - buttons, accents */
+  --primary-green-hover: #3a6b55;     /* Hover state for primary green */
+  --primary-green-light: #4a7a63;     /* Lighter variant */
+  --primary-green-lighter: #6a9a7a;   /* Even lighter */
+  --primary-green-lightest: #8aba92;  /* Lightest green */
+
+  /* Background Gradients - Matching your auth forms */
+  --bg-gradient-start: #e8f2ee;       /* Light green start */
+  --bg-gradient-mid1: #d4e6dd;        /* Mid-light green */
+  --bg-gradient-mid2: #c1d9cc;        /* Medium green */
+  --bg-gradient-mid3: #aec5bb;        /* Darker mid green */
+  --bg-gradient-end: #9bb1aa;         /* End green */
+
+  /* Card and Surface Colors */
+  --card-bg: rgba(248, 252, 250, 0.95);  /* Semi-transparent white with green tint */
+  --card-bg-solid: #f8fcfc;              /* Solid card background */
+  --surface-white: #ffffff;              /* Pure white for inputs */
+  --surface-light: #f8fafc;              /* Light surface */
+
+  /* Text Colors */
+  --text-primary: #1a2e24;            /* Dark green for main text */
+  --text-secondary: #2d4a3e;          /* Muted green for secondary text */
+  --text-muted: #64748b;              /* Gray for placeholder text */
+  --text-light: #6b7280;              /* Light gray text */
+
+  /* Border Colors */
+  --border-primary: #2d5a47;          /* Primary green borders */
+  --border-subtle: rgba(134, 163, 150, 0.3);  /* Subtle green borders */
+  --border-light: rgba(134, 163, 150, 0.2);   /* Very light borders */
+  --border-gray: #e5e7eb;             /* Light gray borders */
+
+  /* Status Colors */
+  --success-green: #10b981;           /* Success green */
+  --success-bg: #d1fae5;              /* Success background */
+  --success-text: #065f46;            /* Success text */
+  
+  --error-red: #ef4444;               /* Error red */
+  --error-bg: rgba(248, 113, 113, 0.12);  /* Error background */
+  --error-text: #7f1d1d;              /* Error text */
+  
+  --warning-orange: #f59e0b;          /* Warning orange */
+  --info-blue: #3b82f6;               /* Info blue */
+
+  /* Shadow Colors */
+  --shadow-light: 0 4px 12px rgba(19, 54, 40, 0.08);
+  --shadow-medium: 0 8px 20px rgba(45, 74, 62, 0.08);
+  --shadow-heavy: 0 12px 28px rgba(45, 74, 62, 0.12);
+
+  /* Button Variants */
+  --btn-primary-bg: var(--primary-green);
+  --btn-primary-hover: var(--primary-green-hover);
+  --btn-primary-text: #ffffff;
+  
+  --btn-secondary-bg: #ffffff;
+  --btn-secondary-border: var(--border-subtle);
+  --btn-secondary-text: var(--text-primary);
+  --btn-secondary-hover: var(--surface-light);
+
+  /* Form Elements */
+  --input-bg: var(--surface-white);
+  --input-border: var(--border-subtle);
+  --input-border-focus: var(--primary-green);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-muted);
+
+  /* Chip/Tag Colors */
+  --chip-bg: #d1fae5;
+  --chip-border: var(--border-subtle);
+  --chip-text: #065f46;
+
+  /* Link Colors */
+  --link-primary: #0ea96a;
+  --link-hover: var(--primary-green);
+  --link-visited: #059669;
+}
+
+/* Utility Classes for Quick Color Application */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+
+.bg-primary { background-color: var(--primary-green); }
+.bg-light { background-color: var(--surface-light); }
+.bg-card { background-color: var(--card-bg-solid); }
+
+.border-primary { border-color: var(--border-primary); }
+.border-subtle { border-color: var(--border-subtle); }
+
+.shadow-light { box-shadow: var(--shadow-light); }
+.shadow-medium { box-shadow: var(--shadow-medium); }
+.shadow-heavy { box-shadow: var(--shadow-heavy); }
