@@ -1,22 +1,26 @@
+// index.js
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const multer = require("multer");
 const mongoose = require("mongoose");
-const path = require("path");
 require("dotenv").config();
 
-// Import Firebase config
+// Import Firebase config (keeps side-effects/init if any)
 const { admin } = require('./config/firebase');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:5173'];
+// Allowed origins (comma-separated in .env) or sensible defaults
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000', 'http://localhost:5173'];
 
+// CORS middleware
 app.use(cors({
   origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, postman)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -25,14 +29,14 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configure multer for file uploads
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
-// Basic routes
+// Basic routes / health checks
 app.get("/", (req, res) => {
   res.json({
     message: "Ammachi AI Backend Server is running!",
@@ -59,29 +63,22 @@ app.get("/api/health", (req, res) => {
 
 // Import routes
 const authRoutes = require('./routes/auth');
-const weatherRoutes = require('./routes/weather');
 
-// API routes
+// API Routes - keep them together and before error handlers
 app.use('/api/auth', authRoutes);
-app.use('/api/weather', weatherRoutes);
 
 // TODO: Add more API routes here as the project grows
 // Example:
 // app.use('/api/users', userRoutes);
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     error: "Something went wrong!",
-    message:
-      process.env.NODE_ENV === "development"
-        ? err.message
-        : "Internal server error",
+    message: process.env.NODE_ENV === "development" ? err.message : "Internal server error",
   });
 });
 
-// Handle 404 for all other routes
 app.use((req, res) => {
   res.status(404).json({
     error: "Route not found",
@@ -95,7 +92,7 @@ async function connectDB() {
     console.log("⚠️ MongoDB URI not provided. MongoDB features will be disabled.");
     return;
   }
-  
+
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
