@@ -1,4 +1,4 @@
-:root { --bg-1: #f4fbf6; --bg-2: #eaf7ee; --accent: #2fb46a; --accent-dark: #1ea055; --muted: #6b8a78; --card-bg: #ffffff; --card-border: rgba(37,147,93,0.06); }
+::root { --bg-1: #f4fbf6; --bg-2: #eaf7ee; --accent: #2fb46a; --accent-dark: #1ea055; --muted: #6b8a78; --card-bg: #f7fff7; --card-border: rgba(37,147,93,0.06); }
 
 .market-layout { display: flex; gap: 20px; }
 .market-main { flex: 1; }
@@ -35,6 +35,9 @@
 .trend-count { color: var(--muted); }
 .tip { margin-bottom: 8px; }
 .muted { color: var(--muted); }
+
+.chart-area { width: 100%; height: 260px; }
+.market-chart.card { padding: 8px; }
 
 @media (max-width: 1000px) { .prices-grid { grid-template-columns: repeat(2, 1fr); } .market-lower { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .prices-grid { grid-template-columns: 1fr; } .market-controls { flex-direction: column; } }

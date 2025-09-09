@@ -66,7 +66,7 @@ export default function App() {
   return (
     <>
       {page}
-      <MobileNav />
+      {route !== '/' && <MobileNav />}
     </>
   );
 }
