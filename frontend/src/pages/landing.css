@@ -32,13 +32,28 @@
   margin-bottom: 1.5rem;
 }
 
-.hero-title { font-size: clamp(2rem, 4vw + 1rem, 3.5rem); margin: 0 0 .25rem; font-weight: 800; letter-spacing: -.02em; }
-.hero-title .accent { color: var(--brand-pastel-deep); }
-.hero-subtitle { font-size: clamp(1rem, 1.3vw + .6rem, 1.5rem); margin: 0 0 .5rem; font-weight: 600; color: var(--text-dark); }
+.hero-title { 
+  font-size: clamp(2rem, 4vw + 1rem, 3.5rem); 
+  margin: 0 0 .25rem; 
+  font-weight: 800; 
+  letter-spacing: -.02em; 
+  color: var(--brand-pastel-deep); /* whole title same green */
+}
+.hero-title .accent { 
+  color: var(--brand-pastel-deep); /* keep Ammachi AI green */
+}
+
+.hero-subtitle { 
+  font-size: clamp(1rem, 1.3vw + .6rem, 1.5rem); 
+  margin: 0 0 .5rem; 
+  font-weight: 600; 
+  color: var(--text-dark); 
+}
 .hero-description { color: var(--muted-dark); margin: 0 0 1.25rem; }
 .cta-row { display: flex; gap: .75rem; justify-content: center; align-items: center; margin: 1rem 0 1.25rem; flex-wrap: wrap; }
 .btn { display: inline-flex; align-items: center; gap: .5rem; padding: .85rem 1.2rem; border-radius: 999px; text-decoration: none; font-weight: 700; letter-spacing: .01em; border: 1px solid transparent; transition: transform .06s ease, background-color .2s ease, border-color .2s ease; }
 .btn:active { transform: translateY(1px); }
+
 .btn-primary { 
   background: var(--btn-primary-bg); 
   color: var(--btn-primary-text); 
@@ -51,17 +66,27 @@
   color: #ffffff;
   transform: translateY(-1px);
 }
-.btn-outline { 
-  background: var(--btn-secondary-bg); 
-  color: var(--btn-secondary-text); 
-  border: 2px solid var(--btn-secondary-border);
+
+/* ------------ SIGN UP button (outline style but FILLED) ------------ */
+/* High specificity + !important so it wins over earlier theme rules */
+.btn.btn-outline { 
+  background: var(--btn-secondary-border, var(--primary-green)) !important; /* fill = border color */
+  color: #fff !important;                                                 /* white text by default */
+  border: 2px solid var(--btn-secondary-border, var(--primary-green)) !important;
   transition: all 0.2s ease;
+  background-clip: padding-box;
 }
-.btn-outline:hover { 
-  background: var(--primary-green); 
-  border-color: var(--primary-green);
-  color: #ffffff;
+.btn.btn-outline:hover { 
+  background: var(--btn-secondary-border, var(--primary-green)) !important; /* keep filled */
+  color: var(--btn-secondary-text, #0c2f1f) !important; /* switch text color on hover */
+  border-color: var(--btn-secondary-border, var(--primary-green)) !important;
 }
+/* make the plus icon follow text color */
+.btn.btn-outline .btn-icon,
+.btn.btn-outline svg { color: currentColor; stroke: currentColor; fill: currentColor; }
+
+/* ------------------------------------------------------------------- */
+
 .btn-icon { width: 1.2rem; height: 1.2rem; display: inline-flex; align-items: center; justify-content: center; }
 .hero-footer { color: var(--muted-dark); font-size: .9rem; margin-top: 1.5rem; }
 
@@ -106,12 +131,10 @@
   line-height: 1;     
 }
 
-
 .feature strong {
   font-size: 0.95rem;
   margin-bottom: 0.25rem;
 }
-
 
 @media (max-width: 900px) {
   .hero-content { padding: 1.25rem; max-width: 640px; }
