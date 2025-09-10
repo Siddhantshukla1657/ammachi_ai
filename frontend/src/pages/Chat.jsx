@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './chat.css';
 import Sidebar from '../components/Sidebar.jsx';
+import TranslatedText from '../components/TranslatedText';
+import { useLanguage } from '../context/LanguageContext';
+import { translate } from '../utils/translate';
 
 export default function Chat(){
+  // Get current language from context
+  const { language } = useLanguage();
   const [messages, setMessages] = useState([
     { id: 1, from: 'bot', text: 'Hello! I am Ammachi AI, your farming assistant. How can I help you today?\n\nസ്വാഗതം! എനിക്ക് സഹായം വേണോ?' , time: '2:26:16 PM' }
   ]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [lang, setLang] = useState('en'); // 'en' or 'ml'
+  const [lang, setLang] = useState(language === 'Malayalam' ? 'ml' : 'en'); // 'en' or 'ml'
+  
+  // Update lang when language context changes
+  useEffect(() => {
+    setLang(language === 'Malayalam' ? 'ml' : 'en');
+  }, [language]);
 
   async function sendMessage(e){
     e.preventDefault();
@@ -42,7 +52,7 @@ export default function Chat(){
           <header className="chat-header">
             <div className="chat-header-left">
               <div className="assistant-badge">Ammachi AI</div>
-              <div className="assistant-sub">Your Farming Assistant</div>
+              <div className="assistant-sub"><TranslatedText text="Your Farming Assistant" /></div>
             </div>
             <div className="chat-header-right">
               {/* Language toggle switch */}

@@ -9,6 +9,7 @@ import Weather from './pages/Weather.jsx';
 import Detect from './pages/Detect.jsx';
 import Chat from './pages/Chat.jsx';
 import MobileNav from './components/MobileNav.jsx';
+import { LanguageProvider } from './context/LanguageContext.jsx';
 
 function getRoute() {
   const h = window.location.hash.replace('#', '');
@@ -64,9 +65,9 @@ export default function App() {
   }
 
   return (
-    <>
+    <LanguageProvider>
       {page}
       {route !== '/' && <MobileNav />}
-    </>
+    </LanguageProvider>
   );
 }

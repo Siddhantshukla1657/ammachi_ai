@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './profile.css';
 import Sidebar from '../components/Sidebar.jsx';
+import TranslatedText from '../components/TranslatedText';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Profile() {
+  const { language: userLanguage } = useLanguage();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -144,6 +147,9 @@ export default function Profile() {
     window.location.href = '/';
   };
 
+  // Get current language from context
+  const { language, changeLanguage } = useLanguage();
+
   if (loading) {
     return (
       <div className="profile-layout">
@@ -151,7 +157,7 @@ export default function Profile() {
         <main className="profile-main page-scroll">
           <div className="loading-container">
             <div className="loading-spinner"></div>
-            <p>Loading profile...</p>
+            <p><TranslatedText text="Loading profile..." /></p>
           </div>
         </main>
       </div>
@@ -173,7 +179,7 @@ export default function Profile() {
               </div>
               <div className="user-info">
                 <h2>{user?.displayName || 'User'}</h2>
-                <p>{user?.district ? `Farmer • ${user.district}` : 'Farmer'}</p>
+                <p>{user?.district ? <><TranslatedText text="Farmer" /> • {user.district}</> : <TranslatedText text="Farmer" />}</p>
               </div>
               <div className="user-tags">
                 {user?.language ? <span className="tag">{user.language}</span> : null}
@@ -185,13 +191,13 @@ export default function Profile() {
             {/* Personal Information */}
             <div className="info-card">
               <div className="card-header">
-                <h3>Personal Information</h3>
+                <h3><TranslatedText text="Personal Information" /></h3>
                 {!editing && (
                   <button className="edit-btn" onClick={() => setEditing(true)}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13M18.5 2.5C18.8978 2.10218 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10218 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10218 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    Edit
+                    <TranslatedText text="Edit" />
                   </button>
                 )}
               </div>
@@ -234,13 +240,13 @@ export default function Profile() {
 
                   {/* Farms block */}
                   <div className="card-header" style={{ marginTop: '1rem' }}>
-                    <h3>Farms</h3>
+                    <h3><TranslatedText text="Farms" /></h3>
                   </div>
                   <div className="farms-grid">
                     {(user?.farms || []).length === 0 ? (
                       <div className="info-item" style={{ gridColumn: '1 / -1' }}>
                         <div className="info-content">
-                          <span className="info-value">No farms added.</span>
+                          <span className="info-value"><TranslatedText text="No farms added." /></span>
                         </div>
                       </div>
                     ) : (
@@ -272,7 +278,7 @@ export default function Profile() {
                 <form className="edit-form" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                   <div className="form-grid">
                     <div className="form-group">
-                      <label>Full Name</label>
+                      <label><TranslatedText text="Full Name" /></label>
                       <input
                         type="text"
                         name="displayName"
@@ -282,7 +288,7 @@ export default function Profile() {
                     </div>
 
                     <div className="form-group">
-                      <label>Email</label>
+                      <label><TranslatedText text="Email" /></label>
                       <input
                         type="email"
                         name="email"
@@ -294,7 +300,7 @@ export default function Profile() {
                     </div>
 
                     <div className="form-group">
-                      <label>Phone Number</label>
+                      <label><TranslatedText text="Phone Number" /></label>
                       <input
                         type="tel"
                         name="phoneNumber"
@@ -304,22 +310,26 @@ export default function Profile() {
                     </div>
 
                     <div className="form-group">
-                      <label>Language</label>
+                      <label><TranslatedText text="Language" /></label>
                       <select
                         name="language"
                         value={formData.language || ''}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                          handleInputChange(e);
+                          // Also update the app language when user changes profile language
+                          changeLanguage(e.target.value);
+                        }}
                         className="language-select"
                         style={{ backgroundColor: '#66BB6A', color: '#f3f5f4' }}
                       >
-                        <option value="">Select</option>
+                        <option value=""><TranslatedText text="Select" /></option>
                         <option value="English">English</option>
                         <option value="Malayalam">Malayalam</option>
                       </select>
                     </div>
 
                     <div className="form-group">
-                      <label>Experience (years)</label>
+                      <label><TranslatedText text="Experience (years)" /></label>
                       <input
                         type="number"
                         name="experience"
@@ -329,7 +339,7 @@ export default function Profile() {
                     </div>
 
                     <div className="form-group">
-                      <label>Number of farms</label>
+                      <label><TranslatedText text="Number of farms" /></label>
                       <input
                         type="number"
                         name="numberOfFarms"
@@ -339,7 +349,7 @@ export default function Profile() {
                     </div>
 
                     <div className="form-group">
-                      <label>State</label>
+                      <label><TranslatedText text="State" /></label>
                       <input
                         type="text"
                         name="state"
@@ -349,7 +359,7 @@ export default function Profile() {
                     </div>
 
                     <div className="form-group">
-                      <label>District</label>
+                      <label><TranslatedText text="District" /></label>
                       <input
                         type="text"
                         name="district"
@@ -361,27 +371,27 @@ export default function Profile() {
 
                   {/* Farms editor */}
                   <div className="card-header" style={{ marginTop: '0.5rem' }}>
-                    <h3>Farms</h3>
-                    <button type="button" className="edit-btn" onClick={addFarm}>Add Farm</button>
+                    <h3><TranslatedText text="Farms" /></h3>
+                    <button type="button" className="edit-btn" onClick={addFarm}><TranslatedText text="Add Farm" /></button>
                   </div>
 
                   <div className="farms-grid">
                     {(formData.farms || []).map((farm, i) => (
                       <div className="farm-card" key={i}>
                         <h4>
-                          Farm {i + 1}
+                          <TranslatedText text="Farm" /> {i + 1}
                           <button
                             type="button"
                             className="edit-btn"
                             style={{ float: 'right', padding: '0.25rem 0.6rem' }}
                             onClick={() => removeFarm(i)}
                           >
-                            Remove
+                            <TranslatedText text="Remove" />
                           </button>
                         </h4>
 
                         <div className="form-group" style={{ margin: 0 }}>
-                          <label className="farm-label">Farm Name</label>
+                          <label className="farm-label"><TranslatedText text="Farm Name" /></label>
                           <input
                             type="text"
                             value={farm?.name || ''}
@@ -389,7 +399,7 @@ export default function Profile() {
                           />
                         </div>
                         <div className="form-group" style={{ margin: 0 }}>
-                          <label className="farm-label">Acres</label>
+                          <label className="farm-label"><TranslatedText text="Acres" /></label>
                           <input
                             type="number"
                             value={farm?.acres ?? ''}
@@ -397,7 +407,7 @@ export default function Profile() {
                           />
                         </div>
                         <div className="form-group" style={{ margin: 0 }}>
-                          <label className="farm-label">Location</label>
+                          <label className="farm-label"><TranslatedText text="Location" /></label>
                           <input
                             type="text"
                             value={farm?.location || ''}
@@ -405,7 +415,7 @@ export default function Profile() {
                           />
                         </div>
                         <div className="form-group" style={{ gridColumn: '1 / -1', margin: 0 }}>
-                          <label className="farm-label">Crops (comma separated)</label>
+                          <label className="farm-label"><TranslatedText text="Crops (comma separated)" /></label>
                           <input
                             type="text"
                             value={
@@ -425,8 +435,8 @@ export default function Profile() {
                   </div>
 
                   <div className="form-actions" style={{ marginTop: '1rem' }}>
-                    <button type="submit" className="save-btn">Save Changes</button>
-                    <button type="button" className="cancel-btn" onClick={() => setEditing(false)}>Cancel</button>
+                    <button type="submit" className="save-btn"><TranslatedText text="Save Changes" /></button>
+                    <button type="button" className="cancel-btn" onClick={() => setEditing(false)}><TranslatedText text="Cancel" /></button>
                   </div>
                 </form>
               )}
@@ -435,7 +445,7 @@ export default function Profile() {
             {/* App Settings */}
             <div className="info-card">
               <div className="card-header">
-                <h3>App Settings</h3>
+                <h3><TranslatedText text="App Settings" /></h3>
               </div>
               <div className="settings-item">
                 <div className="settings-icon">
@@ -444,26 +454,29 @@ export default function Profile() {
                   </svg>
                 </div>
                 <div className="settings-content">
-                  <span className="settings-label">Language</span>
-                  <span className="settings-value">Choose your preferred language</span>
+                  <span className="settings-label"><TranslatedText text="Language" /></span>
+                  <span className="settings-value"><TranslatedText text="Choose your preferred language" /></span>
                 </div>
                 <select
                   className="language-select"
-                  value={formData.language || user?.language || 'English'}
+                  value={language}
                   onChange={(e) => {
-                    setFormData(prev => ({ ...prev, language: e.target.value }));
+                    const newLanguage = e.target.value;
+                    setFormData(prev => ({ ...prev, language: newLanguage }));
+                    // Update app language using context
+                    changeLanguage(newLanguage);
                     // Save language change immediately to database
                     if (user?.email) {
                       fetch(`/api/auth/profile/${encodeURIComponent(user.email)}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ language: e.target.value }),
+                        body: JSON.stringify({ language: newLanguage }),
                       }).then(res => res.json())
                         .then(data => {
                           if (data.success) {
                             // Update local storage with new language
                             const currentProfile = JSON.parse(localStorage.getItem('ammachi_profile') || '{}');
-                            currentProfile.language = e.target.value;
+                            currentProfile.language = newLanguage;
                             localStorage.setItem('ammachi_profile', JSON.stringify(currentProfile));
                           }
                         })
@@ -479,19 +492,19 @@ export default function Profile() {
 
             {/* Activity */}
             <div className="activity-card">
-              <h3>Your Activity</h3>
+              <h3><TranslatedText text="Your Activity" /></h3>
               <div className="activity-stats">
                 <div className="stat-item">
                   <span className="stat-number">{typeof user?.cropsScanned === 'number' ? user.cropsScanned : 0}</span>
-                  <span className="stat-label">Crops Scanned</span>
+                  <span className="stat-label"><TranslatedText text="Crops Scanned" /></span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-number">{typeof user?.questionsAsked === 'number' ? user.questionsAsked : 0}</span>
-                  <span className="stat-label">Questions Asked</span>
+                  <span className="stat-label"><TranslatedText text="Questions Asked" /></span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-number">{typeof user?.daysActive === 'number' ? user.daysActive : 0}</span>
-                  <span className="stat-label">Days Active</span>
+                  <span className="stat-label"><TranslatedText text="Days Active" /></span>
                 </div>
               </div>
             </div>
@@ -506,6 +519,8 @@ export default function Profile() {
 
 /* ---------- Small icon component for readability ---------- */
 function InfoItem({ label, value, icon }) {
+  const { language } = useLanguage();
+  // No need to destructure language here as we're using TranslatedText component
   const Icon = () => {
     switch (icon) {
       case 'user': return (
@@ -556,9 +571,11 @@ function InfoItem({ label, value, icon }) {
 
   return (
     <div className="info-item">
-      <div className="info-icon"><Icon /></div>
+      <div className="info-icon">
+        <Icon />
+      </div>
       <div className="info-content">
-        <span className="info-label">{label}</span>
+        <span className="info-label"><TranslatedText text={label} /></span>
         <span className="info-value">{value}</span>
       </div>
     </div>
