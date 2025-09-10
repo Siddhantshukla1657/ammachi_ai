@@ -136,7 +136,7 @@ export default function Weather(){
   const formatTime = (timestamp) => {
     if (!timestamp) return '—';
     const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
   };
  
   const formatDate = (timestamp) => {
@@ -376,16 +376,22 @@ export default function Weather(){
             <section className="hourly-forecast">
               <h3>Hourly Forecast</h3>
               <div className="hour-row">
-                {(hourly.length ? hourly : Array.from({length:24})).map((h,i)=> {
-                  const timestamp = h?.dt || Math.floor(Date.now()/1000) + i*3600;
-                  console.log('Hour data:', h); // Debug log to see what data is available
+                {Array.from({length:24}).map((_,i)=> {
+                  // Calculate proper timestamp starting from 12:00 AM today
+                  const now = new Date();
+                  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+                  const timestamp = Math.floor(startOfDay.getTime()/1000) + i*3600;
+                  
+                  // Get hourly data if available, otherwise use null
+                  const hourlyData = hourly[i] || null;
+                  
                   return (
                     <div key={i} className="hour-card">
                       <div className="hour-time">{formatTime(timestamp)}</div>
-                      <div className="hour-icon">{getWeatherIcon(h?.weather?.[0]?.main)}</div>
-                      <div className="hour-temp">{h?.main?.temp ? `${Math.round(h.main.temp)}°C` : '—'}</div>
-                      <div className="hour-cond muted">{ h?.weather?.[0]?.main || 'Cloudy' }</div>
-                      <div className="hour-pop muted">{ popPercent(h) }</div>
+                      <div className="hour-icon">{getWeatherIcon(hourlyData?.weather?.[0]?.main)}</div>
+                      <div className="hour-temp">{hourlyData?.main?.temp ? `${Math.round(hourlyData.main.temp)}°C` : '—'}</div>
+                      <div className="hour-cond muted">{ hourlyData?.weather?.[0]?.main || 'Cloudy' }</div>
+                      <div className="hour-pop muted">{ popPercent(hourlyData) }</div>
                     </div>
                   );
                 })}
