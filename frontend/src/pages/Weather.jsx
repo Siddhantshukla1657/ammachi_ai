@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './weather.css';
 import Sidebar from '../components/Sidebar.jsx';
+import TranslatedText from '../components/TranslatedText';
+import { useLanguage } from '../context/LanguageContext';
 
 
 const DISTRICTS = {
@@ -198,7 +200,7 @@ export default function Weather(){
           {loading && (
             <div className="weather-loading">
               <div className="loading-spinner"></div>
-              <div className="loading-text">Loading weather data for {district}...</div>
+              <div className="loading-text"><TranslatedText text="Loading weather data for" /> {district}...</div>
             </div>
           )}
          
@@ -206,15 +208,15 @@ export default function Weather(){
             <div className="weather-error">
               <div className="error-icon">⚠️</div>
               <div className="error-message">
-                <strong>Error:</strong> {error}
+                <strong><TranslatedText text="Error" />:</strong> {error}
                 <div className="error-help">
-                  Please ensure:
+                  <TranslatedText text="Please ensure" />:
                   <ul>
-                    <li>Backend server is running at http://localhost:5000</li>
-                    <li>OPENWEATHER_API_KEY is properly set in the backend .env file</li>
-                    <li>Your internet connection is working</li>
+                    <li><TranslatedText text="Backend server is running at" /> http://localhost:5000</li>
+                    <li>OPENWEATHER_API_KEY <TranslatedText text="is properly set in the backend .env file" /></li>
+                    <li><TranslatedText text="Your internet connection is working" /></li>
                   </ul>
-                  <button className="retry-button" onClick={() => window.location.reload()}>Retry</button>
+                  <button className="retry-button" onClick={() => window.location.reload()}><TranslatedText text="Retry" /></button>
                 </div>
               </div>
             </div>
@@ -223,39 +225,39 @@ export default function Weather(){
 
           <div className="weather-top">
             <div className="current-weather card">
-              <div className="cw-head">Current Weather - {district}</div>
+              <div className="cw-head"><TranslatedText text="Current Weather" /> - {district}</div>
               <div className="cw-body">
                 <div className="cw-left">
                   <div className="cw-icon">{current ? getWeatherIcon(current.weather?.[0]?.main) : '☁️'}</div>
                   <div className="cw-temp">{current ? formatTemp(current.main?.temp) : '—'}</div>
                   <div className="cw-cond">{current ? `${current.weather?.[0]?.description || ''}` : '—'}<br/>
-                    <span className="muted">{current ? `Feels like ${Math.round(current.main?.feels_like || 0)}°C` : ''}</span>
+                    <span className="muted">{current ? <><TranslatedText text="Feels like" /> {Math.round(current.main?.feels_like || 0)}°C</> : ''}</span>
                   </div>
                 </div>
                 <div className="cw-right">
-                  <div className="cw-meta"><strong>Humidity</strong><div>{current ? `${current.main?.humidity}%` : '—'}</div></div>
-                  <div className="cw-meta"><strong>Wind Speed</strong><div>{current ? `${current.wind?.speed} m/s` : '—'}</div></div>
-                  <div className="cw-meta"><strong>Pressure</strong><div>{current ? `${current.main?.pressure} hPa` : '—'}</div></div>
-                  <div className="cw-meta"><strong>Visibility</strong><div>{current ? `${(current.visibility/1000)||0} km` : '—'}</div></div>
-                  <div className="cw-meta"><strong>Rain Chance</strong><div>{daily && daily[0] ? popPercent(daily[0]) : '—'}</div></div>
-                  <div className="cw-meta"><strong>Updated</strong><div>{current ? new Date(current.dt * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '—'}</div></div>
+                  <div className="cw-meta"><strong><TranslatedText text="Humidity" /></strong><div>{current ? `${current.main?.humidity}%` : '—'}</div></div>
+                  <div className="cw-meta"><strong><TranslatedText text="Wind Speed" /></strong><div>{current ? `${current.wind?.speed} m/s` : '—'}</div></div>
+                  <div className="cw-meta"><strong><TranslatedText text="Pressure" /></strong><div>{current ? `${current.main?.pressure} hPa` : '—'}</div></div>
+                  <div className="cw-meta"><strong><TranslatedText text="Visibility" /></strong><div>{current ? `${(current.visibility/1000)||0} km` : '—'}</div></div>
+                  <div className="cw-meta"><strong><TranslatedText text="Rain Chance" /></strong><div>{daily && daily[0] ? popPercent(daily[0]) : '—'}</div></div>
+                  <div className="cw-meta"><strong><TranslatedText text="Updated" /></strong><div>{current ? new Date(current.dt * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '—'}</div></div>
                 </div>
               </div>
             </div>
 
 
             <aside className="advisories card">
-              <h3>Farming Advisories</h3>
+              <h3><TranslatedText text="Farming Advisories" /></h3>
               {current && current.main?.humidity > 70 ? (
-                <div className="adv">Watering Advisory - Reduce watering today due to high humidity ({current.main?.humidity}%). {daily && daily[0]?.pop > 0.3 ? 'Rain expected tomorrow.' : ''}</div>
+                <div className="adv"><TranslatedText text="Watering Advisory" /> - <TranslatedText text="Reduce watering today due to high humidity" /> ({current.main?.humidity}%). {daily && daily[0]?.pop > 0.3 ? <TranslatedText text="Rain expected tomorrow" /> : ''}</div>
               ) : (
-                <div className="adv">Watering Advisory - {current ? `Current humidity is ${current.main?.humidity}%. ` : ''}Regular watering recommended.</div>
+                <div className="adv"><TranslatedText text="Watering Advisory" /> - {current ? <><TranslatedText text="Current humidity is" /> {current.main?.humidity}%. </> : ''}<TranslatedText text="Regular watering recommended" />.</div>
               )}
               {current && current.main?.humidity > 75 ? (
-                <div className="adv muted">Pest Alert - High humidity may increase fungal diseases. Monitor crops closely.</div>
+                <div className="adv muted"><TranslatedText text="Pest Alert" /> - <TranslatedText text="High humidity may increase fungal diseases. Monitor crops closely" />.</div>
               ) : null}
               {daily && daily.slice(0, 3).every(d => !d.pop || d.pop < 0.4) ? (
-                <div className="adv muted">Harvesting Window - Good weather conditions for harvesting in the next few days.</div>
+                <div className="adv muted"><TranslatedText text="Harvesting Window" /> - <TranslatedText text="Good weather conditions for harvesting in the next few days" />.</div>
               ) : null}
             </aside>
           </div>
@@ -266,20 +268,20 @@ export default function Weather(){
               className={`tab-button ${activeTab === 'daily' ? 'active' : ''}`}
               onClick={() => setActiveTab('daily')}
             >
-              7-Day Forecast
+              <TranslatedText text="7-Day Forecast" />
             </button>
             <button
               className={`tab-button ${activeTab === 'hourly' ? 'active' : ''}`}
               onClick={() => setActiveTab('hourly')}
             >
-              Hourly Forecast
+              <TranslatedText text="Hourly Forecast" />
             </button>
           </div>
 
 
           {activeTab === 'daily' && (
             <section className="seven-day">
-              <h3>7-Day Forecast</h3>
+              <h3><TranslatedText text="7-Day Forecast" /></h3>
               <div className="day-row">
                 {(daily.length ? daily : Array.from({length:7})).map((d,i)=> {
                   const timestamp = d?.dt || Math.floor(Date.now()/1000);
