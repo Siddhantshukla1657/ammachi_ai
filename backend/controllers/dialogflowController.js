@@ -36,92 +36,6 @@ try {
   console.log('   Chatbot will use fallback responses');
 }
 
-// Comprehensive farming knowledge base for predefined Q&A
-const farmingKnowledgeBase = {
-  // Crop-specific questions
-  "how to grow rice": `**Rice Cultivation Guide:**
-
-🌱 **Land Preparation:** Prepare well-leveled fields with good drainage
-💧 **Water Management:** Maintain 2-5cm water level during growing season
-🌾 **Planting:** Use quality seeds, direct seeding or transplanting method
-🐛 **Pest Control:** Watch for stem borers, leaf folders, and brown planthoppers
-🌾 **Harvesting:** Harvest when 80-85% of grains turn golden yellow`,
-  
-  "coconut farming tips": `**Coconut Farming Best Practices:**
-
-🌴 **Planting:** Space trees 7-8 meters apart, dig 1m x 1m x 1m pits
-💧 **Irrigation:** Deep watering twice a week, more in summer
-🌿 **Fertilization:** Apply organic manure annually, NPK fertilizers quarterly
-🐛 **Pest Management:** Watch for rhinoceros beetles, red palm weevils
-🥥 **Harvesting:** Nuts ready in 11-12 months, harvest every 45 days`,
-  
-  "pepper cultivation": `**Black Pepper Growing Guide:**
-
-🍃 **Climate:** Requires warm, humid climate with good rainfall
-🌳 **Support:** Plant near trees or provide artificial support poles
-💧 **Watering:** Regular watering but avoid waterlogging
-🐛 **Diseases:** Watch for foot rot, anthracnose, and pollu beetle
-🌾 **Harvesting:** Harvest when berries turn red, dry for black pepper`,
-  
-  // Disease and pest management
-  "rice blast disease": `**Rice Blast Management:**
-
-🌱 **Symptoms:** Brown spots on leaves, neck rot in severe cases
-🚪 **Prevention:** Use resistant varieties, avoid excessive nitrogen
-🌿 **Organic Control:** Neem oil spray, proper field sanitation
-⚗️ **Chemical Control:** Carbendazim or Tricyclazole fungicides
-💧 **Management:** Improve drainage, balanced fertilization`,
-  
-  "coconut red palm weevil": `**Red Palm Weevil Control:**
-
-🔍 **Detection:** Look for holes in trunk, frass around base
-🦅 **Prevention:** Regular inspection, avoid trunk injuries
-🌿 **Biological Control:** Pheromone traps, beneficial nematodes
-⚗️ **Chemical Control:** Systemic insecticides like Imidacloprid
-🛠️ **Cultural:** Remove infected palms immediately`,
-  
-  "pepper foot rot": `**Pepper Foot Rot Management:**
-
-🌱 **Symptoms:** Yellowing leaves, wilting, root blackening
-💧 **Prevention:** Improve drainage, avoid waterlogging
-🌿 **Organic Treatment:** Trichoderma application, neem cake
-⚗️ **Chemical Treatment:** Copper oxychloride or Metalaxyl
-🏞️ **Soil Management:** Add organic matter, proper spacing`,
-  
-  // Organic farming
-  "organic pest control": `**Natural Pest Control Methods:**
-
-🌿 **Neem Solutions:** Neem oil spray for aphids, whiteflies
-🐞 **Beneficial Insects:** Encourage ladybugs, lacewings, spiders
-🌱 **Companion Planting:** Marigolds, basil to repel pests
-💨 **Soap Sprays:** Mild soap solution for soft-bodied insects
-🥫 **Diatomaceous Earth:** For crawling insects like ants, beetles`,
-  
-  "crop prices": `**Current Market Information:**
-
-📊 Check our Market section for real-time prices from Kerala mandis
-🌾 **Rice:** ₹2,800-3,200 per quintal (varies by variety)
-🥥 **Coconut:** ₹10-15 per piece (depending on size)
-🌶️ **Pepper:** ₹550-650 per kg (seasonal variation)
-📈 **Tip:** Track price trends before harvesting`,
-  
-  "soil testing": `**Soil Health Assessment:**
-
-🧪 **Testing:** Test soil every 2-3 years for pH, nutrients
-📊 **Parameters:** Check N, P, K levels and micronutrients
-🌱 **pH Management:** Most crops prefer 6.0-7.5 pH range
-🌿 **Amendments:** Add lime for acidic soil, sulfur for alkaline
-📄 **Report:** Get detailed recommendations from soil lab`,
-  
-  "drip irrigation": `**Drip Irrigation Benefits:**
-
-💧 **Water Saving:** 30-50% less water usage
-🌱 **Better Growth:** Direct root zone watering
-🐛 **Disease Reduction:** Less leaf wetness, fewer fungal issues
-💰 **Cost Effective:** Long-term savings on water and labor
-🛠️ **Maintenance:** Regular cleaning and filter replacement`
-};
-
 const cleanAIResponse = (text) => {
   if (!text) return text;
   
@@ -137,11 +51,9 @@ const cleanAIResponse = (text) => {
   return cleaned.trim();
 };
 
-// Enhanced fallback response system with language support and shorter responses
 const generateFallbackResponse = (message, language = 'en') => {
   const lowerMessage = message.toLowerCase();
   
-  // Short responses based on language
   const responses = {
     en: {
       greeting: `Hi! I'm Ammachi AI 🌾\n• Crop help\n• Disease tips\n• Market prices\nWhat do you need?`,
@@ -155,7 +67,7 @@ const generateFallbackResponse = (message, language = 'en') => {
     ml: {
       greeting: `ഹായ്! ഞാൻ അമ്മച്ചി AI 🌾\n• കൃഷി സഹായം\n• രോഗ ടിപ്സ്\n• വില\nഎന്തു വേണം?`,
       rice: `🌾 നെല്ല്:\n• നല്ല വിത്ത്\n• വെള്ളം maintain\n• കീടങ്ങൾ നോക്കുക`,
-      coconut: `🥥 തെങ്:\n• 7m അന്തരം\n• ആഴ്ചയിൽ 2 വാര വെള്ളം\n• organic manure`,
+      coconut: `🥥 തെങ്ങ്:\n• 7m അന്തരം\n• ആഴ്ചയിൽ 2 വാര വെള്ളം\n• organic manure`,
       pepper: `🌶️ കുരുമുളക്:\n• സപ്പോർട്ട് വേണം\n• drainage നല്ലത്\n• ചുവന്നപ്പോൾ വെട്ടുക`,
       disease: `🐛 രോഗം:\n• leaf scanner use ചെയ്യുക\n• വേപ്പെണ്ണ ഇടുക\n• രോഗം ഉള്ള ഭാഗം മാറ്റുക`,
       market: `📊 വില:\n• നെല്ല്: ₹2,800/quintal\n• തെങ്ങ്: ₹12/piece\n• കുരുമുളക്: ₹600/kg`,
@@ -165,7 +77,6 @@ const generateFallbackResponse = (message, language = 'en') => {
   
   const lang = responses[language] || responses.en;
   
-  // Check for keywords and return appropriate short response
   if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('namaste') || lowerMessage.includes('നമസ്കാരം')) {
     return lang.greeting;
   }
@@ -193,13 +104,11 @@ const generateFallbackResponse = (message, language = 'en') => {
   return lang.general;
 };
 
-// Generate session path
 const getSessionPath = (sessionId) => {
   if (!sessionClient || !projectId) return null;
   return sessionClient.projectAgentSessionPath(projectId, sessionId);
 };
 
-// Main chat function with Gemini AI integration and language support
 const chatWithBot = async (req, res) => {
   try {
     const { message, sessionId = 'default-session', language = 'en' } = req.body;
@@ -218,12 +127,10 @@ const chatWithBot = async (req, res) => {
       language: language
     };
 
-    // Try Gemini AI first if available
     if (model && genAI) {
       try {
         console.log(`🤖 Using Gemini AI for response generation (${language})...`);
         
-        // Create a farming-focused prompt for Gemini with language support and VERY SHORT responses
         const farmingPrompt = `You are Ammachi AI, an expert farming assistant for Kerala farmers.
 
 CRITICAL RULES:
@@ -244,7 +151,6 @@ User Question: ${userMessage.text}
 
 Give VERY SHORT answer in ${userMessage.language === 'ml' ? 'Malayalam' : 'English'}.`;
 
-
         const result = await model.generateContent(farmingPrompt);
         const response = await result.response;
         const geminiReply = response.text();
@@ -263,12 +169,10 @@ Give VERY SHORT answer in ${userMessage.language === 'ml' ? 'Malayalam' : 'Engli
         reply = generateFallbackResponse(userMessage.text, userMessage.language);
       }
     } else {
-      // Fallback to predefined responses if Gemini is not available
       console.log('📚 Using predefined knowledge base responses...');
       reply = generateFallbackResponse(userMessage.text, userMessage.language);
     }
 
-    // Log the conversation for debugging
     console.log(`Chat - User: ${userMessage.text.substring(0, 50)}... | Bot: ${reply.substring(0, 50)}...`);
 
     res.json({
@@ -289,7 +193,6 @@ Give VERY SHORT answer in ${userMessage.language === 'ml' ? 'Malayalam' : 'Engli
   }
 };
 
-// Enhanced health check for both Dialogflow and Gemini AI
 const checkDialogflowHealth = async (req, res) => {
   try {
     const health = {
@@ -300,7 +203,6 @@ const checkDialogflowHealth = async (req, res) => {
       timestamp: new Date().toISOString()
     };
     
-    // Test Dialogflow if available
     if (health.dialogflowAvailable) {
       try {
         const sessionPath = getSessionPath('health-check');
@@ -322,7 +224,6 @@ const checkDialogflowHealth = async (req, res) => {
       }
     }
     
-    // Test Gemini AI if available
     if (health.geminiAvailable) {
       try {
         const testResult = await model.generateContent('Hello, this is a test.');
