@@ -8,6 +8,7 @@ export default function Chat(){
   ]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState('en'); // 'en' or 'ml'
 
   async function sendMessage(e){
     e.preventDefault();
@@ -44,8 +45,24 @@ export default function Chat(){
               <div className="assistant-sub">Your Farming Assistant</div>
             </div>
             <div className="chat-header-right">
-              <button className="lang-btn">മലയാളം</button>
-              <button className="settings-btn">⚙</button>
+              {/* Language toggle switch */}
+              <div className="lang-toggle-pill">
+                <button
+                  className={`lang-toggle-option${lang === 'en' ? ' active' : ''}`}
+                  onClick={() => setLang('en')}
+                  type="button"
+                >
+                  English
+                </button>
+                <button
+                  className={`lang-toggle-option${lang === 'ml' ? ' active' : ''}`}
+                  onClick={() => setLang('ml')}
+                  type="button"
+                >
+                  മലയാളം
+                </button>
+                <span className={`lang-toggle-slider ${lang === 'ml' ? 'right' : ''}`}></span>
+              </div>
             </div>
           </header>
 
