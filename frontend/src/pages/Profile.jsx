@@ -315,7 +315,6 @@ export default function Profile() {
                         <option value="">Select</option>
                         <option value="English">English</option>
                         <option value="Malayalam">Malayalam</option>
-                        <option value="Hindi">Hindi</option>
                       </select>
                     </div>
 
