@@ -15,6 +15,8 @@ const verifyFirebaseCredentials = async (email, password) => {
       throw new Error('Firebase API key not configured');
     }
 
+    console.log(`Attempting Firebase login for email: ${email}`);
+
     const response = await axios.post(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {
@@ -24,14 +26,33 @@ const verifyFirebaseCredentials = async (email, password) => {
       }
     );
 
+    console.log('Firebase authentication successful');
     return {
       success: true,
       data: response.data
     };
   } catch (error) {
+    // Extract the specific Firebase error code
+    const errorCode = error.response?.data?.error?.message;
+    console.error(`Firebase authentication failed: ${errorCode || error.message}`);
+    
+    let userFriendlyMessage = 'Invalid email or password';
+    
+    // Provide more specific error messages based on Firebase error codes
+    if (errorCode === 'EMAIL_NOT_FOUND') {
+      userFriendlyMessage = 'No account found with this email address';
+    } else if (errorCode === 'INVALID_PASSWORD') {
+      userFriendlyMessage = 'Incorrect password';
+    } else if (errorCode === 'USER_DISABLED') {
+      userFriendlyMessage = 'This account has been disabled';
+    } else if (errorCode === 'TOO_MANY_ATTEMPTS_TRY_LATER') {
+      userFriendlyMessage = 'Too many failed login attempts. Please try again later';
+    }
+    
     return {
       success: false,
-      error: error.response?.data?.error?.message || error.message
+      error: userFriendlyMessage,
+      errorCode: errorCode
     };
   }
 };
@@ -173,13 +194,22 @@ class AuthController {
       }
 
       const { email, password } = req.body;
+      
+      // Basic validation
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+      }
+      
+      // Normalize email (trim and lowercase)
+      const normalizedEmail = email.trim().toLowerCase();
 
       // Verify credentials with Firebase
-      const firebaseAuth = await verifyFirebaseCredentials(email, password);
+      const firebaseAuth = await verifyFirebaseCredentials(normalizedEmail, password);
       
       if (!firebaseAuth.success) {
         return res.status(401).json({ 
-          error: 'Invalid email or password'
+          error: firebaseAuth.error || 'Invalid email or password',
+          errorCode: firebaseAuth.errorCode
         });
       }
 
@@ -247,10 +277,87 @@ class AuthController {
     }
   }
 
-  // Verify Firebase ID Token (placeholder)
+  // Verify Firebase ID Token
   static async verifyToken(req, res) {
     try {
-      return res.status(501).json({ error: 'Token verification not implemented yet' });
+      if (!isFirebaseEnabled) {
+        return res.status(503).json({
+          error: 'Authentication service unavailable',
+          message: 'Firebase not configured.'
+        });
+      }
+
+      // Get the token from the Authorization header
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'No token provided' });
+      }
+
+      const idToken = authHeader.split('Bearer ')[1];
+      if (!idToken) {
+        return res.status(401).json({ error: 'Invalid token format' });
+      }
+
+      // Verify the ID token using Firebase Admin SDK
+      const decodedToken = await auth.verifyIdToken(idToken);
+      console.log('✅ Firebase ID token verified successfully');
+      
+      // Get the user from Firebase
+      const firebaseUser = await auth.getUser(decodedToken.uid);
+      
+      // Get user data from MongoDB
+      let mongoUser = null;
+      try {
+        const mongoose = require('mongoose');
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          const MongoUser = require('../models/MongoUser');
+          mongoUser = await MongoUser.findOne({ email: firebaseUser.email });
+          
+          if (mongoUser) {
+            await MongoUser.updateOne(
+              { _id: mongoUser._id },
+              { lastLoginAt: new Date() }
+            );
+            console.log('✅ User login updated in MongoDB');
+          } else {
+            // Create a new user in MongoDB if they don't exist
+            const newUser = new MongoUser({
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+              firebaseUid: firebaseUser.uid,
+              role: 'farmer',
+              createdAt: new Date(),
+              lastLoginAt: new Date()
+            });
+            await newUser.save();
+            mongoUser = newUser;
+            console.log('✅ New user created in MongoDB from verified token');
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch/update user in MongoDB:', e.message);
+      }
+
+      // Prepare user response
+      const userData = {
+        id: mongoUser?._id || firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: mongoUser?.displayName || firebaseUser.displayName || firebaseUser.email.split('@')[0],
+        role: mongoUser?.role || 'farmer',
+        firebaseUid: firebaseUser.uid,
+        experience: mongoUser?.experience || 0,
+        farmSize: mongoUser?.farmSize || '',
+        district: mongoUser?.district || '',
+        phoneNumber: mongoUser?.phoneNumber || '',
+        primaryCrops: mongoUser?.primaryCrops || [],
+        language: mongoUser?.language || 'english',
+        farms: mongoUser?.farms || []
+      };
+
+      res.json({
+        message: 'Token verified successfully',
+        user: userData
+      });
     } catch (error) {
       console.error('Token verification error:', error);
       res.status(403).json({ error: 'Invalid token' });
