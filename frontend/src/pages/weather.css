@@ -29,17 +29,19 @@
 .seven-day h3 { font-size: 1.13rem; font-weight: 700; color: #063f2d; margin-bottom: 10px; }
 .day-row { 
   display: flex; 
-  gap: 20px; 
+  gap: 16px; 
   margin-top: 20px; 
-  flex-wrap: wrap; 
-  justify-content: center;
+  flex-wrap: nowrap; 
+  justify-content: space-between;
   padding: 0 10px;
+  width: 100%;
 }
 .day-card { 
   background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%); 
   border-radius: 20px; 
-  padding: 24px 20px; 
-  min-width: 140px; 
+  padding: 28px 24px; 
+  min-width: 180px; 
+  width: calc(100% / 7 - 20px);
   text-align: center; 
   border: 2px solid transparent; 
   box-shadow: 0 8px 32px rgba(47,180,106,0.12); 
@@ -49,6 +51,7 @@
   overflow: hidden;
   backdrop-filter: blur(20px);
   background-clip: padding-box;
+  flex: 1;
 }
 .day-card::before {
   content: '';
@@ -95,10 +98,11 @@
   transform: scaleX(1);
 }
 .day-card.expanded {
-  min-width: 280px;
+  min-width: 320px;
   text-align: left;
-  padding: 24px;
+  padding: 28px;
   background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  flex: 1.5;
 }
 .day-card-header {
   display: flex;
@@ -151,64 +155,10 @@
   color: #2fb46a; 
   font-size: 0.85rem; 
   font-weight: 600;
-  background: linear-gradient(135deg, rgba(47,180,106,0.1), rgba(34,197,94,0.1));
-  padding: 6px 12px;
-  border-radius: 16px;
   display: inline-block;
   margin-top: 6px;
-  border: 1px solid rgba(47,180,106,0.2);
-  position: relative;
-  overflow: hidden;
-}
-.day-pop.muted::before {
-  content: '💧';
-  margin-right: 4px;
-  font-size: 0.9rem;
 }
 
-/* Enhanced weather indicators */
-.weather-indicators {
-  display: flex;
-  justify-content: space-between;
-  margin: 12px 0 8px;
-  gap: 8px;
-}
-
-.weather-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  padding: 8px 4px;
-  background: rgba(255,255,255,0.6);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.weather-indicator:hover {
-  background: rgba(47,180,106,0.1);
-  transform: translateY(-2px);
-}
-
-.indicator-icon {
-  font-size: 1.2rem;
-  margin-bottom: 4px;
-  opacity: 0.8;
-}
-
-.indicator-value {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #064e3b;
-}
-
-.indicator-label {
-  font-size: 0.65rem;
-  color: #365a49;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 2px;
-}
 
 /* Temperature progress bar */
 .temp-progress {
@@ -245,19 +195,6 @@
   100% { transform: translateX(100%); }
 }
 
-/* Wind direction indicator */
-.wind-direction {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 8px 0;
-  font-size: 1.5rem;
-  transition: transform 0.3s ease;
-}
-
-.wind-direction:hover {
-  transform: rotate(15deg);
-}
 
 /* UV Index indicator */
 .uv-index {
@@ -425,34 +362,6 @@
 .status-rainy { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; }
 .status-stormy { background: linear-gradient(135deg, #fecaca, #fca5a5); color: #991b1b; }
 
-/* Air quality indicator */
-.air-quality {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: rgba(255,255,255,0.8);
-  border-radius: 10px;
-  margin: 8px 0;
-  border: 1px solid rgba(47,180,106,0.2);
-}
-
-.air-quality-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #365a49;
-}
-
-.air-quality-value {
-  font-size: 0.9rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 8px;
-}
-
-.aq-good { background: rgba(34,197,94,0.1); color: #16a34a; }
-.aq-moderate { background: rgba(251,191,36,0.1); color: #d97706; }
-.aq-unhealthy { background: rgba(239,68,68,0.1); color: #dc2626; }
 .day-expand-icon {
   display: none;
 }
@@ -513,28 +422,17 @@
   .advisories { width: 100%; min-width: 0; }
   .day-row { 
     overflow-x: auto; 
-    gap: 16px; 
+    gap: 12px; 
     padding: 0 5px;
     justify-content: flex-start;
   }
   .day-card { 
-    min-width: 130px; 
+    min-width: 160px; 
     flex-shrink: 0;
+    width: auto;
   }
   .day-card.expanded {
-    min-width: 280px;
-  }
-  .weather-indicators {
-    gap: 4px;
-  }
-  .weather-indicator {
-    padding: 6px 2px;
-  }
-  .indicator-value {
-    font-size: 0.7rem;
-  }
-  .indicator-label {
-    font-size: 0.6rem;
+    min-width: 300px;
   }
 }
 @media (max-width: 768px) {
@@ -553,28 +451,17 @@
   .advisories { padding: 8px; }
   .seven-day { margin-top: 8px; }
   .day-card { 
-    padding: 16px 12px; 
+    padding: 20px 16px; 
     font-size: 0.95rem; 
-    min-width: 120px;
+    min-width: 140px;
+    width: auto;
   }
   .day-card.expanded {
-    min-width: 260px;
-    padding: 20px;
+    min-width: 280px;
+    padding: 24px;
   }
   .day-icon { font-size: 1.8rem; }
   .day-temp { font-size: 1.2rem; }
-  .weather-indicators {
-    gap: 2px;
-  }
-  .weather-indicator {
-    padding: 4px 1px;
-  }
-  .indicator-value {
-    font-size: 0.65rem;
-  }
-  .indicator-label {
-    font-size: 0.55rem;
-  }
   .uv-index {
     font-size: 0.7rem;
     padding: 3px 6px;

@@ -311,24 +311,6 @@ export default function Weather(){
                       <div className="day-cond muted">{ d?.weather?.[0]?.main || (i===0? 'Partly Cloudy' : 'Rain') }</div>
                       <div className="day-pop muted">{ popPercent(d) }</div>
                       
-                      {/* Enhanced weather indicators */}
-                      <div className="weather-indicators">
-                        <div className="weather-indicator">
-                          <div className="indicator-icon">💨</div>
-                          <div className="indicator-value">{d?.wind?.speed ? `${d.wind.speed} m/s` : '—'}</div>
-                          <div className="indicator-label">Wind</div>
-                        </div>
-                        <div className="weather-indicator">
-                          <div className="indicator-icon">💧</div>
-                          <div className="indicator-value">{d?.main?.humidity ? `${d.main.humidity}%` : '—'}</div>
-                          <div className="indicator-label">Humidity</div>
-                        </div>
-                        <div className="weather-indicator">
-                          <div className="indicator-icon">🌡️</div>
-                          <div className="indicator-value">{d?.main?.pressure ? `${d.main.pressure} hPa` : '—'}</div>
-                          <div className="indicator-label">Pressure</div>
-                        </div>
-                      </div>
                       
                       {/* Temperature progress bar */}
                       {(tempMax || tempMin) && (
@@ -344,12 +326,6 @@ export default function Weather(){
                         </div>
                       )}
                       
-                      {/* Wind direction */}
-                      {d?.wind?.deg && (
-                        <div className="wind-direction" style={{ transform: `rotate(${d.wind.deg}deg)` }}>
-                          🧭
-                        </div>
-                      )}
                       
                       {/* UV Index simulation */}
                       <div className={`uv-index ${temp > 30 ? 'uv-high' : temp > 25 ? 'uv-moderate' : 'uv-low'}`}>
@@ -377,31 +353,6 @@ export default function Weather(){
                             </div>
                           )}
                           
-                          {/* Air quality indicator */}
-                          <div className="air-quality">
-                            <span className="air-quality-label">Air Quality</span>
-                            <span className={`air-quality-value ${
-                              humidity > 80 ? 'aq-unhealthy' : 
-                              humidity > 60 ? 'aq-moderate' : 'aq-good'
-                            }`}>
-                              {humidity > 80 ? 'Poor' : humidity > 60 ? 'Moderate' : 'Good'}
-                            </span>
-                          </div>
-                          
-                          <div className="day-detail-row">
-                            <span className="day-detail-label">Humidity</span>
-                            <span className="day-detail-value">{humidity ? `${humidity}%` : '—'}</span>
-                          </div>
-                          
-                          <div className="day-detail-row">
-                            <span className="day-detail-label">Wind Speed</span>
-                            <span className="day-detail-value">{windSpeed ? `${windSpeed} m/s` : '—'}</span>
-                          </div>
-                          
-                          <div className="day-detail-row">
-                            <span className="day-detail-label">Pressure</span>
-                            <span className="day-detail-value">{pressure ? `${pressure} hPa` : '—'}</span>
-                          </div>
                           
                           <div className="day-detail-row">
                             <span className="day-detail-label">Rain Chance</span>
