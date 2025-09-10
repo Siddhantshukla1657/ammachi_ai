@@ -11,7 +11,7 @@ This guide explains how to set up the Firebase authentication system for email/p
 ## 🔧 Step 1: Firebase Setup
 
 ### ✅ Service Account Key File (Current Setup)
-Your Firebase service account key has already been added as `serviceAccountKey.json` in the backend directory. No additional Firebase configuration is needed!
+Your Firebase service account key has already been added as `amaachiai-f879ccf99f8e.json` in the backend/credentials directory. No additional Firebase configuration is needed!
 
 ### 1.1 Enable Firebase Authentication (If Not Done)
 1. Go to [Firebase Console](https://console.firebase.google.com/)
@@ -152,7 +152,7 @@ Copy this checklist to ensure all variables are set:
 - [ ] `GOOGLE_CLIENT_SECRET`
 - [ ] `ALLOWED_ORIGINS` (update for your frontend)
 
-Note: Firebase configuration variables are not needed as the service account key file (`serviceAccountKey.json`) is used directly.
+Note: Firebase configuration variables are not needed as the service account key file (`amaachiai-f879ccf99f8e.json`) is used directly.
 
 ## 🎯 Next Steps
 

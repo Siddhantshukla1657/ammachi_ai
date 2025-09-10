@@ -22,7 +22,7 @@ let sessionClient;
 let projectId;
 
 try {
-  const keyFilename = path.join(__dirname, '../credentials/ammachi-ai-KEY.json');
+  const keyFilename = path.join(__dirname, '../credentials/amaachiai-f879ccf99f8e.json');
   const serviceAccount = require(keyFilename);
   projectId = serviceAccount.project_id;
   
