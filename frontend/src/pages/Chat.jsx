@@ -9,7 +9,8 @@ export default function Chat(){
   // Get current language from context
   const { language } = useLanguage();
   const [messages, setMessages] = useState([
-    { id: 1, from: 'bot', text: 'Hello! I am Ammachi AI, your farming assistant. How can I help you today?\n\nസ്വാഗതം! എനിക്ക് സഹായം വേണോ?' , time: '2:26:16 PM' }
+    { id: 1, from: 'bot', text: 'Hello! I am Ammachi AI, your farming assistant. How can I help you today?', time: '2:26 PM' },
+    { id: 2, from: 'bot', text: 'സ്വാഗതം! എനിക്ക് സഹായം വേണോ?', time: '2:26 PM' }
   ]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,7 +38,7 @@ export default function Chat(){
   async function sendMessage(e){
     e.preventDefault();
     if(!query.trim()) return;
-    const m = { id: Date.now(), from: 'user', text: query.trim(), time: new Date().toLocaleTimeString() };
+    const m = { id: Date.now(), from: 'user', text: query.trim(), time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
     setMessages(prev => [...prev, m]);
     setQuery('');
     setLoading(true);
@@ -52,9 +53,9 @@ export default function Chat(){
         })
       });
       const data = await res.json();
-      setMessages(prev => [...prev, { id: Date.now()+1, from: 'bot', text: data.reply || 'Sorry, I could not understand that.', time: new Date().toLocaleTimeString() }]);
+      setMessages(prev => [...prev, { id: Date.now()+1, from: 'bot', text: data.reply || 'Sorry, I could not understand that.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
     } catch (err) {
-      setMessages(prev => [...prev, { id: Date.now()+2, from: 'bot', text: 'Sorry, there was a problem connecting to the AI.', time: new Date().toLocaleTimeString() }]);
+      setMessages(prev => [...prev, { id: Date.now()+2, from: 'bot', text: 'Sorry, there was a problem connecting to the AI.', time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
     } finally {
       setLoading(false);
     }
@@ -63,6 +64,29 @@ export default function Chat(){
   const quick = lang === 'ml' 
     ? ['നെല്ലിന് രോഗം എങ്ങനെ കണ്ടറിയാം?', 'തെങ്ങിന് നടാൻ എപ്പോളാണ് നല്ല സമയം?', 'ഌർഗാനിക് കീട നിയന്ത്രണ രീതികൾ', 'മഴക്കാല കൃഷി സലാഹങ്ങൾ']
     : ['How to identify rice blast disease?', 'Best time to plant coconut?', 'Organic pest control methods', 'Monsoon farming tips'];
+
+  // Group consecutive messages from the same sender
+  const groupMessages = (messages) => {
+    const grouped = [];
+    let currentGroup = null;
+
+    messages.forEach((message, index) => {
+      if (!currentGroup || currentGroup.sender !== message.from) {
+        currentGroup = {
+          sender: message.from,
+          messages: [message],
+          id: `group-${index}`
+        };
+        grouped.push(currentGroup);
+      } else {
+        currentGroup.messages.push(message);
+      }
+    });
+
+    return grouped;
+  };
+
+  const messageGroups = groupMessages(messages);
 
   return (
     <div className="chat-layout">
@@ -97,14 +121,33 @@ export default function Chat(){
           </header>
 
           <section className="chat-window">
-            {messages.map(m => (
-              <div key={m.id} className={`msg-row ${m.from==='bot'? 'bot':'user'}`}>
-                <div className="msg-bubble">{m.text.split('\n').map((line,i)=>(<div key={i}>{line}</div>))}
-                  <div className="msg-time">{m.time}</div>
+            {messageGroups.map(group => (
+              <div key={group.id} className={`msg-cluster ${group.sender}`}>
+                {group.messages.map((message, index) => (
+                  <div key={message.id} className={`msg-row ${message.from === 'bot' ? 'bot' : 'user'}`}>
+                    <div className="msg-bubble">
+                      {message.text.split('\n').map((line, i) => (
+                        <div key={i}>{line}</div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <div className={`msg-time ${group.sender === 'bot' ? 'bot' : 'user'}`}>
+                  {group.messages[group.messages.length - 1].time}
                 </div>
               </div>
             ))}
-            {loading && <div className="msg-row bot"><div className="msg-bubble">Ammachi AI is typing...</div></div>}
+            {loading && (
+              <div className="typing-indicator">
+                <div className="typing-bubble">
+                  <div className="typing-dots">
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
 
           <div className="chat-quick">
