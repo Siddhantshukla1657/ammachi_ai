@@ -6,35 +6,157 @@ export default function Detect(){
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
+  const [remedies, setRemedies] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isGettingRemedies, setIsGettingRemedies] = useState(false);
+  const [error, setError] = useState(null);
 
   function onChoose(e){
     const f = e.target.files && e.target.files[0];
     if (!f) return;
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(f.type)) {
+      setError('Please upload a valid image file (JPG, PNG)');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (f.size > 5 * 1024 * 1024) {
+      setError('File size must be less than 5MB');
+      return;
+    }
+    
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setResult(null);
+    setRemedies(null);
+    setError(null);
   }
 
   function onDrop(e){
     e.preventDefault();
     const f = e.dataTransfer.files && e.dataTransfer.files[0];
     if (!f) return;
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(f.type)) {
+      setError('Please upload a valid image file (JPG, PNG)');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (f.size > 5 * 1024 * 1024) {
+      setError('File size must be less than 5MB');
+      return;
+    }
+    
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setResult(null);
+    setRemedies(null);
+    setError(null);
   }
 
   function onDragOver(e){ e.preventDefault(); }
+  
+  function onDragEnter(e){ e.preventDefault(); }
+  function onDragLeave(e){ e.preventDefault(); }
 
-  async function analyze(){
+  async function analyzeDisease(){
     if (!file) return;
+    
     setIsProcessing(true);
     setResult(null);
-    // mock detection - in real app you'd upload to backend/ML model
-    await new Promise(r=>setTimeout(r, 900));
-    setResult({ diagnosis: 'Leaf blast (suspected)', confidence: '86%' });
-    setIsProcessing(false);
+    setRemedies(null);
+    setError(null);
+    
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const response = await fetch('/api/disease/detect', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Detection failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Process Plant.id response
+      if (data.result && data.result.disease && data.result.disease.suggestions && data.result.disease.suggestions.length > 0) {
+        const topDisease = data.result.disease.suggestions[0];
+        setResult({
+          diseaseName: topDisease.name,
+          probability: Math.round(topDisease.probability * 100),
+          description: topDisease.details?.description || 'No description available',
+          treatment: topDisease.details?.treatment || {},
+          isHealthy: false
+        });
+        
+        // Get remedies from Dialogflow
+        await getRemedies(topDisease.name);
+      } else if (data.result && data.result.classification && data.result.classification.suggestions && data.result.classification.suggestions.length > 0) {
+        // Plant is healthy
+        const plantInfo = data.result.classification.suggestions[0];
+        setResult({
+          plantName: plantInfo.name,
+          probability: Math.round(plantInfo.probability * 100),
+          isHealthy: true,
+          message: 'Your crop appears to be healthy! No diseases detected.'
+        });
+      } else {
+        setResult({
+          isHealthy: true,
+          message: 'No diseases detected. Your crop appears to be healthy!',
+          probability: 0
+        });
+      }
+    } catch (error) {
+      console.error('Disease detection error:', error);
+      setError('Failed to analyze the image. Please try again with a clearer photo.');
+    } finally {
+      setIsProcessing(false);
+    }
+  }
+  
+  async function getRemedies(diseaseName) {
+    setIsGettingRemedies(true);
+    try {
+      const response = await fetch('/api/chatbot/remedies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          disease: diseaseName,
+          query: `What are the treatment and prevention methods for ${diseaseName}?`
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRemedies(data.response || 'No specific remedies found. Please consult with an agricultural expert.');
+      }
+    } catch (error) {
+      console.error('Remedies fetch error:', error);
+      setRemedies('Unable to fetch remedies at the moment. Please consult with an agricultural expert.');
+    } finally {
+      setIsGettingRemedies(false);
+    }
+  }
+
+  function resetDetection() {
+    setPreview(null);
+    setFile(null);
+    setResult(null);
+    setRemedies(null);
+    setError(null);
   }
 
   return (
@@ -44,43 +166,145 @@ export default function Detect(){
         <div className="detect-container">
           <header className="detect-header">
             <h1 className="detect-title">Disease Detection</h1>
-            <p className="detect-sub">Upload a photo of your crop to detect diseases</p>
+            <p className="detect-sub">Upload a photo of your crop to detect diseases 🔬</p>
           </header>
 
-          <div className="upload-card card" onDrop={onDrop} onDragOver={onDragOver}>
+          {error && (
+            <div className="error-card card">
+              <div className="error-icon">⚠️</div>
+              <div className="error-message">{error}</div>
+              <button className="error-close" onClick={() => setError(null)}>×</button>
+            </div>
+          )}
+
+          <div className="upload-card card" 
+               onDrop={onDrop} 
+               onDragOver={onDragOver}
+               onDragEnter={onDragEnter}
+               onDragLeave={onDragLeave}>
             <div className="upload-inner">
-              <div className="upload-icon">📷</div>
+              <div className="upload-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19Z" stroke="#2fb46a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M8.5 14L11 16.5L16.5 9.5" stroke="#2fb46a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
               <h3>Upload Crop Photo</h3>
               <p className="upload-note">Drag and drop your image here, or click to browse</p>
 
               <div className="upload-actions">
                 <label className="choose-btn">
-                  Choose File
+                  📁 Choose File
                   <input type="file" accept="image/*" onChange={onChoose} />
                 </label>
-                <button className="camera-btn" onClick={() => alert('Camera capture not available in this demo')}>Camera</button>
+                <button className="camera-btn" onClick={() => alert('Camera capture will be available in the mobile app')}>
+                  📷 Camera
+                </button>
               </div>
 
-              <div className="formats">Supported formats: JPG, PNG, PDF</div>
+              <div className="formats">Supported formats: JPG, PNG • Max size: 5MB</div>
             </div>
           </div>
 
           {preview && (
             <div className="preview-section card">
-              <img src={preview} alt="preview" className="preview-img" />
-              <div className="preview-actions">
-                <button className="btn-outline" onClick={() => { setPreview(null); setFile(null); setResult(null); }}>Remove</button>
-                <button className="btn-submit" onClick={analyze} disabled={isProcessing || !file}>{isProcessing ? 'Analyzing...' : 'Analyze Photo'}</button>
+              <div className="preview-image-container">
+                <img src={preview} alt="Crop preview" className="preview-img" />
+                <div className="preview-overlay">
+                  <button className="preview-remove" onClick={resetDetection} title="Remove image">×</button>
+                </div>
+              </div>
+              <div className="preview-info">
+                <h4>Ready for Analysis</h4>
+                <p>Click "Analyze Photo" to detect diseases in your crop image</p>
+                <div className="preview-actions">
+                  <button className="btn-outline" onClick={resetDetection}>Remove</button>
+                  <button 
+                    className="btn-submit" 
+                    onClick={analyzeDisease} 
+                    disabled={isProcessing || !file}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <span className="spinner"></span>
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>🔍 Analyze Photo</>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
           {result && (
             <div className="result-card card">
-              <h3>Detection Result</h3>
-              <div className="result-item"><strong>Diagnosis:</strong> {result.diagnosis}</div>
-              <div className="result-item"><strong>Confidence:</strong> {result.confidence}</div>
-              <div className="result-note">This is a demo result. For accurate diagnosis, consult an expert and upload clear photos of affected leaves.</div>
+              <div className="result-header">
+                <h3>
+                  {result.isHealthy ? (
+                    <>✅ Healthy Crop Detected</>
+                  ) : (
+                    <>🦠 Disease Detected</>
+                  )}
+                </h3>
+                <div className="confidence-badge">
+                  {result.probability}% confidence
+                </div>
+              </div>
+              
+              {result.isHealthy ? (
+                <div className="healthy-result">
+                  {result.plantName && (
+                    <div className="result-item">
+                      <strong>Plant Identified:</strong> {result.plantName}
+                    </div>
+                  )}
+                  <div className="result-message success">
+                    {result.message}
+                  </div>
+                  <div className="tips-section">
+                    <h4>🌱 Tips to Keep Your Crop Healthy:</h4>
+                    <ul>
+                      <li>Regular monitoring for early signs of disease</li>
+                      <li>Proper watering and drainage</li>
+                      <li>Adequate spacing between plants</li>
+                      <li>Use of organic fertilizers</li>
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <div className="disease-result">
+                  <div className="result-item">
+                    <strong>Disease:</strong> {result.diseaseName}
+                  </div>
+                  {result.description && (
+                    <div className="result-item">
+                      <strong>Description:</strong> {result.description}
+                    </div>
+                  )}
+                  
+                  {isGettingRemedies && (
+                    <div className="remedies-loading">
+                      <span className="spinner"></span>
+                      Getting treatment recommendations...
+                    </div>
+                  )}
+                  
+                  {remedies && (
+                    <div className="remedies-section">
+                      <h4>💊 Recommended Treatment:</h4>
+                      <div className="remedies-content">
+                        {remedies}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div className="result-disclaimer">
+                <strong>⚠️ Disclaimer:</strong> This is an AI-based detection system. For accurate diagnosis and treatment, please consult with a qualified agricultural expert or plant pathologist.
+              </div>
             </div>
           )}
 
