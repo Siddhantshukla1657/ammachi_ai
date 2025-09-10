@@ -20,7 +20,7 @@
 
 .market-layout { display: flex; gap: 20px; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
 .market-main { flex: 1; }
-.market-container { max-width: 1100px; margin: 0 auto; padding: 16px 16px 16px 0; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
+.market-container { max-width: 1400px; margin: 0 auto; padding: 16px 16px 16px 0; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
 .market-header { margin-bottom: 12px; }
 .market-title { margin: 0; color: var(--mediumseagreen-dark); font-size: 1.8rem; font-weight: 800; }
 .market-sub { margin: 4px 0 18px; color: var(--muted); font-size: 1.1rem; }
