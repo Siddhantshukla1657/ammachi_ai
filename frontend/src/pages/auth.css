@@ -193,7 +193,13 @@
   .auth-switch{ margin: 12px 0 0; color: #064e3b; }
   .auth-switch a{ color: #0ea96a; text-decoration: underline; }
   
-  
+  .btn-google:hover {
+  background: #eaf6ec;   /* pastel green tint */
+  border-color: #b7e1c4;
+  color: #2d5a47;
+  transform: translateY(-1px);
+}
+
   .back-home{
     display: inline-flex;
     align-items: center;
