@@ -10,6 +10,7 @@ const MongoUserSchema = new mongoose.Schema({
   // Farmer-specific fields
   experience: { type: Number, default: 0 },
   farmSize: { type: String, default: '' },
+  state: { type: String, default: '' },
   district: { type: String, default: '' },
   phoneNumber: { type: String, default: '' },
   primaryCrops: { type: [String], default: [] },
