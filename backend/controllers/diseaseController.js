@@ -29,34 +29,24 @@ exports.detectDisease = async (req, res) => {
     console.log('📦 Reading image file:', req.file.path);
     const imageBuffer = fs.readFileSync(req.file.path);
     const imageBase64 = imageBuffer.toString('base64');
-    console.log('🖼️ Image converted to base64, size:', imageBase64.length, 'chars');
+    console.log('🖼 Image converted to base64, size:', imageBase64.length, 'chars');
 
     // Plant.id API request for plant identification and disease detection
     const requestBody = {
-      images: [imageBase64],
-      modifiers: ['health=all', 'similar_images=true'],
-      plant_language: 'en',
-      plant_net: 'all',
-      plant_details: [
-        'common_names',
-        'url', 
-        'description',
-        'taxonomy',
-        'rank',
-        'gbif_id',
-        'observations',
-        'synonyms'
-      ]
+      images: [imageBase64]
     };
 
     console.log('📡 Sending request to Plant.id API...');
     console.log('📝 Request body keys:', Object.keys(requestBody));
-    console.log('🖼️ Images array length:', requestBody.images.length);
+    console.log('🖼 Images array length:', requestBody.images.length);
     
     const response = await axios.post(
       'https://api.plant.id/v3/identification',
       requestBody,
       {
+        params: {
+          details: 'common_names,url,description,treatment'
+        },
         headers: {
           'Content-Type': 'application/json',
           'Api-Key': process.env.PLANT_ID_KEY,

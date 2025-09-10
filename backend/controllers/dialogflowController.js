@@ -1,5 +1,23 @@
 const dialogflow = require('@google-cloud/dialogflow');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const path = require('path');
+
+// Initialize Gemini AI
+let genAI;
+let model;
+
+try {
+  const apiKey = process.env.API_KEY;
+  if (apiKey) {
+    genAI = new GoogleGenerativeAI(apiKey);
+    model = genAI.getGenerativeModel({ model: process.env.MODEL || 'gemini-1.5-flash' });
+    console.log('✅ Gemini AI initialized successfully');
+  } else {
+    console.warn('⚠️ Gemini API key not found in environment variables');
+  }
+} catch (error) {
+  console.warn('⚠️ Gemini AI initialization failed:', error.message);
+}
 
 // Initialize Dialogflow client
 let sessionClient;
@@ -23,25 +41,173 @@ try {
   console.log('   Chatbot will use fallback responses');
 }
 
-// Fallback responses for when Dialogflow is not available
-const fallbackResponses = [
-  "Thank you for your question! I'm currently learning to help farmers better. Could you try asking about weather, crops, or farming techniques?",
-  "I'm here to help with farming questions! Try asking about plant diseases, weather forecasts, or market prices.",
-  "As your farming assistant, I can help with crop care, disease identification, and agricultural advice. What would you like to know?",
-  "നമസ്കാരം! I'm here to assist with farming questions. Ask me about crops, weather, or agricultural practices.",
-  "I understand you're seeking farming guidance. Feel free to ask about irrigation, pest control, or crop management."
-];
+// Comprehensive farming knowledge base for predefined Q&A
+const farmingKnowledgeBase = {
+  // Crop-specific questions
+  "how to grow rice": `**Rice Cultivation Guide:**
 
-// Simple keyword-based responses
-const keywordResponses = {
-  weather: "For detailed weather information, please check the Weather section of the app where you can get 7-day forecasts for your district.",
-  rice: "Rice farming requires proper water management. Ensure adequate drainage during monsoon and maintain consistent water levels during growing season.",
-  coconut: "Coconut trees need well-drained soil and regular watering. Watch for signs of pests like rhinoceros beetles and red palm weevils.",
-  pepper: "Black pepper requires shade and support. Ensure good drainage and watch for diseases like foot rot and anthracnose.",
-  disease: "For plant disease identification, use our Disease Detection feature where you can upload photos of affected plants for analysis.",
-  market: "Check the Market section for current crop prices and trends from various mandis across Kerala.",
-  irrigation: "Proper irrigation timing depends on crop type and season. Generally, early morning watering is most effective.",
-  pest: "Common organic pest control methods include neem oil spray, companion planting, and encouraging beneficial insects."
+🌱 **Land Preparation:** Prepare well-leveled fields with good drainage
+💧 **Water Management:** Maintain 2-5cm water level during growing season
+🌾 **Planting:** Use quality seeds, direct seeding or transplanting method
+🐛 **Pest Control:** Watch for stem borers, leaf folders, and brown planthoppers
+🌾 **Harvesting:** Harvest when 80-85% of grains turn golden yellow`,
+  
+  "coconut farming tips": `**Coconut Farming Best Practices:**
+
+🌴 **Planting:** Space trees 7-8 meters apart, dig 1m x 1m x 1m pits
+💧 **Irrigation:** Deep watering twice a week, more in summer
+🌿 **Fertilization:** Apply organic manure annually, NPK fertilizers quarterly
+🐛 **Pest Management:** Watch for rhinoceros beetles, red palm weevils
+🥥 **Harvesting:** Nuts ready in 11-12 months, harvest every 45 days`,
+  
+  "pepper cultivation": `**Black Pepper Growing Guide:**
+
+🍃 **Climate:** Requires warm, humid climate with good rainfall
+🌳 **Support:** Plant near trees or provide artificial support poles
+💧 **Watering:** Regular watering but avoid waterlogging
+🐛 **Diseases:** Watch for foot rot, anthracnose, and pollu beetle
+🌾 **Harvesting:** Harvest when berries turn red, dry for black pepper`,
+  
+  // Disease and pest management
+  "rice blast disease": `**Rice Blast Management:**
+
+🌱 **Symptoms:** Brown spots on leaves, neck rot in severe cases
+🚪 **Prevention:** Use resistant varieties, avoid excessive nitrogen
+🌿 **Organic Control:** Neem oil spray, proper field sanitation
+⚗️ **Chemical Control:** Carbendazim or Tricyclazole fungicides
+💧 **Management:** Improve drainage, balanced fertilization`,
+  
+  "coconut red palm weevil": `**Red Palm Weevil Control:**
+
+🔍 **Detection:** Look for holes in trunk, frass around base
+🦅 **Prevention:** Regular inspection, avoid trunk injuries
+🌿 **Biological Control:** Pheromone traps, beneficial nematodes
+⚗️ **Chemical Control:** Systemic insecticides like Imidacloprid
+🛠️ **Cultural:** Remove infected palms immediately`,
+  
+  "pepper foot rot": `**Pepper Foot Rot Management:**
+
+🌱 **Symptoms:** Yellowing leaves, wilting, root blackening
+💧 **Prevention:** Improve drainage, avoid waterlogging
+🌿 **Organic Treatment:** Trichoderma application, neem cake
+⚗️ **Chemical Treatment:** Copper oxychloride or Metalaxyl
+🏞️ **Soil Management:** Add organic matter, proper spacing`,
+  
+  // Organic farming
+  "organic pest control": `**Natural Pest Control Methods:**
+
+🌿 **Neem Solutions:** Neem oil spray for aphids, whiteflies
+🐞 **Beneficial Insects:** Encourage ladybugs, lacewings, spiders
+🌱 **Companion Planting:** Marigolds, basil to repel pests
+💨 **Soap Sprays:** Mild soap solution for soft-bodied insects
+🥫 **Diatomaceous Earth:** For crawling insects like ants, beetles`,
+  
+  "crop prices": `**Current Market Information:**
+
+📊 Check our Market section for real-time prices from Kerala mandis
+🌾 **Rice:** ₹2,800-3,200 per quintal (varies by variety)
+🥥 **Coconut:** ₹10-15 per piece (depending on size)
+🌶️ **Pepper:** ₹550-650 per kg (seasonal variation)
+📈 **Tip:** Track price trends before harvesting`,
+  
+  "soil testing": `**Soil Health Assessment:**
+
+🧪 **Testing:** Test soil every 2-3 years for pH, nutrients
+📊 **Parameters:** Check N, P, K levels and micronutrients
+🌱 **pH Management:** Most crops prefer 6.0-7.5 pH range
+🌿 **Amendments:** Add lime for acidic soil, sulfur for alkaline
+📄 **Report:** Get detailed recommendations from soil lab`,
+  
+  "drip irrigation": `**Drip Irrigation Benefits:**
+
+💧 **Water Saving:** 30-50% less water usage
+🌱 **Better Growth:** Direct root zone watering
+🐛 **Disease Reduction:** Less leaf wetness, fewer fungal issues
+💰 **Cost Effective:** Long-term savings on water and labor
+🛠️ **Maintenance:** Regular cleaning and filter replacement`
+};
+
+// Function to completely remove asterisks and ensure clean formatting
+const cleanAIResponse = (text) => {
+  if (!text) return text;
+  
+  let cleaned = text;
+  
+  // Step 1: Remove ALL asterisks and replace with appropriate formatting
+  // Replace **text** with simple text (since we told Gemini not to use them)
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  
+  // Replace any remaining asterisks with bullet points if they appear to be bullets
+  cleaned = cleaned.replace(/^\s*\*\s+/gm, '• ');
+  cleaned = cleaned.replace(/\n\s*\*\s+/g, '\n• ');
+  
+  // Remove any remaining isolated asterisks
+  cleaned = cleaned.replace(/\*/g, '');
+  
+  // Step 2: Clean up formatting
+  cleaned = cleaned.replace(/•([^ ])/g, '• $1'); // Ensure space after bullets
+  cleaned = cleaned.replace(/•+/g, '•'); // Remove duplicate bullets
+  
+  // Step 3: Ensure proper line breaks before bullet points
+  cleaned = cleaned.replace(/([^\n])•/g, '$1\n•');
+  
+  return cleaned.trim();
+};
+
+// Enhanced fallback response system with language support and shorter responses
+const generateFallbackResponse = (message, language = 'en') => {
+  const lowerMessage = message.toLowerCase();
+  
+  // Short responses based on language
+  const responses = {
+    en: {
+      greeting: `Hi! I'm Ammachi AI 🌾\n• Crop help\n• Disease tips\n• Market prices\nWhat do you need?`,
+      rice: `🌾 Rice:\n• Quality seeds\n• Keep water level\n• Watch pests`,
+      coconut: `🥥 Coconut:\n• 7m spacing\n• Water twice/week\n• Organic manure`,
+      pepper: `🌶️ Pepper:\n• Needs support\n• Good drainage\n• Harvest when red`,
+      disease: `🐛 Disease:\n• Use leaf scanner\n• Apply neem oil\n• Remove infected parts`,
+      market: `📊 Prices:\n• Rice: ₹2,800/quintal\n• Coconut: ₹12/piece\n• Pepper: ₹600/kg`,
+      general: `🌾 How can I help?\n• Crops\n• Diseases\n• Prices`
+    },
+    ml: {
+      greeting: `ഹായ്! ഞാൻ അമ്മച്ചി AI 🌾\n• കൃഷി സഹായം\n• രോഗ ടിപ്സ്\n• വില\nഎന്തു വേണം?`,
+      rice: `🌾 നെല്ല്:\n• നല്ല വിത്ത്\n• വെള്ളം maintain\n• കീടങ്ങൾ നോക്കുക`,
+      coconut: `🥥 തെങ്ങിന് പരിചരണം:\n• 7-8 മീറ്റർ അന്തരം\n• ആഴ്ചയിൽ രണ്ടു തവണ വെള്ളം\n• ഌര്ഗാനിക് മാൻയൂർ ഇടുക\n• കണ്ണന് കീടങ്ങളെ തടയുക`,
+      pepper: `🌶️ കുരുമുളക്:\n• സപ്പോർട്ട് വേണം\n• drainage നല്ലത്\n• ചുവന്നപ്പോൾ വെട്ടുക`,
+      disease: `🐛 രോഗം:\n• leaf scanner use ചെയ്യുക\n• വേപ്പെണ്ണ ഇടുക\n• രോഗം ഉള്ള ഭാഗം മാറ്റുക`,
+      market: `📊 വില:\n• നെല്ല്: ₹2,800/quintal\n• തെങ്ങ്: ₹12/piece\n• കുരുമുളക്: ₹600/kg`,
+      general: `🌾 എങ്ങനെ സഹായിക്കാം?\n• വിളകൾ\n• രോഗങ്ങൾ\n• വില`
+    }
+  };
+  
+  const lang = responses[language] || responses.en;
+  
+  // Check for keywords and return appropriate short response
+  if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('namaste') || lowerMessage.includes('നമസ്കാരം')) {
+    return lang.greeting;
+  }
+  
+  if (lowerMessage.includes('rice') || lowerMessage.includes('നെല്ല്')) {
+    return lang.rice;
+  }
+  
+  if (lowerMessage.includes('coconut') || lowerMessage.includes('തെങ്ങിന്')) {
+    return lang.coconut;
+  }
+  
+  if (lowerMessage.includes('pepper') || lowerMessage.includes('കുർവർ')) {
+    return lang.pepper;
+  }
+  
+  if (lowerMessage.includes('disease') || lowerMessage.includes('രോഗം')) {
+    return lang.disease;
+  }
+  
+  if (lowerMessage.includes('price') || lowerMessage.includes('market') || lowerMessage.includes('വില')) {
+    return lang.market;
+  }
+  
+  return lang.general;
 };
 
 // Generate session path
@@ -50,10 +216,10 @@ const getSessionPath = (sessionId) => {
   return sessionClient.projectAgentSessionPath(projectId, sessionId);
 };
 
-// Main chat function
+// Main chat function with Gemini AI integration and language support
 const chatWithBot = async (req, res) => {
   try {
-    const { message, sessionId = 'default-session' } = req.body;
+    const { message, sessionId = 'default-session', language = 'en' } = req.body;
     
     if (!message || !message.trim()) {
       return res.status(400).json({
@@ -63,50 +229,72 @@ const chatWithBot = async (req, res) => {
     }
 
     let reply;
+    let source = 'fallback';
+    const userMessage = {
+      text: message.trim(),
+      language: language
+    };
 
-    // Try Dialogflow first if available
-    if (sessionClient && projectId) {
+    // Try Gemini AI first if available
+    if (model && genAI) {
       try {
-        const sessionPath = getSessionPath(sessionId);
+        console.log(`🤖 Using Gemini AI for response generation (${language})...`);
         
-        const request = {
-          session: sessionPath,
-          queryInput: {
-            text: {
-              text: message.trim(),
-              languageCode: 'en', // You can also support 'ml' for Malayalam
-            },
-          },
-        };
+        // Create a farming-focused prompt for Gemini with language support and VERY SHORT responses
+        const farmingPrompt = `You are Ammachi AI, an expert farming assistant for Kerala farmers.
 
-        const [response] = await sessionClient.detectIntent(request);
-        const result = response.queryResult;
+CRITICAL RULES:
+• Keep responses EXTREMELY SHORT (maximum 2-3 bullet points)
+• NO asterisks (*) - use bullet points (•) only  
+• Maximum 3 lines total
+• Language: ${userMessage.language === 'ml' ? 'Respond ONLY in Malayalam' : 'Respond in English'}
+• For Malayalam: Use Malayalam script only
+
+Format Example:
+🌱 Rice:
+• Good seeds
+• Water level maintain
+
+Topics: Crop cultivation, pest control, weather advice, market prices
+
+User Question: ${userMessage.text}
+
+Give VERY SHORT answer in ${userMessage.language === 'ml' ? 'Malayalam' : 'English'}.`;
+
+
+        const result = await model.generateContent(farmingPrompt);
+        const response = await result.response;
+        const geminiReply = response.text();
         
-        if (result.fulfillmentText && result.fulfillmentText.trim()) {
-          reply = result.fulfillmentText;
+        if (geminiReply && geminiReply.trim()) {
+          reply = cleanAIResponse(geminiReply.trim());
+          source = 'gemini';
+          console.log('✅ Gemini AI response generated successfully');
         } else {
-          // If Dialogflow returns empty response, use keyword matching
-          reply = generateKeywordResponse(message);
+          console.log('⚠️ Gemini returned empty response, using fallback');
+          reply = generateFallbackResponse(userMessage.text, userMessage.language);
         }
         
-        console.log('✅ Dialogflow response generated');
-      } catch (dialogflowError) {
-        console.warn('Dialogflow request failed:', dialogflowError.message);
-        reply = generateKeywordResponse(message);
+      } catch (geminiError) {
+        console.warn('Gemini AI request failed:', geminiError.message);
+        reply = generateFallbackResponse(userMessage.text, userMessage.language);
       }
     } else {
-      // Use fallback keyword matching
-      reply = generateKeywordResponse(message);
+      // Fallback to predefined responses if Gemini is not available
+      console.log('📚 Using predefined knowledge base responses...');
+      reply = generateFallbackResponse(userMessage.text, userMessage.language);
     }
 
     // Log the conversation for debugging
-    console.log(`Chat - User: ${message.substring(0, 50)}... | Bot: ${reply.substring(0, 50)}...`);
+    console.log(`Chat - User: ${userMessage.text.substring(0, 50)}... | Bot: ${reply.substring(0, 50)}...`);
 
     res.json({
       success: true,
       reply: reply,
       sessionId: sessionId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      source: source,
+      language: userMessage.language
     });
 
   } catch (error) {
@@ -118,43 +306,19 @@ const chatWithBot = async (req, res) => {
   }
 };
 
-// Generate response based on keywords when Dialogflow is not available
-const generateKeywordResponse = (message) => {
-  const lowerMessage = message.toLowerCase();
-  
-  // Check for keywords
-  for (const [keyword, response] of Object.entries(keywordResponses)) {
-    if (lowerMessage.includes(keyword)) {
-      return response;
-    }
-  }
-  
-  // Check for common greetings
-  if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('namaste') || lowerMessage.includes('നമസ്കാരം')) {
-    return "Hello! I'm Ammachi AI, your farming assistant. I can help you with questions about crops, weather, diseases, and agricultural practices. How can I assist you today?\n\nസ്വാഗതം! എനിക്ക് കൃഷിയെ കുറിച്ച് സഹായിക്കാൻ കഴിയും।";
-  }
-  
-  // Check for Malayalam keywords
-  if (lowerMessage.includes('കൃഷി') || lowerMessage.includes('വിളകൾ')) {
-    return "കൃഷിയെ കുറിച്ചുള്ള ചോദ്യങ്ങൾക്ക് ഞാൻ സഹായിക്കാം। വിളകൾ, കീടനാശിനികൾ, കാലാവസ്ഥ എന്നിവയെ കുറിച്ച് ചോദിക്കാം।";
-  }
-  
-  // Return random fallback response
-  const randomIndex = Math.floor(Math.random() * fallbackResponses.length);
-  return fallbackResponses[randomIndex];
-};
-
-// Health check for Dialogflow connection
+// Enhanced health check for both Dialogflow and Gemini AI
 const checkDialogflowHealth = async (req, res) => {
   try {
     const health = {
       dialogflowAvailable: Boolean(sessionClient && projectId),
+      geminiAvailable: Boolean(model && genAI),
       projectId: projectId || 'Not configured',
+      geminiModel: process.env.MODEL || 'gemini-1.5-flash',
       timestamp: new Date().toISOString()
     };
     
+    // Test Dialogflow if available
     if (health.dialogflowAvailable) {
-      // Test a simple query
       try {
         const sessionPath = getSessionPath('health-check');
         const request = {
@@ -168,10 +332,27 @@ const checkDialogflowHealth = async (req, res) => {
         };
         
         await sessionClient.detectIntent(request);
-        health.connectionTest = 'Success';
+        health.dialogflowTest = 'Success';
       } catch (error) {
-        health.connectionTest = `Failed: ${error.message}`;
+        health.dialogflowTest = `Failed: ${error.message}`;
         health.dialogflowAvailable = false;
+      }
+    }
+    
+    // Test Gemini AI if available
+    if (health.geminiAvailable) {
+      try {
+        const testResult = await model.generateContent('Hello, this is a test.');
+        const response = await testResult.response;
+        if (response.text()) {
+          health.geminiTest = 'Success';
+        } else {
+          health.geminiTest = 'Failed: Empty response';
+          health.geminiAvailable = false;
+        }
+      } catch (error) {
+        health.geminiTest = `Failed: ${error.message}`;
+        health.geminiAvailable = false;
       }
     }
     
