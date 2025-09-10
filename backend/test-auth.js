@@ -49,8 +49,12 @@ async function testAuthentication() {
 
     // Test 4: Verify token
     console.log('4️⃣ Testing token verification...');
-    const verifyResponse = await axios.post(`${BASE_URL}/verify-token`, {
-      idToken: loginResponse.data.token
+    // Use the idToken if available, otherwise use the token
+    const tokenToVerify = loginResponse.data.idToken || loginResponse.data.token;
+    const verifyResponse = await axios.get(`${BASE_URL}/verify-token`, {
+      headers: {
+        Authorization: `Bearer ${tokenToVerify}`
+      }
     });
     console.log('✅ Token verification successful');
     console.log('Verified user:', verifyResponse.data.user);
