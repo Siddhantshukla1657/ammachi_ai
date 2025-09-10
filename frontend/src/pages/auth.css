@@ -28,7 +28,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 20px; /* space between back button and card */
+    gap: 1px; 
   }
   
   .auth-card{
@@ -259,4 +259,32 @@
 }
 @media (max-width: 640px){
   .farm-row{ grid-template-columns: 1fr; }
+}
+/* Input fields stay full width */
+.auth-form input {
+  width: 100%;
+}
+
+/* Login button: medium width */
+.btn-submit {
+  width: 70%;   /* adjust this percentage until it feels right */
+  max-width: 300px;  /* prevents it from stretching too much */
+  margin: 0 auto;    /* centers it under the inputs */
+}
+
+/* Continue with Google button: smaller */
+.btn-google {
+  width: 55%;   /* smaller than Login */
+  max-width: 240px;
+  margin: 10px auto;
+}
+.btn-submit {
+  display: flex;
+  justify-content: center;  /* centers text horizontally */
+  align-items: center;      /* keeps it vertically centered */
+}
+.field-row.double {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two equal columns */
+  gap: 16px; /* spacing between state & district */
 }
