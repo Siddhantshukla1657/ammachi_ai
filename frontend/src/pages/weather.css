@@ -89,7 +89,7 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-.page-scroll { overflow-y: auto; height: 100vh; padding-left: 220px; box-sizing: border-box; }
+.page-scroll { overflow-y: auto; height: 100vh; padding-left: 20px; box-sizing: border-box; }
 @media (max-width: 1200px) {
   .weather-container { padding: 16px; }
   .current-weather, .advisories { min-width: 220px; }
@@ -103,8 +103,14 @@
   .day-row { overflow-x: auto; gap: 8px; }
   .day-card { min-width: 90px; }
 }
+@media (max-width: 768px) {
+  .weather-layout { flex-direction: column; gap: 10px; }
+  .weather-top { flex-direction: column; }
+  .advisories { width: 100%; }
+}
+
 @media (max-width: 600px) {
-  .weather-container { padding: 2px; }
+  .weather-container { padding: 10px; }
   .weather-title { font-size: 1.2rem; }
   .cw-icon { font-size: 1.8rem; }
   .cw-temp { font-size: 1.3rem; }
