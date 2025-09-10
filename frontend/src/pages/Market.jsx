@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './market.css';
 import Sidebar from '../components/Sidebar.jsx';
+import TranslatedText from '../components/TranslatedText';
+import { useLanguage } from '../context/LanguageContext';
 
 // Kerala districts for market selection
 const KERALA_DISTRICTS = [
@@ -13,6 +15,7 @@ const KERALA_DISTRICTS = [
 const POPULAR_CROPS = ['Rice', 'Coconut', 'Pepper', 'Cardamom', 'Rubber', 'Ginger'];
 
 export default function Market() {
+  const { language } = useLanguage();
   const [selectedDistrict, setSelectedDistrict] = useState('Ernakulam');
   const [selectedCrop, setSelectedCrop] = useState('Rice');
   const [marketData, setMarketData] = useState([]);
@@ -238,13 +241,13 @@ export default function Market() {
       <main className="market-main page-scroll">
         <div className="market-container">
           <header className="market-header">
-            <h1 className="market-title">Market Prices</h1>
-            <p className="market-sub">Live crop prices and market trends for better selling decisions</p>
+            <h1 className="market-title"><TranslatedText text="Market Prices" /></h1>
+            <p className="market-sub"><TranslatedText text="Live crop prices and market trends for better selling decisions" /></p>
           </header>
 
           <div className="market-controls">
             <div className="control-card">
-              <label className="control-label">Select District</label>
+              <label className="control-label"><TranslatedText text="Select District" /></label>
               <select 
                 className="control-select" 
                 value={selectedDistrict} 
@@ -259,7 +262,7 @@ export default function Market() {
             </div>
 
             <div className="control-card">
-              <label className="control-label">Select Market</label>
+              <label className="control-label"><TranslatedText text="Select Market" /></label>
               <select 
                 className="control-select" 
                 value={selectedMarket} 
@@ -271,12 +274,12 @@ export default function Market() {
                 ))}
               </select>
               <div className="control-note">
-                {availableMarkets.length === 0 ? 'No markets found' : `${availableMarkets.length} markets available`}
+                {availableMarkets.length === 0 ? <TranslatedText text="No markets found" /> : `${availableMarkets.length} `}<TranslatedText text="markets available" />
               </div>
             </div>
 
             <div className="control-card">
-              <label className="control-label">Select Crop</label>
+              <label className="control-label"><TranslatedText text="Select Crop" /></label>
               <select 
                 className="control-select" 
                 value={selectedCrop} 
@@ -291,10 +294,10 @@ export default function Market() {
             </div>
 
             <div className="control-card status-card">
-              <label className="control-label">Last Updated</label>
+              <label className="control-label"><TranslatedText text="Last Updated" /></label>
               <div className="updated-time">{lastUpdated.toLocaleString()}</div>
               <button className="refresh-btn" onClick={handleRefresh} disabled={loading}>
-                {loading ? '⟳' : '⟳'}
+                <TranslatedText text="Refresh" />
               </button>
             </div>
           </div>
@@ -303,14 +306,14 @@ export default function Market() {
             <div className="market-error">
               <div className="error-icon">⚠️</div>
               <div className="error-message">{error}</div>
-              <button className="retry-btn" onClick={handleRefresh}>Retry</button>
+              <button className="retry-btn" onClick={handleRefresh}><TranslatedText text="Retry" /></button>
             </div>
           )}
 
           {loading && (
             <div className="market-loading">
               <div className="loading-spinner"></div>
-              <div className="loading-text">Loading market data...</div>
+              <div className="loading-text"><TranslatedText text="Loading market data..." /></div>
             </div>
           )}
 
@@ -321,30 +324,30 @@ export default function Market() {
           {marketData.length > 0 && (
             <section className="price-details-grid">
               <div className="price-detail-card">
-                <div className="price-detail-title">Minimum Price</div>
+                <div className="price-detail-title"><TranslatedText text="Minimum Price" /></div>
                 <div className="price-detail-amount">
                   ₹{marketData[0]?.min_price || 'N/A'}
                   <span className="price-unit">{selectedCrop === 'Rice' ? '/quintal' : '/kg'}</span>
                 </div>
-                <div className="price-detail-desc">Lowest recorded price for {selectedCrop} in {selectedMarket}</div>
+                <div className="price-detail-desc"><TranslatedText text="Lowest recorded price for" /> {selectedCrop} <TranslatedText text="in" /> {selectedMarket}</div>
               </div>
               
               <div className="price-detail-card">
-                <div className="price-detail-title">Modal Price</div>
+                <div className="price-detail-title"><TranslatedText text="Modal Price" /></div>
                 <div className="price-detail-amount">
                   ₹{marketData[0]?.modal_price || 'N/A'}
                   <span className="price-unit">{selectedCrop === 'Rice' ? '/quintal' : '/kg'}</span>
                 </div>
-                <div className="price-detail-desc">Most common price for {selectedCrop} in {selectedMarket}</div>
+                <div className="price-detail-desc"><TranslatedText text="Most common price for" /> {selectedCrop} <TranslatedText text="in" /> {selectedMarket}</div>
               </div>
               
               <div className="price-detail-card">
-                <div className="price-detail-title">Maximum Price</div>
+                <div className="price-detail-title"><TranslatedText text="Maximum Price" /></div>
                 <div className="price-detail-amount">
                   ₹{marketData[0]?.max_price || 'N/A'}
                   <span className="price-unit">{selectedCrop === 'Rice' ? '/quintal' : '/kg'}</span>
                 </div>
-                <div className="price-detail-desc">Highest recorded price for {selectedCrop} in {selectedMarket}</div>
+                <div className="price-detail-desc"><TranslatedText text="Highest recorded price for" /> {selectedCrop} <TranslatedText text="in" /> {selectedMarket}</div>
               </div>
             </section>
           )}
@@ -358,10 +361,10 @@ export default function Market() {
                 </div>
                 <div className="price-amount">{p.price}<span className="price-unit">{p.unit}</span></div>
                 <div className="price-meta">
-                  <div><span className="meta-label">Quality:</span> {p.quality}</div>
-                  <div><span className="meta-label">Updated:</span> {p.updated}</div>
+                  <div><span className="meta-label"><TranslatedText text="Quality" />:</span> {p.quality}</div>
+                  <div><span className="meta-label"><TranslatedText text="Updated" />:</span> {p.updated}</div>
                   {p.market && (
-                    <div><span className="meta-label">Market:</span> {p.market}</div>
+                    <div><span className="meta-label"><TranslatedText text="Market" />:</span> {p.market}</div>
                   )}
                 </div>
               </article>
@@ -370,18 +373,18 @@ export default function Market() {
 
           <section className="market-lower">
             <div className="market-trends card">
-              <h3 className="card-title">Market Summary</h3>
+              <h3 className="card-title"><TranslatedText text="Market Summary" /></h3>
               <div className="summary-stats">
                 <div className="summary-item">
-                  <span className="summary-label">Selected Market:</span>
+                  <span className="summary-label"><TranslatedText text="Selected Market" />:</span>
                   <span className="summary-value">{selectedMarket || 'None'}</span>
                 </div>
                 <div className="summary-item">
-                  <span className="summary-label">Data Points:</span>
+                  <span className="summary-label"><TranslatedText text="Data Points" />:</span>
                   <span className="summary-value">{marketData.length}</span>
                 </div>
                 <div className="summary-item">
-                  <span className="summary-label">Average Price:</span>
+                  <span className="summary-label"><TranslatedText text="Average Price" />:</span>
                   <span className="summary-value">
                     {marketData.length > 0 
                       ? `₹${Math.round(marketData.reduce((sum, item) => sum + (item.modal_price || item.max_price || 0), 0) / marketData.length)}`

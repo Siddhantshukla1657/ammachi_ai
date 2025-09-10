@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import './dashboard.css';
 import Sidebar from '../components/Sidebar.jsx';
 import { FaCheckCircle, FaExclamationTriangle, FaLeaf, FaCloud, FaTint, FaWind, FaLightbulb, FaSync } from 'react-icons/fa';
+import TranslatedText from '../components/TranslatedText';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Dashboard() {
+  const { language } = useLanguage();
   const profile = (() => {
     try { return JSON.parse(localStorage.getItem('ammachi_profile') || '{}'); } catch { return {}; }
   })();
@@ -367,13 +370,15 @@ export default function Dashboard() {
               </h2>
               <p className="dash-text">
                 {cropHealthData.length > 0 ? 
-                  `${cropHealthData.filter(scan => scan.status === 'Healthy' || !scan.status).length} of ${cropHealthData.length} recent scans show healthy crops` :
-                  'Your crops are looking healthy today'
+                  <>
+                    {cropHealthData.filter(scan => scan.status === 'Healthy' || !scan.status).length} <TranslatedText text="of" /> {cropHealthData.length} <TranslatedText text="recent scans show healthy crops" />
+                  </> :
+                  <TranslatedText text="Your crops are looking healthy today" />
                 }
               </p>
               {lastUpdated && (
                 <p style={{ fontSize: '0.9rem', color: '#666', margin: '8px 0' }}>
-                  Last updated: {lastUpdated.toLocaleTimeString()}
+                  <TranslatedText text="Last updated" />: {lastUpdated.toLocaleTimeString()}
                   <button 
                     onClick={handleRefresh}
                     style={{
@@ -386,16 +391,16 @@ export default function Dashboard() {
                     }}
                     disabled={isLoading}
                   >
-                    <FaSync className={isLoading ? 'fa-spin' : ''} /> Refresh
+                    <FaSync className={isLoading ? 'fa-spin' : ''} /> <TranslatedText text="Refresh" />
                   </button>
                 </p>
               )}
               <div className="hero-actions">
                 <button className="btn-cta" onClick={() => window.location.hash = '#/detect'}>
-                  <FaLeaf style={{marginRight: 6}} /> Scan Leaf
+                  <FaLeaf style={{marginRight: 6}} /> <TranslatedText text="Scan Leaf" />
                 </button>
                 <button className="btn-cta outline" onClick={() => window.location.hash = '#/chat'}>
-                  💬 Ask AI
+                  💬 <TranslatedText text="Ask AI" />
                 </button>
               </div>
             </div>
@@ -408,7 +413,7 @@ export default function Dashboard() {
           <div className="card crop-health" style={{flex: 1, minWidth: 0}}>
             <div style={{display: 'flex', alignItems: 'center', marginBottom: 10}}>
               <FaLeaf style={{marginRight: 8, color: '#059669'}} />
-              <strong style={{fontSize: '1.15rem'}}>Crop Health</strong>
+              <strong style={{fontSize: '1.15rem'}}><TranslatedText text="Crop Health" /></strong>
             </div>
             {recentScans.map((scan, idx) => (
               <div key={idx} style={{display: 'flex', alignItems: 'center', marginBottom: 12}}>
@@ -425,7 +430,7 @@ export default function Dashboard() {
           <div className="card todays-tips" style={{flex: 1, minWidth: 0}}>
             <div style={{display: 'flex', alignItems: 'center', marginBottom: 10}}>
               <FaLightbulb style={{marginRight: 8, color: '#fbbf24'}} />
-              <strong style={{fontSize: '1.15rem'}}>Today's Tips</strong>
+              <strong style={{fontSize: '1.15rem'}}><TranslatedText text="Today's Tips" /></strong>
             </div>
             {tips.map((tip, idx) => (
               <div key={idx} style={{
@@ -446,7 +451,7 @@ export default function Dashboard() {
             <div style={{display: 'flex', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between'}}>
               <div style={{display: 'flex', alignItems: 'center'}}>
                 <FaCloud style={{marginRight: 8, color: '#3b7c5a'}} />
-                <strong style={{fontSize: '1.15rem'}}>Today's Weather</strong>
+                <strong style={{fontSize: '1.15rem'}}><TranslatedText text="Today's Weather" /></strong>
               </div>
               <button 
                 onClick={() => window.location.hash = '#/weather'}
@@ -461,7 +466,7 @@ export default function Dashboard() {
                   alignItems: 'center'
                 }}
               >
-                View Details
+                <TranslatedText text="View Details" />
               </button>
             </div>
             <div style={{display: 'flex', alignItems: 'center', marginBottom: 4}}>
@@ -473,12 +478,12 @@ export default function Dashboard() {
             <div style={{display: 'flex', gap: 18}}>
               <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
                 <FaTint style={{color: '#3b82f6'}} />
-                <span style={{fontSize: 14, color: '#64748b'}}>Humidity</span>
+                <span style={{fontSize: 14, color: '#64748b'}}><TranslatedText text="Humidity" /></span>
                 <span style={{fontWeight: 700, marginLeft: 4}}>{weather.humidity}%</span>
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
                 <FaWind style={{color: '#64748b'}} />
-                <span style={{fontSize: 14, color: '#64748b'}}>Wind</span>
+                <span style={{fontSize: 14, color: '#64748b'}}><TranslatedText text="Wind" /></span>
                 <span style={{fontWeight: 700, marginLeft: 4}}>{weather.wind} km/h</span>
               </div>
             </div>
@@ -488,7 +493,7 @@ export default function Dashboard() {
         {/* Market Prices Section */}
         <div className="market-prices card" style={{marginTop: 24}}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3>Market Prices</h3>
+            <h3><TranslatedText text="Market Prices" /></h3>
             <button 
               onClick={() => window.location.hash = '#/market'}
               style={{
