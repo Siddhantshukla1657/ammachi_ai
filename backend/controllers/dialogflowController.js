@@ -2,7 +2,6 @@ const dialogflow = require('@google-cloud/dialogflow');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const path = require('path');
 
-// Initialize Gemini AI
 let genAI;
 let model;
 
@@ -19,15 +18,11 @@ try {
   console.warn('⚠️ Gemini AI initialization failed:', error.message);
 }
 
-// Initialize Dialogflow client
 let sessionClient;
 let projectId;
 
 try {
-  // Use service account key from credentials folder
   const keyFilename = path.join(__dirname, '../credentials/ammachi-ai-KEY.json');
-  
-  // Read the service account key to get project ID
   const serviceAccount = require(keyFilename);
   projectId = serviceAccount.project_id;
   
@@ -127,28 +122,16 @@ const farmingKnowledgeBase = {
 🛠️ **Maintenance:** Regular cleaning and filter replacement`
 };
 
-// Function to completely remove asterisks and ensure clean formatting
 const cleanAIResponse = (text) => {
   if (!text) return text;
   
   let cleaned = text;
-  
-  // Step 1: Remove ALL asterisks and replace with appropriate formatting
-  // Replace **text** with simple text (since we told Gemini not to use them)
   cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
-  
-  // Replace any remaining asterisks with bullet points if they appear to be bullets
   cleaned = cleaned.replace(/^\s*\*\s+/gm, '• ');
   cleaned = cleaned.replace(/\n\s*\*\s+/g, '\n• ');
-  
-  // Remove any remaining isolated asterisks
   cleaned = cleaned.replace(/\*/g, '');
-  
-  // Step 2: Clean up formatting
-  cleaned = cleaned.replace(/•([^ ])/g, '• $1'); // Ensure space after bullets
-  cleaned = cleaned.replace(/•+/g, '•'); // Remove duplicate bullets
-  
-  // Step 3: Ensure proper line breaks before bullet points
+  cleaned = cleaned.replace(/•([^ ])/g, '• $1');
+  cleaned = cleaned.replace(/•+/g, '•');
   cleaned = cleaned.replace(/([^\n])•/g, '$1\n•');
   
   return cleaned.trim();
