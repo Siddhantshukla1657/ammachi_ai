@@ -1,25 +1,40 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const CropDiary = require('../models/CropDiary');
 
 exports.detectDisease = async (req, res) => {
+  console.log('🔍 Disease detection request received');
+  console.log('📁 File info:', req.file ? {
+    originalname: req.file.originalname,
+    mimetype: req.file.mimetype,
+    size: req.file.size,
+    path: req.file.path
+  } : 'No file');
+  
   try {
     if (!req.file) {
+      console.log('❌ No file provided in request');
       return res.status(400).json({ error: 'Image file is required' });
     }
 
     // Validate Plant.id API key
     if (!process.env.PLANT_ID_KEY) {
+      console.log('❌ Plant.id API key not configured');
       return res.status(500).json({ error: 'Plant.id API key not configured' });
     }
+    
+    console.log('🔑 Plant.id API key found:', process.env.PLANT_ID_KEY.substring(0, 10) + '...');
 
+    console.log('📦 Reading image file:', req.file.path);
     const imageBuffer = fs.readFileSync(req.file.path);
     const imageBase64 = imageBuffer.toString('base64');
+    console.log('🖼️ Image converted to base64, size:', imageBase64.length, 'chars');
 
-    // Plant.id API request for disease detection
+    // Plant.id API request for plant identification and disease detection
     const requestBody = {
       images: [imageBase64],
-      modifiers: ['crops_fast', 'similar_images', 'health_only'],
+      modifiers: ['health=all', 'similar_images=true'],
       plant_language: 'en',
       plant_net: 'all',
       plant_details: [
@@ -31,21 +46,15 @@ exports.detectDisease = async (req, res) => {
         'gbif_id',
         'observations',
         'synonyms'
-      ],
-      health_details: [
-        'description',
-        'treatment',
-        'classification',
-        'cause',
-        'common_names',
-        'url'
       ]
     };
 
-    console.log('Sending request to Plant.id API...');
+    console.log('📡 Sending request to Plant.id API...');
+    console.log('📝 Request body keys:', Object.keys(requestBody));
+    console.log('🖼️ Images array length:', requestBody.images.length);
     
     const response = await axios.post(
-      'https://api.plant.id/v3/health_assessment',
+      'https://api.plant.id/v3/identification',
       requestBody,
       {
         headers: {
@@ -56,7 +65,8 @@ exports.detectDisease = async (req, res) => {
       }
     );
 
-    console.log('Plant.id API response received');
+    console.log('✅ Plant.id API response received, status:', response.status);
+    console.log('📊 Response data keys:', Object.keys(response.data || {}));
 
     // Clean up uploaded file
     try {
@@ -68,14 +78,14 @@ exports.detectDisease = async (req, res) => {
     // Process the response
     const result = response.data;
     
-    // Check if the response contains health assessment
+    // Check if the response contains identification results
     if (result && result.result) {
-      const healthAssessment = result.result;
+      const identification = result.result;
       
-      // Check if any diseases are detected
-      if (healthAssessment.disease && healthAssessment.disease.suggestions && healthAssessment.disease.suggestions.length > 0) {
+      // Check if any diseases are detected in health assessment
+      if (identification.disease && identification.disease.suggestions && identification.disease.suggestions.length > 0) {
         // Disease detected
-        const diseases = healthAssessment.disease.suggestions.map(disease => ({
+        const diseases = identification.disease.suggestions.map(disease => ({
           name: disease.name,
           probability: disease.probability,
           description: disease.details?.description || 'No description available',
@@ -91,19 +101,42 @@ exports.detectDisease = async (req, res) => {
             disease: {
               suggestions: diseases
             },
-            is_plant: healthAssessment.is_plant,
+            is_plant: identification.is_plant,
             is_healthy: false
           }
         });
-      } else {
-        // No diseases detected - healthy plant
+        
+        // Auto-save to crop diary if user info is available
+        // Note: In a real implementation, you would get user ID from authentication
+        // For now, we'll skip auto-save to avoid errors
+        // saveToCropDiary(req, diseases[0]);
+      } else if (identification.classification && identification.classification.suggestions && identification.classification.suggestions.length > 0) {
+        // No diseases detected but plant identified - healthy plant
+        const plantInfo = identification.classification.suggestions[0];
         res.json({
           success: true,
           is_healthy: true,
           result: {
-            is_plant: healthAssessment.is_plant,
+            is_plant: identification.is_plant,
             is_healthy: true,
-            classification: healthAssessment.classification || null
+            classification: {
+              suggestions: [{
+                name: plantInfo.name,
+                probability: plantInfo.probability,
+                details: plantInfo.details || {}
+              }]
+            }
+          }
+        });
+      } else {
+        // No clear identification or health assessment
+        res.json({
+          success: true,
+          is_healthy: true,
+          result: {
+            is_plant: identification.is_plant,
+            is_healthy: true,
+            classification: null
           }
         });
       }
@@ -124,10 +157,26 @@ exports.detectDisease = async (req, res) => {
       }
     }
 
-    console.error('Plant.id API error:', error.message);
+    console.error('❌ Plant.id API error details:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      } : 'No response data',
+      code: error.code
+    });
     
     if (error.response) {
       console.error('API Response:', error.response.status, error.response.data);
+      
+      if (error.response.status === 400) {
+        return res.status(400).json({ 
+          error: 'Invalid image for plant analysis',
+          details: 'The uploaded image cannot be analyzed. Please ensure you upload a clear, high-quality photo of a plant or crop leaf.'
+        });
+      }
       
       if (error.response.status === 402) {
         return res.status(402).json({ 
