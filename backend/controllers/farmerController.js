@@ -31,6 +31,7 @@ class FarmerController {
       
       // Create Firebase Auth account if Firebase is enabled and email is provided
       let firebaseUid = null;
+      let idToken = null;
       if (isFirebaseEnabled && payload.email) {
         try {
           // Check if user already exists in Firebase
@@ -48,6 +49,29 @@ class FarmerController {
               });
               firebaseUid = firebaseUser.uid;
               console.log(`✅ Created Firebase Auth user with UID: ${firebaseUid}`);
+              
+              // Get an ID token for the new user
+              try {
+                const axios = require('axios');
+                const apiKey = process.env.FIREBASE_API_KEY || process.env.FIREBASE_WEB_API_KEY;
+                
+                if (apiKey) {
+                  const response = await axios.post(
+                    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+                    {
+                      email: payload.email,
+                      password: payload.password,
+                      returnSecureToken: true
+                    }
+                  );
+                  
+                  idToken = response.data.idToken;
+                  console.log('✅ Retrieved Firebase ID token for new user');
+                }
+              } catch (tokenError) {
+                console.error('Error getting ID token for new user:', tokenError.message);
+                // Continue without ID token
+              }
             } else {
               throw error;
             }
@@ -110,40 +134,86 @@ class FarmerController {
 
       const { identifier, password } = req.body;
 
+      // First check if the farmer exists in our database
       const farmer = await Farmer.findOne({ $or: [{ email: identifier }, { phone: identifier }, { farmerId: identifier }] });
       if (!farmer) return res.status(401).json({ error: 'Invalid credentials' });
 
-      let firebaseAuthSuccess = false;
-      
-      // Try Firebase Auth if enabled and user has a Firebase UID or email
-      if (isFirebaseEnabled && (farmer.firebaseUid || farmer.email)) {
+      // If Firebase is enabled and we have an email, verify with Firebase Auth
+      if (isFirebaseEnabled && farmer.email) {
         try {
-          // If we have an email but no Firebase UID, try to get the UID
-          if (!farmer.firebaseUid && farmer.email) {
+          // Check if the user exists in Firebase
+          let firebaseUid = farmer.firebaseUid;
+          
+          // If we don't have a Firebase UID but have an email, try to get the UID
+          if (!firebaseUid) {
             try {
               const firebaseUser = await auth.getUserByEmail(farmer.email);
-              farmer.firebaseUid = firebaseUser.uid;
-              await farmer.save(); // Update the farmer record with the Firebase UID
+              firebaseUid = firebaseUser.uid;
+              
+              // Update the farmer record with the Firebase UID
+              farmer.firebaseUid = firebaseUid;
+              await farmer.save();
+              console.log(`✅ Updated farmer with Firebase UID: ${firebaseUid}`);
             } catch (error) {
-              if (error.code !== 'auth/user-not-found') {
+              if (error.code === 'auth/user-not-found') {
+                // Create a new Firebase user if not found
+                try {
+                  const firebaseUser = await auth.createUser({
+                    email: farmer.email,
+                    password: password, // Use the provided password
+                    displayName: farmer.name
+                  });
+                  
+                  firebaseUid = firebaseUser.uid;
+                  farmer.firebaseUid = firebaseUid;
+                  await farmer.save();
+                  console.log(`✅ Created Firebase user for existing farmer: ${firebaseUid}`);
+                } catch (createError) {
+                  console.error('Error creating Firebase user:', createError);
+                  // Fall back to local verification
+                }
+              } else {
                 console.error('Error getting Firebase user by email:', error);
+                // Fall back to local verification
               }
-              // If user not found in Firebase, we'll fall back to local auth
             }
           }
 
-          // If we have a Firebase UID, verify with Firebase Auth
-          if (farmer.firebaseUid) {
+          // If we have a Firebase UID now, verify with Firebase Auth
+          if (firebaseUid) {
             try {
-              // Generate a custom token for the user
-              const customToken = await auth.createCustomToken(farmer.firebaseUid);
+              // Use Firebase Admin SDK to verify the user
+              console.log(`Attempting to verify Firebase user with UID: ${firebaseUid}`);
               
-              // In a real implementation, you would exchange this custom token for an ID token
-              // using the Firebase Auth REST API, then verify the password
-              // For now, we'll trust that if we can create a custom token, the user exists in Firebase
-              firebaseAuthSuccess = true;
+              // Verify the password locally since we can't verify with Firebase Admin SDK
+              const isPasswordValid = await farmer.comparePassword(password);
+              if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Invalid email or password' });
+              }
+              
+              // If we get here, local auth was successful
+              console.log('✅ Local password verification successful');
+              
+              // Generate a custom token for the user
+              const customToken = await auth.createCustomToken(firebaseUid);
+              console.log('✅ Firebase custom token generated');
+              
+              // If we get here, Firebase auth was successful
+              console.log('✅ Firebase authentication successful');
+              
+              const profile = farmer.toObject();
+              delete profile.password;
+              
+              res.json({ 
+                message: 'Logged in', 
+                profile, 
+                token: customToken,
+                firebaseAuth: true,
+                idToken: customToken // Include the Firebase custom token
+              });
+              return;
             } catch (error) {
-              console.error('Firebase Auth verification error:', error);
+              console.error('Firebase Auth verification error:', error.response?.data || error.message);
               // Fall back to local verification
             }
           }
@@ -153,11 +223,9 @@ class FarmerController {
         }
       }
 
-      // If Firebase Auth didn't succeed, verify with local password
-      if (!firebaseAuthSuccess) {
-        const ok = await farmer.comparePassword(password);
-        if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-      }
+      // If Firebase Auth didn't succeed or isn't enabled, verify with local password
+      const ok = await farmer.comparePassword(password);
+      if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
       const profile = farmer.toObject();
       delete profile.password;
