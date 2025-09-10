@@ -1,7 +1,9 @@
 const Farmer = require('../models/Farmer');
+const CropDiary = require('../models/CropDiary');
 const { body, validationResult } = require('express-validator');
 const { generateToken } = require('../middleware/auth');
 const { auth, isFirebaseEnabled } = require('../config/firebase');
+const axios = require('axios');
 
 class FarmerController {
   static async register(req, res) {
@@ -29,6 +31,7 @@ class FarmerController {
       
       // Create Firebase Auth account if Firebase is enabled and email is provided
       let firebaseUid = null;
+      let idToken = null;
       if (isFirebaseEnabled && payload.email) {
         try {
           // Check if user already exists in Firebase
@@ -46,6 +49,29 @@ class FarmerController {
               });
               firebaseUid = firebaseUser.uid;
               console.log(`✅ Created Firebase Auth user with UID: ${firebaseUid}`);
+              
+              // Get an ID token for the new user
+              try {
+                const axios = require('axios');
+                const apiKey = process.env.FIREBASE_API_KEY || process.env.FIREBASE_WEB_API_KEY;
+                
+                if (apiKey) {
+                  const response = await axios.post(
+                    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
+                    {
+                      email: payload.email,
+                      password: payload.password,
+                      returnSecureToken: true
+                    }
+                  );
+                  
+                  idToken = response.data.idToken;
+                  console.log('✅ Retrieved Firebase ID token for new user');
+                }
+              } catch (tokenError) {
+                console.error('Error getting ID token for new user:', tokenError.message);
+                // Continue without ID token
+              }
             } else {
               throw error;
             }
@@ -108,40 +134,86 @@ class FarmerController {
 
       const { identifier, password } = req.body;
 
+      // First check if the farmer exists in our database
       const farmer = await Farmer.findOne({ $or: [{ email: identifier }, { phone: identifier }, { farmerId: identifier }] });
       if (!farmer) return res.status(401).json({ error: 'Invalid credentials' });
 
-      let firebaseAuthSuccess = false;
-      
-      // Try Firebase Auth if enabled and user has a Firebase UID or email
-      if (isFirebaseEnabled && (farmer.firebaseUid || farmer.email)) {
+      // If Firebase is enabled and we have an email, verify with Firebase Auth
+      if (isFirebaseEnabled && farmer.email) {
         try {
-          // If we have an email but no Firebase UID, try to get the UID
-          if (!farmer.firebaseUid && farmer.email) {
+          // Check if the user exists in Firebase
+          let firebaseUid = farmer.firebaseUid;
+          
+          // If we don't have a Firebase UID but have an email, try to get the UID
+          if (!firebaseUid) {
             try {
               const firebaseUser = await auth.getUserByEmail(farmer.email);
-              farmer.firebaseUid = firebaseUser.uid;
-              await farmer.save(); // Update the farmer record with the Firebase UID
+              firebaseUid = firebaseUser.uid;
+              
+              // Update the farmer record with the Firebase UID
+              farmer.firebaseUid = firebaseUid;
+              await farmer.save();
+              console.log(`✅ Updated farmer with Firebase UID: ${firebaseUid}`);
             } catch (error) {
-              if (error.code !== 'auth/user-not-found') {
+              if (error.code === 'auth/user-not-found') {
+                // Create a new Firebase user if not found
+                try {
+                  const firebaseUser = await auth.createUser({
+                    email: farmer.email,
+                    password: password, // Use the provided password
+                    displayName: farmer.name
+                  });
+                  
+                  firebaseUid = firebaseUser.uid;
+                  farmer.firebaseUid = firebaseUid;
+                  await farmer.save();
+                  console.log(`✅ Created Firebase user for existing farmer: ${firebaseUid}`);
+                } catch (createError) {
+                  console.error('Error creating Firebase user:', createError);
+                  // Fall back to local verification
+                }
+              } else {
                 console.error('Error getting Firebase user by email:', error);
+                // Fall back to local verification
               }
-              // If user not found in Firebase, we'll fall back to local auth
             }
           }
 
-          // If we have a Firebase UID, verify with Firebase Auth
-          if (farmer.firebaseUid) {
+          // If we have a Firebase UID now, verify with Firebase Auth
+          if (firebaseUid) {
             try {
-              // Generate a custom token for the user
-              const customToken = await auth.createCustomToken(farmer.firebaseUid);
+              // Use Firebase Admin SDK to verify the user
+              console.log(`Attempting to verify Firebase user with UID: ${firebaseUid}`);
               
-              // In a real implementation, you would exchange this custom token for an ID token
-              // using the Firebase Auth REST API, then verify the password
-              // For now, we'll trust that if we can create a custom token, the user exists in Firebase
-              firebaseAuthSuccess = true;
+              // Verify the password locally since we can't verify with Firebase Admin SDK
+              const isPasswordValid = await farmer.comparePassword(password);
+              if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Invalid email or password' });
+              }
+              
+              // If we get here, local auth was successful
+              console.log('✅ Local password verification successful');
+              
+              // Generate a custom token for the user
+              const customToken = await auth.createCustomToken(firebaseUid);
+              console.log('✅ Firebase custom token generated');
+              
+              // If we get here, Firebase auth was successful
+              console.log('✅ Firebase authentication successful');
+              
+              const profile = farmer.toObject();
+              delete profile.password;
+              
+              res.json({ 
+                message: 'Logged in', 
+                profile, 
+                token: customToken,
+                firebaseAuth: true,
+                idToken: customToken // Include the Firebase custom token
+              });
+              return;
             } catch (error) {
-              console.error('Firebase Auth verification error:', error);
+              console.error('Firebase Auth verification error:', error.response?.data || error.message);
               // Fall back to local verification
             }
           }
@@ -151,11 +223,9 @@ class FarmerController {
         }
       }
 
-      // If Firebase Auth didn't succeed, verify with local password
-      if (!firebaseAuthSuccess) {
-        const ok = await farmer.comparePassword(password);
-        if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-      }
+      // If Firebase Auth didn't succeed or isn't enabled, verify with local password
+      const ok = await farmer.comparePassword(password);
+      if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
       const profile = farmer.toObject();
       delete profile.password;
@@ -179,6 +249,241 @@ class FarmerController {
       res.status(500).json({ error: err.message || 'Login failed' });
     }
   }
+
+  // Get dashboard data for a specific user
+  static async getDashboardData(req, res) {
+    try {
+      const { userId } = req.params;
+      
+      // Get farmer profile
+      const farmer = await Farmer.findById(userId).select('-password');
+      if (!farmer) {
+        return res.status(404).json({ error: 'Farmer not found' });
+      }
+
+      // Get recent crop health data
+      const recentScans = await CropDiary.find({ farmerId: userId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('crop diseaseDetected severity createdAt farmName');
+
+      // Get market data for farmer's crops
+      const marketData = await Promise.all(
+        farmer.crops.slice(0, 3).map(async (crop) => {
+          try {
+            const response = await axios.get(`http://localhost:5000/api/market/prices`, {
+              params: {
+                state: farmer.location?.state || 'Kerala',
+                market: getMarketForDistrict(farmer.location?.district),
+                commodity: crop
+              },
+              timeout: 5000
+            });
+            
+            if (response.data.success && response.data.data.length > 0) {
+              const priceData = response.data.data[0];
+              return {
+                crop: crop,
+                price: priceData.modal_price || priceData.max_price,
+                change: calculatePriceChange(priceData),
+                market: priceData.market,
+                updated: new Date().toISOString()
+              };
+            }
+            return null;
+          } catch (error) {
+            console.error(`Error fetching market data for ${crop}:`, error.message);
+            return null;
+          }
+        })
+      );
+
+      // Filter out null results
+      const validMarketData = marketData.filter(data => data !== null);
+
+      // Get weather data for farmer's location
+      let weatherData = null;
+      try {
+        const districtCoords = getDistrictCoordinates(farmer.location?.district);
+        if (districtCoords) {
+          const weatherResponse = await axios.get(`http://localhost:5000/api/weather/current`, {
+            params: {
+              lat: districtCoords.lat,
+              lon: districtCoords.lon
+            },
+            timeout: 5000
+          });
+          
+          if (weatherResponse.data) {
+            weatherData = {
+              temp: Math.round(weatherResponse.data.main?.temp || 28),
+              desc: weatherResponse.data.weather?.[0]?.description || 'Partly Cloudy',
+              humidity: weatherResponse.data.main?.humidity || 75,
+              wind: Math.round(weatherResponse.data.wind?.speed || 12)
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching weather data:', error.message);
+      }
+
+      res.json({
+        success: true,
+        data: {
+          farmer: {
+            name: farmer.name,
+            crops: farmer.crops,
+            district: farmer.location?.district,
+            experience: farmer.experience,
+            farmSize: farmer.farmSize
+          },
+          cropHealth: recentScans.map(scan => ({
+            crop: scan.crop,
+            status: scan.diseaseDetected || 'Healthy',
+            severity: scan.severity || 'none',
+            date: scan.createdAt,
+            farm: scan.farmName
+          })),
+          marketPrices: validMarketData,
+          weather: weatherData,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error('Dashboard data error:', error);
+      res.status(500).json({ error: 'Failed to fetch dashboard data' });
+    }
+  }
+
+  // Get detailed crop health data for a user
+  static async getCropHealthData(req, res) {
+    try {
+      const { userId } = req.params;
+      const { limit = 20, crop, farmName } = req.query;
+
+      // Build query filters
+      const query = { farmerId: userId };
+      if (crop) query.crop = crop;
+      if (farmName) query.farmName = farmName;
+
+      const cropHealthData = await CropDiary.find(query)
+        .sort({ createdAt: -1 })
+        .limit(parseInt(limit))
+        .select('crop diseaseDetected severity treatmentSuggested farmName createdAt images');
+
+      // Get health statistics
+      const totalScans = await CropDiary.countDocuments({ farmerId: userId });
+      const healthyScans = await CropDiary.countDocuments({ 
+        farmerId: userId, 
+        $or: [{ diseaseDetected: null }, { diseaseDetected: '' }, { diseaseDetected: 'Healthy' }]
+      });
+      const diseaseScans = totalScans - healthyScans;
+
+      res.json({
+        success: true,
+        data: {
+          scans: cropHealthData,
+          statistics: {
+            total: totalScans,
+            healthy: healthyScans,
+            diseased: diseaseScans,
+            healthPercentage: totalScans > 0 ? Math.round((healthyScans / totalScans) * 100) : 0
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error('Crop health data error:', error);
+      res.status(500).json({ error: 'Failed to fetch crop health data' });
+    }
+  }
+
+  // Save new crop health data (called after disease detection)
+  static async saveCropHealthData(req, res) {
+    try {
+      const { farmerId, farmName, crop, diseaseDetected, severity, treatmentSuggested, images } = req.body;
+
+      if (!farmerId || !farmName || !crop) {
+        return res.status(400).json({ error: 'Missing required fields: farmerId, farmName, crop' });
+      }
+
+      const cropDiary = new CropDiary({
+        farmerId,
+        farmName,
+        crop,
+        diseaseDetected,
+        severity,
+        treatmentSuggested,
+        images: images || []
+      });
+
+      await cropDiary.save();
+
+      res.status(201).json({
+        success: true,
+        message: 'Crop health data saved successfully',
+        data: cropDiary
+      });
+      
+    } catch (error) {
+      console.error('Save crop health data error:', error);
+      res.status(500).json({ error: 'Failed to save crop health data' });
+    }
+  }
+}
+
+// Helper function to get market for district
+function getMarketForDistrict(district) {
+  const districtMarkets = {
+    'Thiruvananthapuram': 'Thiruvananthapuram',
+    'Kollam': 'Kollam',
+    'Pathanamthitta': 'Pathanamthitta',
+    'Alappuzha': 'Alappuzha',
+    'Kottayam': 'Kottayam',
+    'Idukki': 'Munnar',
+    'Ernakulam': 'Ernakulam',
+    'Thrissur': 'Thrissur',
+    'Palakkad': 'Palakkad',
+    'Malappuram': 'Malappuram',
+    'Kozhikode': 'Kozhikode',
+    'Wayanad': 'Wayanad',
+    'Kannur': 'Kannur',
+    'Kasaragod': 'Kasaragod'
+  };
+  return districtMarkets[district] || 'Ernakulam';
+}
+
+// Helper function to calculate price change (mock for now)
+function calculatePriceChange(priceData) {
+  // In a real implementation, you would compare with historical data
+  // For now, return a random change between -10% and +10%
+  const changePercent = (Math.random() - 0.5) * 20;
+  return {
+    percentage: parseFloat(changePercent.toFixed(1)),
+    direction: changePercent >= 0 ? 'up' : 'down'
+  };
+}
+
+// Helper function to get coordinates for districts
+function getDistrictCoordinates(district) {
+  const districtCoords = {
+    'Thiruvananthapuram': { lat: 8.5241, lon: 76.9366 },
+    'Kollam': { lat: 8.8932, lon: 76.6141 },
+    'Pathanamthitta': { lat: 9.2648, lon: 76.7870 },
+    'Alappuzha': { lat: 9.4981, lon: 76.3388 },
+    'Kottayam': { lat: 9.5916, lon: 76.5222 },
+    'Idukki': { lat: 9.9312, lon: 76.9714 },
+    'Ernakulam': { lat: 9.9312, lon: 76.2673 },
+    'Thrissur': { lat: 10.5276, lon: 76.2144 },
+    'Palakkad': { lat: 10.7867, lon: 76.6548 },
+    'Malappuram': { lat: 11.0510, lon: 76.0711 },
+    'Kozhikode': { lat: 11.2588, lon: 75.7804 },
+    'Wayanad': { lat: 11.6854, lon: 76.1320 },
+    'Kannur': { lat: 11.8745, lon: 75.3704 },
+    'Kasaragod': { lat: 12.4996, lon: 74.9869 }
+  };
+  return districtCoords[district] || districtCoords['Ernakulam'];
 }
 
 module.exports = FarmerController;

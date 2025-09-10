@@ -7,7 +7,8 @@ const { authenticateToken } = require('../middleware/auth');
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
 router.post('/google', AuthController.googleAuth);
-router.post('/verify-token', AuthController.verifyToken);
+router.get('/verify-token', AuthController.verifyToken);
+router.post('/verify-token', AuthController.verifyToken); // Keep POST for backward compatibility
 
 // Protected routes
 router.post('/logout', authenticateToken, AuthController.logout);

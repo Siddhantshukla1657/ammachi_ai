@@ -20,7 +20,7 @@
 
 .market-layout { display: flex; gap: 20px; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
 .market-main { flex: 1; }
-.market-container { max-width: 1100px; margin: 0 auto; padding: 16px 16px 16px 0; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
+.market-container { max-width: 1400px; margin: 0 auto; padding: 16px 16px 16px 0; background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%); min-height: 100vh; }
 .market-header { margin-bottom: 12px; }
 .market-title { margin: 0; color: var(--mediumseagreen-dark); font-size: 1.8rem; font-weight: 800; }
 .market-sub { margin: 4px 0 18px; color: var(--muted); font-size: 1.1rem; }
@@ -85,6 +85,39 @@
 }
 .retry-btn:hover { background: #B91C1C; }
 
+.price-details-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 20px; }
+.price-detail-card { 
+  background: var(--card-bg); 
+  border: 2px solid var(--card-border); 
+  border-radius: 12px; 
+  padding: 18px; 
+  box-shadow: 0 6px 20px rgba(60,179,113,0.08); 
+  transition: all 0.3s ease;
+  text-align: center;
+}
+.price-detail-card:hover { 
+  border-color: var(--mediumseagreen); 
+  box-shadow: 0 8px 25px rgba(60,179,113,0.15); 
+  transform: translateY(-2px);
+}
+.price-detail-title { 
+  font-weight: 700; 
+  color: var(--mediumseagreen-darker); 
+  font-size: 1.1rem; 
+  margin-bottom: 10px;
+}
+.price-detail-amount { 
+  font-size: 1.8rem; 
+  font-weight: 800; 
+  color: var(--mediumseagreen-dark); 
+  margin: 10px 0;
+}
+.price-detail-desc { 
+  color: var(--muted); 
+  font-size: 0.9rem; 
+  margin-top: 8px;
+}
+
 .prices-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 20px; }
 .price-card { 
   background: var(--card-bg); 
@@ -145,15 +178,18 @@
 /* Responsive Design */
 @media (max-width: 1000px) { 
   .prices-grid { grid-template-columns: repeat(2, 1fr); } 
+  .price-details-grid { grid-template-columns: repeat(2, 1fr); }
   .market-lower { grid-template-columns: 1fr; } 
   .market-controls { flex-direction: column; }
   .control-card { min-width: 100%; }
 }
 @media (max-width: 640px) { 
   .prices-grid { grid-template-columns: 1fr; } 
+  .price-details-grid { grid-template-columns: 1fr; }
   .market-controls { flex-direction: column; } 
   .market-container { padding: 12px; }
   .control-card { padding: 12px; }
   .price-card { padding: 14px; }
+  .price-detail-card { padding: 14px; }
   .card { padding: 14px; }
 }
