@@ -411,10 +411,17 @@ class AuthController {
             role: 'farmer',
             experience: 15,
             farmSize: '3.5 acres',
+            state: 'Kerala',
             district: 'Wayanad',
             phoneNumber: '+91 9876543210',
             primaryCrops: ['Coconut', 'Pepper', 'Cardamom'],
-            language: 'english'
+            language: 'english',
+            farms: [{
+              name: 'Demo Farm',
+              acres: '3.5',
+              location: 'Wayanad, Kerala',
+              crops: ['Coconut', 'Pepper', 'Cardamom']
+            }]
           }
         });
       }
@@ -427,6 +434,7 @@ class AuthController {
         firebaseUid: mongoUser.firebaseUid,
         experience: mongoUser.experience || 0,
         farmSize: mongoUser.farmSize || '',
+        state: mongoUser.state || '',
         district: mongoUser.district || '',
         phoneNumber: mongoUser.phoneNumber || '',
         primaryCrops: mongoUser.primaryCrops || [],
@@ -460,7 +468,7 @@ class AuthController {
       const decodedUserId = decodeURIComponent(userId);
       
       // Whitelist updatable fields
-      const allowed = ['displayName', 'experience', 'farmSize', 'district', 'phoneNumber', 'primaryCrops', 'language', 'farms'];
+      const allowed = ['displayName', 'experience', 'farmSize', 'district', 'state', 'phoneNumber', 'primaryCrops', 'language', 'farms'];
       const sanitized = {};
       for (const key of allowed) {
         if (Object.prototype.hasOwnProperty.call(updateData, key)) {

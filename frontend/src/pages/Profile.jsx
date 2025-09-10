@@ -37,6 +37,8 @@ export default function Profile() {
           ...data.user,
           farms: Array.isArray(data.user?.farms) ? data.user.farms : [],   // normalize
         };
+        // Update local storage with latest data from database
+        localStorage.setItem('ammachi_profile', JSON.stringify(u));
         setUser(u);
         setFormData(u);
       } else {
@@ -88,7 +90,7 @@ export default function Profile() {
   const addFarm = () => {
     setFormData(prev => ({
       ...prev,
-      farms: [...(prev.farms || []), { farmName: '', acres: '', location: '', crops: '' }]
+      farms: [...(prev.farms || []), { name: '', acres: '', location: '', crops: [] }]
     }));
   };
 
@@ -120,10 +122,8 @@ export default function Profile() {
         setEditing(false);
         setMessage('Profile updated successfully!');
         
-        // Update local storage with new data
-        const currentProfile = JSON.parse(localStorage.getItem('ammachi_profile') || '{}');
-        const updatedProfile = { ...currentProfile, ...formData };
-        localStorage.setItem('ammachi_profile', JSON.stringify(updatedProfile));
+        // Update local storage with new data from database
+        localStorage.setItem('ammachi_profile', JSON.stringify(formData));
         
         setTimeout(() => setMessage(''), 3000);
       } else {
@@ -246,10 +246,10 @@ export default function Profile() {
                     ) : (
                       user.farms.map((farm, i) => (
                         <div className="farm-card" key={i}>
-                          <h4>Farm {i + 1}{farm?.farmName ? ` — ${farm.farmName}` : ''}</h4>
+                          <h4>Farm {i + 1}{farm?.name ? ` — ${farm.name}` : ''}</h4>
                           <div className="farm-field">
                             <span className="farm-label">Farm Name</span>
-                            {farm?.farmName || '—'}
+                            {farm?.name || '—'}
                           </div>
                           <div className="farm-field">
                             <span className="farm-label">Acres</span>
@@ -385,8 +385,8 @@ export default function Profile() {
                           <label className="farm-label">Farm Name</label>
                           <input
                             type="text"
-                            value={farm?.farmName || ''}
-                            onChange={(e) => handleFarmChange(i, 'farmName', e.target.value)}
+                            value={farm?.name || ''}
+                            onChange={(e) => handleFarmChange(i, 'name', e.target.value)}
                           />
                         </div>
                         <div className="form-group" style={{ margin: 0 }}>
@@ -415,8 +415,9 @@ export default function Profile() {
                                 : (farm?.crops || '')
                             }
                             onChange={(e) => {
-                              // store as string; backend can normalize to array
-                              handleFarmChange(i, 'crops', e.target.value);
+                              // Convert comma-separated string to array for database
+                              const cropsArray = e.target.value.split(',').map(crop => crop.trim()).filter(crop => crop !== '');
+                              handleFarmChange(i, 'crops', cropsArray);
                             }}
                           />
                         </div>
@@ -450,7 +451,26 @@ export default function Profile() {
                 <select
                   className="language-select"
                   value={formData.language || user?.language || 'English'}
-                  onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, language: e.target.value }));
+                    // Save language change immediately to database
+                    if (user?.email) {
+                      fetch(`/api/auth/profile/${encodeURIComponent(user.email)}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ language: e.target.value }),
+                      }).then(res => res.json())
+                        .then(data => {
+                          if (data.success) {
+                            // Update local storage with new language
+                            const currentProfile = JSON.parse(localStorage.getItem('ammachi_profile') || '{}');
+                            currentProfile.language = e.target.value;
+                            localStorage.setItem('ammachi_profile', JSON.stringify(currentProfile));
+                          }
+                        })
+                        .catch(err => console.error('Error updating language:', err));
+                    }
+                  }}
                 >
                   <option value="English">English</option>
                   <option value="Malayalam">Malayalam</option>
