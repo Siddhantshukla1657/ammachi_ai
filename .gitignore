@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Firebase/Google Cloud credentials (NEVER COMMIT THESE)
+credentials/
+backend/credentials/
+frontend/credentials/
+*.json
+!package*.json
+!tsconfig.json
+!jsconfig.json
+!vite.config.js
+!eslint.config.js
+serviceAccountKey.json
+ammachi-ai-KEY.json
+amaachiai-*.json
+*service-account*.json
+*firebase-key*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+tmp/
+temp/
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Build outputs
+dist/
+build/
+
+# Coverage directory
+coverage/
+.nyc_output
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history

@@ -61,3 +61,19 @@ temp/
 # Build outputs
 dist/
 build/
+
+# Firebase/Google Cloud credentials (NEVER COMMIT THESE)
+credentials/
+*.json
+!package*.json
+!tsconfig.json
+!jsconfig.json
+serviceAccountKey.json
+ammachi-ai-KEY.json
+amaachiai-*.json
+*service-account*.json
+*firebase-key*.json
+
+# Legacy credential files
+backend/amaachiai-f879ccf99f8e.json
+backend/credentials/amaachiai-f879ccf99f8e.json
