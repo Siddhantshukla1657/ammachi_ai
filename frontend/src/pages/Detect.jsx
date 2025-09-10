@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import './detect.css';
 import Sidebar from '../components/Sidebar.jsx';
+import TranslatedText from '../components/TranslatedText';
+import { useLanguage } from '../context/LanguageContext';
+import { translate } from '../utils/translate';
 
 export default function Detect(){
+  // Get current language from context
+  const { language } = useLanguage();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
@@ -18,13 +23,13 @@ export default function Detect(){
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     if (!validTypes.includes(f.type)) {
-      setError('Please upload a valid image file (JPG, PNG)');
+      setError(<TranslatedText text="Please upload a valid image file (JPG, PNG)" />);
       return;
     }
     
     // Validate file size (max 5MB)
     if (f.size > 5 * 1024 * 1024) {
-      setError('File size must be less than 5MB');
+      setError(<TranslatedText text="File size must be less than 5MB" />);
       return;
     }
     
@@ -83,7 +88,7 @@ export default function Detect(){
       });
       
       if (!response.ok) {
-        throw new Error(`Detection failed: ${response.status}`);
+        throw new Error(`${translate('Detection failed')}: ${response.status}`);
       }
       
       const data = await response.json();
@@ -94,7 +99,7 @@ export default function Detect(){
         setResult({
           diseaseName: topDisease.name,
           probability: Math.round(topDisease.probability * 100),
-          description: topDisease.details?.description || 'No description available',
+          description: topDisease.details?.description || translate('No description available'),
           treatment: topDisease.details?.treatment || {},
           isHealthy: false
         });
@@ -108,18 +113,18 @@ export default function Detect(){
           plantName: plantInfo.name,
           probability: Math.round(plantInfo.probability * 100),
           isHealthy: true,
-          message: 'Your crop appears to be healthy! No diseases detected.'
+          message: translate('Your crop appears to be healthy! No diseases detected.')
         });
       } else {
         setResult({
           isHealthy: true,
-          message: 'No diseases detected. Your crop appears to be healthy!',
+          message: translate('No diseases detected. Your crop appears to be healthy!'),
           probability: 0
         });
       }
     } catch (error) {
       console.error('Disease detection error:', error);
-      setError('Failed to analyze the image. Please try again with a clearer photo.');
+      setError(<TranslatedText text="Failed to analyze the image. Please try again with a clearer photo." />);
     } finally {
       setIsProcessing(false);
     }
@@ -141,11 +146,11 @@ export default function Detect(){
       
       if (response.ok) {
         const data = await response.json();
-        setRemedies(data.response || 'No specific remedies found. Please consult with an agricultural expert.');
+        setRemedies(data.response || translate('No specific remedies found. Please consult with an agricultural expert.'));
       }
     } catch (error) {
       console.error('Remedies fetch error:', error);
-      setRemedies('Unable to fetch remedies at the moment. Please consult with an agricultural expert.');
+      setRemedies(translate('Unable to fetch remedies at the moment. Please consult with an agricultural expert.'));
     } finally {
       setIsGettingRemedies(false);
     }
@@ -165,8 +170,8 @@ export default function Detect(){
       <main className="detect-main page-scroll">
         <div className="detect-container">
           <header className="detect-header">
-            <h1 className="detect-title">Disease Detection</h1>
-            <p className="detect-sub">Upload a photo of your crop to detect diseases 🔬</p>
+            <h1 className="detect-title"><TranslatedText text="Disease Detection" /></h1>
+            <p className="detect-sub"><TranslatedText text="Upload a photo of your crop to detect diseases" /> 🔬</p>
           </header>
 
           {error && (
@@ -189,8 +194,8 @@ export default function Detect(){
                   <path d="M8.5 14L11 16.5L16.5 9.5" stroke="#2fb46a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <h3>Upload Crop Photo</h3>
-              <p className="upload-note">Drag and drop your image here, or click to browse</p>
+              <h3><TranslatedText text="Upload Crop Photo" /></h3>
+              <p className="upload-note"><TranslatedText text="Drag and drop your image here, or click to browse" /></p>
 
               <div className="upload-actions">
                 <label className="choose-btn">
