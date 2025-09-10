@@ -20,6 +20,7 @@ export default function Weather(){
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('daily');
+  const [expandedDay, setExpandedDay] = useState(null);
 
 
   useEffect(() => {
@@ -154,6 +155,26 @@ export default function Weather(){
     return '☁️';
   };
 
+  const getFarmingTip = (dayData) => {
+    if (!dayData) return '';
+    const temp = dayData.temp || dayData.main?.temp;
+    const humidity = dayData.humidity || dayData.main?.humidity;
+    const pop = dayData.pop || 0;
+    const windSpeed = dayData.wind?.speed || 0;
+
+    if (pop > 0.7) return '🌧️ Heavy rain expected - Avoid field work';
+    if (pop > 0.4) return '🌦️ Light rain - Good for watering, avoid harvesting';
+    if (temp > 35) return '☀️ Hot day - Water early morning or evening';
+    if (temp < 15) return '❄️ Cool day - Good for planting and transplanting';
+    if (humidity > 80) return '💧 High humidity - Watch for fungal diseases';
+    if (windSpeed > 5) return '💨 Windy conditions - Secure crops and equipment';
+    return '🌱 Good weather for farming activities';
+  };
+
+  const toggleDayExpansion = (dayIndex) => {
+    setExpandedDay(expandedDay === dayIndex ? null : dayIndex);
+  };
+
 
   return (
     <div className="weather-layout">
@@ -262,14 +283,68 @@ export default function Weather(){
               <div className="day-row">
                 {(daily.length ? daily : Array.from({length:7})).map((d,i)=> {
                   const timestamp = d?.dt || Math.floor(Date.now()/1000);
-                  console.log('Day data:', d); // Debug log to see what data is available
+                  const isExpanded = expandedDay === i;
+                  const temp = d?.temp || d?.main?.temp;
+                  const tempMax = d?.temp_max || d?.main?.temp_max;
+                  const tempMin = d?.temp_min || d?.main?.temp_min;
+                  const humidity = d?.humidity || d?.main?.humidity;
+                  const windSpeed = d?.wind?.speed || 0;
+                  const pressure = d?.main?.pressure || 0;
+                  
                   return (
-                    <div key={i} className={`day-card ${i===0? 'active':''}`}>
-                      <div className="day-name">{i===0? 'Today' : new Date(timestamp * 1000).toLocaleDateString(undefined,{weekday:'short'})}</div>
-                      <div className="day-icon">{getWeatherIcon(d?.weather?.[0]?.main)}</div>
-                      <div className="day-temp">{d?.temp ? `${Math.round(d.temp)}°C` : d?.main?.temp ? `${Math.round(d.main.temp)}°C` : '—'}</div>
+                    <div 
+                      key={i} 
+                      className={`day-card ${i===0? 'active':''} ${isExpanded ? 'expanded' : ''}`}
+                      onClick={() => toggleDayExpansion(i)}
+                    >
+                      <div className="day-expand-icon">▼</div>
+                      <div className="day-card-header">
+                        <div>
+                          <div className="day-name">{i===0? 'Today' : new Date(timestamp * 1000).toLocaleDateString(undefined,{weekday:'short'})}</div>
+                          <div className="day-icon">{getWeatherIcon(d?.weather?.[0]?.main)}</div>
+                        </div>
+                        <div className="day-temp">{temp ? `${Math.round(temp)}°C` : '—'}</div>
+                      </div>
+                      
                       <div className="day-cond muted">{ d?.weather?.[0]?.main || (i===0? 'Partly Cloudy' : 'Rain') }</div>
                       <div className="day-pop muted">{ popPercent(d) }</div>
+                      
+                      {isExpanded && (
+                        <div className="day-details">
+                          <div className="day-weather-desc">{d?.weather?.[0]?.description || 'Partly cloudy'}</div>
+                          
+                          {(tempMax || tempMin) && (
+                            <div className="day-temp-range">
+                              <span className="day-temp-high">↑ {tempMax ? `${Math.round(tempMax)}°C` : '—'}</span>
+                              <span className="day-temp-low">↓ {tempMin ? `${Math.round(tempMin)}°C` : '—'}</span>
+                            </div>
+                          )}
+                          
+                          <div className="day-detail-row">
+                            <span className="day-detail-label">Humidity</span>
+                            <span className="day-detail-value">{humidity ? `${humidity}%` : '—'}</span>
+                          </div>
+                          
+                          <div className="day-detail-row">
+                            <span className="day-detail-label">Wind Speed</span>
+                            <span className="day-detail-value">{windSpeed ? `${windSpeed} m/s` : '—'}</span>
+                          </div>
+                          
+                          <div className="day-detail-row">
+                            <span className="day-detail-label">Pressure</span>
+                            <span className="day-detail-value">{pressure ? `${pressure} hPa` : '—'}</span>
+                          </div>
+                          
+                          <div className="day-detail-row">
+                            <span className="day-detail-label">Rain Chance</span>
+                            <span className="day-detail-value">{popPercent(d)}</span>
+                          </div>
+                          
+                          <div className="day-farming-tip">
+                            {getFarmingTip(d)}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
