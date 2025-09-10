@@ -199,9 +199,6 @@ class FarmerController {
               // If we get here, Firebase auth was successful
               console.log('✅ Firebase authentication successful');
               
-              // Generate a custom token for the user
-              const customToken = await auth.createCustomToken(firebaseUid);
-              
               const profile = farmer.toObject();
               delete profile.password;
               
@@ -210,7 +207,7 @@ class FarmerController {
                 profile, 
                 token: customToken,
                 firebaseAuth: true,
-                idToken: response.data.idToken // Include the Firebase ID token
+                idToken: customToken // Include the Firebase custom token
               });
               return;
             } catch (error) {
