@@ -318,6 +318,37 @@ export default function Market() {
             <div ref={chartRef} className="chart-area" />
           </div>
 
+          {marketData.length > 0 && (
+            <section className="price-details-grid">
+              <div className="price-detail-card">
+                <div className="price-detail-title">Minimum Price</div>
+                <div className="price-detail-amount">
+                  ₹{marketData[0]?.min_price || 'N/A'}
+                  <span className="price-unit">{selectedCrop === 'Rice' ? '/quintal' : '/kg'}</span>
+                </div>
+                <div className="price-detail-desc">Lowest recorded price for {selectedCrop} in {selectedMarket}</div>
+              </div>
+              
+              <div className="price-detail-card">
+                <div className="price-detail-title">Modal Price</div>
+                <div className="price-detail-amount">
+                  ₹{marketData[0]?.modal_price || 'N/A'}
+                  <span className="price-unit">{selectedCrop === 'Rice' ? '/quintal' : '/kg'}</span>
+                </div>
+                <div className="price-detail-desc">Most common price for {selectedCrop} in {selectedMarket}</div>
+              </div>
+              
+              <div className="price-detail-card">
+                <div className="price-detail-title">Maximum Price</div>
+                <div className="price-detail-amount">
+                  ₹{marketData[0]?.max_price || 'N/A'}
+                  <span className="price-unit">{selectedCrop === 'Rice' ? '/quintal' : '/kg'}</span>
+                </div>
+                <div className="price-detail-desc">Highest recorded price for {selectedCrop} in {selectedMarket}</div>
+              </div>
+            </section>
+          )}
+
           <section className="prices-grid">
             {processedPrices.map(p => (
               <article key={p.id} className="price-card">
