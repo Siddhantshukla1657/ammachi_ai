@@ -93,28 +93,44 @@ export default function Detect(){
       
       const data = await response.json();
       
-      // Process Plant.id response
-      if (data.result && data.result.disease && data.result.disease.suggestions && data.result.disease.suggestions.length > 0) {
-        const topDisease = data.result.disease.suggestions[0];
-        setResult({
-          diseaseName: topDisease.name,
-          probability: Math.round(topDisease.probability * 100),
-          description: topDisease.details?.description || translate('No description available'),
-          treatment: topDisease.details?.treatment || {},
-          isHealthy: false
-        });
+      // Process Plant.id response with enhanced information
+      if (data.result) {
+        const plantInfo = data.result.plant_identification;
         
-        // Get remedies from Dialogflow
-        await getRemedies(topDisease.name);
-      } else if (data.result && data.result.classification && data.result.classification.suggestions && data.result.classification.suggestions.length > 0) {
-        // Plant is healthy
-        const plantInfo = data.result.classification.suggestions[0];
-        setResult({
-          plantName: plantInfo.name,
-          probability: Math.round(plantInfo.probability * 100),
-          isHealthy: true,
-          message: translate('Your crop appears to be healthy! No diseases detected.')
-        });
+        if (!data.result.is_healthy && data.result.disease && data.result.disease.suggestions && data.result.disease.suggestions.length > 0) {
+          // Disease detected
+          const topDisease = data.result.disease.suggestions[0];
+          setResult({
+            diseaseName: topDisease.name,
+            probability: Math.round(topDisease.probability * 100),
+            description: topDisease.description || translate('No description available'),
+            treatment: topDisease.treatment || {},
+            isHealthy: false,
+            healthStatus: data.result.health_status,
+            plantInfo: plantInfo ? {
+              scientificName: plantInfo.scientific_name,
+              commonNames: plantInfo.common_names,
+              primaryCommonName: plantInfo.common_names && plantInfo.common_names.length > 0 ? plantInfo.common_names[0] : plantInfo.scientific_name,
+              identificationProbability: Math.round(plantInfo.probability * 100)
+            } : null
+          });
+          
+          // Get remedies from Dialogflow
+          await getRemedies(topDisease.name);
+        } else {
+          // Plant is healthy
+          setResult({
+            isHealthy: true,
+            healthStatus: data.result.health_status,
+            message: translate('Your crop appears to be healthy! No diseases detected.'),
+            plantInfo: plantInfo ? {
+              scientificName: plantInfo.scientific_name,
+              commonNames: plantInfo.common_names,
+              primaryCommonName: plantInfo.common_names && plantInfo.common_names.length > 0 ? plantInfo.common_names[0] : plantInfo.scientific_name,
+              identificationProbability: Math.round(plantInfo.probability * 100)
+            } : null
+          });
+        }
       } else {
         setResult({
           isHealthy: true,
@@ -248,46 +264,83 @@ export default function Detect(){
               <div className="result-header">
                 <h3>
                   {result.isHealthy ? (
-                    <>✅ Healthy Crop Detected</>
+                    <>✅ Healthy Plant</>    
                   ) : (
                     <>🦠 Disease Detected</>
                   )}
                 </h3>
-                <div className="confidence-badge">
-                  {result.probability}% confidence
+                {(result.probability || result.plantInfo?.identificationProbability) && (
+                  <div className="confidence-badge">
+                    {result.probability || result.plantInfo?.identificationProbability}% confidence
+                  </div>
+                )}
+              </div>
+              
+              {/* Plant Identification Section */}
+              {result.plantInfo && (
+                <div className="plant-identification">
+                  <h4>🌱 Plant Identification</h4>
+                  <div className="plant-details">
+                    {result.plantInfo.primaryCommonName && (
+                      <div className="result-item primary-name">
+                        <strong>Common Name:</strong> <span className="primary-common-name">{result.plantInfo.primaryCommonName}</span>
+                      </div>
+                    )}
+                    <div className="result-item">
+                      <strong>Scientific Name:</strong> <em>{result.plantInfo.scientificName}</em>
+                    </div>
+                    {result.plantInfo.commonNames && result.plantInfo.commonNames.length > 1 && (
+                      <div className="result-item">
+                        <strong>Other Common Names:</strong> {result.plantInfo.commonNames.slice(1).join(', ')}
+                      </div>
+                    )}
+                    <div className="result-item">
+                      <strong>Identification Confidence:</strong> {result.plantInfo.identificationProbability}%
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Health Status Section */}
+              <div className="health-status">
+                <h4>🏥 Health Assessment</h4>
+                <div className={`health-indicator ${result.isHealthy ? 'healthy' : 'diseased'}`}>
+                  {result.healthStatus || (result.isHealthy ? 'Plant appears healthy' : 'Disease detected')}
                 </div>
               </div>
               
               {result.isHealthy ? (
                 <div className="healthy-result">
-                  {result.plantName && (
-                    <div className="result-item">
-                      <strong>Plant Identified:</strong> {result.plantName}
-                    </div>
-                  )}
                   <div className="result-message success">
                     {result.message}
                   </div>
                   <div className="tips-section">
-                    <h4>🌱 Tips to Keep Your Crop Healthy:</h4>
+                    <h4>🌱 Tips to Keep Your Plant Healthy:</h4>
                     <ul>
                       <li>Regular monitoring for early signs of disease</li>
                       <li>Proper watering and drainage</li>
                       <li>Adequate spacing between plants</li>
                       <li>Use of organic fertilizers</li>
+                      <li>Maintain proper air circulation</li>
                     </ul>
                   </div>
                 </div>
               ) : (
                 <div className="disease-result">
-                  <div className="result-item">
-                    <strong>Disease:</strong> {result.diseaseName}
-                  </div>
-                  {result.description && (
+                  <div className="disease-details">
+                    <h4>🦠 Disease Information</h4>
                     <div className="result-item">
-                      <strong>Description:</strong> {result.description}
+                      <strong>Disease:</strong> {result.diseaseName}
                     </div>
-                  )}
+                    <div className="result-item">
+                      <strong>Detection Confidence:</strong> {result.probability}%
+                    </div>
+                    {result.description && (
+                      <div className="result-item">
+                        <strong>Description:</strong> {result.description}
+                      </div>
+                    )}
+                  </div>
                   
                   {isGettingRemedies && (
                     <div className="remedies-loading">

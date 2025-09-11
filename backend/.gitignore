@@ -57,6 +57,7 @@ logs
 # Runtime data
 tmp/
 temp/
+uploads/
 
 # Build outputs
 dist/
