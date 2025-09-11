@@ -2,39 +2,37 @@
 
 > *Empowering farmers with AI-driven agricultural solutions for a sustainable future*
 
-[![Smart Irrigation](https://img.shields.io/badge/Smart-Irrigation-green?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  
-[![Disease Detection](https://img.shields.io/badge/Disease-Detection-orange?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  
-[![Weather Analytics](https://img.shields.io/badge/Weather-Analytics-blue?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  
-[![SIH 2025](https://img.shields.io/badge/SIH-2025-red?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  
+[![Smart Irrigation](https://img.shields.io/badge/Smart-Irrigation-green?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  [![Disease Detection](https://img.shields.io/badge/Disease-Detection-orange?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  [![Weather Analytics](https://img.shields.io/badge/Weather-Analytics-blue?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  [![SIH 2025](https://img.shields.io/badge/SIH-2025-red?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  
 
 ---
 
-## 🚀 Overview
+## Overview
 **Ammachi AI** is an innovative agricultural technology platform developed for **Smart India Hackathon (SIH) 2025**. Our solution combines **artificial intelligence, APIs, and data analytics** to revolutionize farming practices, helping farmers make informed decisions for better crop yields and sustainable agriculture.  
 
 ---
 
-## 🎯 Problem Statement
-Traditional farming methods often lack precision and real-time insights, leading to:  
-- Inefficient water usage and irrigation scheduling  
-- Late detection of crop diseases  
-- Poor weather-related decision making  
-- Reduced agricultural productivity  
-- Barriers due to limited English-only digital tools  
+## Problem Statement
+Traditional farming in Kerala often lacks precision and real-time insights. Farmers struggle with:
+- Inefficient water usage and irrigation scheduling
+- Late detection of crop diseases in coconut, pepper, and cardamom
+- Poor weather-related decision making
+- Reduced agricultural productivity
+- Barriers due to English-only digital tools
 
 ---
 
-## 💡 Our Solution
+## Our Solution
 Ammachi AI provides:  
-- **Bilingual Conversational Chatbot** – Farmers interact in **Malayalam + English** through **Dialogflow**.  
-- **AI-Powered Disease Detection** – Upload a plant image, get instant analysis via **Plant.id API**, explained in farmer-friendly terms.  
-- **Weather Intelligence** – Real-time weather monitoring and agricultural forecasts with **OpenWeatherMap API**.  
-- **Market Price Trends** – Clear mandi trends from **AGMARKNET API** to guide selling decisions.  
-- **Farmer Dashboard** – Securely stores disease history, weather updates, and price insights in **MongoDB Atlas**.  
+- **💬Bilingual Chatbot** – Farmers interact in **Malayalam + English**.
+- **🌿AI-Powered Disease Detection** – Instant analysis of crop images with farmer-friendly remedies.
+- **☀️Weather Intelligence** – Hyperlocal forecasts with actionable advice.
+- **📈Market Trends** – Clear price insights from **AGMARKNET**.
+- **📋Farmer Dashboard** – Stores disease history, weather updates, and mandi trends in **MongoDB Atlas**.
+- **🌴Localized Optimization** – Currently focused on **Kerala crops (coconut, pepper, cardamom)** for maximum accuracy.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 ### 🌱 Smart Agriculture Tools
 - Real-time crop monitoring and health assessment  
@@ -50,7 +48,7 @@ Ammachi AI provides:
 - Personalized farmer profiles  
 - Clear visualizations instead of raw numbers  
 
-### 🔧 User-Friendly Interface
+### ✨ User-Friendly Interface
 - Mobile-first **React PWA**  
 - **Multi-language support** (Malayalam + English, scalable to other Indian languages)  
 - **Offline readiness** for rural areas with poor connectivity  
@@ -78,7 +76,6 @@ Ammachi AI provides:
 ### Backend
 - **Node.js + Express.js** – Core backend server  
 - **REST APIs** – Connecting frontend with services  
-- **Multer** – For image uploads  
 - **dotenv** – Secure `.env` API key management  
 
 ### Database
@@ -87,47 +84,36 @@ Ammachi AI provides:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-ammachi_ai/
-├── frontend/              # React PWA frontend
-│   ├── src/components/    # UI Components
-│   ├── src/pages/         # App pages
-│   └── App.jsx            # Main frontend entry
-├── backend/               # Node.js + Express backend
-│   ├── controllers/       # Dialogflow, Plant.id, etc.
-│   ├── routes/            # API route definitions
-│   ├── config/            # Service account JSON + env
-│   ├── models/            # Farmer profiles
-│   ├── middleware/        # Middleware utilities
-│   └── server.js          # Backend entry point
-└── docs/                  # Documentation
+AMMACHI_AI/
+│── backend/               # Node.js + Express API
+│   ├── config/            # DB & server config
+│   ├── controllers/       # Route controllers (auth, disease, weather, market)
+│   ├── models/            # Mongoose schemas (Farmer, CropDiary, MarketPrice)
+│   ├── routes/            # Express routes
+│   ├── services/          # External API integrations
+│   └── index.js           # Backend entry point
+
+│── frontend/              # React PWA (JSX only)
+│   ├── public/images/     # Static assets (logo, backgrounds)
+│   ├── src/components/    # Reusable UI (Navbar, Sidebar, ChatBox, etc.)
+│   ├── src/pages/         # Screens (Home, Dashboard, Chat, Detect, Weather, Market, Community, Profile)
+│   ├── src/context/       # Auth & global state
+│   ├── src/utils/         # API helper functions
+│   ├── App.jsx            # Main React app
+│   └── main.jsx           # Entry point
+
+│── docs/                  # Setup & API references
+│── readme.md
+│── package.json
+│── .gitignore             
 ```
 
 ---
 
-## 📖 API Endpoints
-
-### 🌿 Disease Detection (Plant.id)
-- `POST /api/disease` – Upload a leaf image → returns disease analysis & remedies  
-
-### 💬 Chatbot (Dialogflow)
-- `POST /api/chat` – Send a message in Malayalam/English → AI reply  
-
-### ☀️ Weather (OpenWeatherMap)
-- `GET /api/weather?location=kochi` – Returns 7-day forecast  
-
-### 📈 Market Prices (AGMARKNET)
-- `GET /api/market?crop=rice` – Returns mandi price trends  
-
-### 👩‍🌾 Farmer Profile
-- `GET /api/farmers/profile` – Fetch profile  
-- `PUT /api/farmers/profile` – Update details  
-
----
-
-## 🌟 Use Cases
+## Use Cases
 
 ### Small-Scale Farmers
 - Diagnose crop diseases instantly  
@@ -144,16 +130,16 @@ ammachi_ai/
 
 ---
 
-## 🔮 Roadmap
+## Roadmap
 
-- ✅ Phase 1: Dialogflow chatbot + Plant.id + Weather + Market APIs  
-- 🔄 Phase 2: Add IoT sensors, community features, mobile app  
-- 🔮 Phase 3: National scale with Hindi, Marathi, Tamil, Kannada versions  
+- Phase 1: Dialogflow chatbot + Plant.id + Weather + Market APIs  
+- Phase 2: Add IoT sensors, community features, mobile app  
+- Phase 3: National scale with Hindi, Marathi, Tamil, Kannada versions  
 
 ---
 
 ## 🏆 Achievements
-- Selected for **Smart India Hackathon 2025** (Team Catalyst)  
+- Selected for **Smart India Hackathon 2025** internal Hackathon(Team Catalyst)  
 - Built a working **bilingual farming AI assistant**  
 - Integrated **four key APIs** (Dialogflow, Plant.id, OpenWeatherMap, AGMARKNET)  
 - Secured backend with **Firebase Auth + .env**  
@@ -161,8 +147,7 @@ ammachi_ai/
 ---
 
 <div align="center">
-
-**🌾 Built with ❤️ for farmers everywhere 🌾**  
-*"Empowering agriculture through technology, one farm at a time"*  
+ 
+**"🌾Empowering agriculture through technology, one farm at a time🌾"**  
 
 </div>
