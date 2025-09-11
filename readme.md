@@ -1,4 +1,6 @@
-# 🌾 Ammachi AI - Smart Farming Assistant
+# <p align="center">
+  <img src="frontend/public/images/logo_withbg.png" alt="Ammachi AI Logo" width="200"/> Ammachi AI - Smart Farming Assistant
+</p> 
 
 > *Empowering farmers with AI-driven agricultural solutions for a sustainable future*
 
