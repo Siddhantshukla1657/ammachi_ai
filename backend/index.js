@@ -13,24 +13,36 @@ const PORT = process.env.PORT || 5000;
 
 // Allowed origins (comma-separated in .env) or sensible defaults
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176'];
+
+console.log('Allowed origins:', allowedOrigins);
 
 // CORS middleware
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps, curl, postman)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) {
+      console.log('No origin header, allowing request');
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('CORS allowing origin:', origin);
       callback(null, true);
     } else {
+      console.log('CORS blocking origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -41,6 +53,15 @@ app.get("/", (req, res) => {
     message: "Ammachi AI Backend Server is running!",
     status: "healthy",
     timestamp: new Date().toISOString(),
+    allowedOrigins: allowedOrigins
+  });
+});
+
+// Test CORS endpoint
+app.post("/api/test-cors", (req, res) => {
+  res.json({
+    message: "CORS is working correctly!",
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -77,14 +98,22 @@ app.use('/api/market', marketRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Global error handler:', err.stack);
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      error: "CORS Error",
+      message: "CORS policy is blocking your request. Please check your origin.",
+    });
+  }
   res.status(500).json({
     error: "Something went wrong!",
     message: process.env.NODE_ENV === "development" ? err.message : "Internal server error",
   });
 });
 
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     error: "Route not found",
@@ -112,12 +141,12 @@ async function connectDB() {
 
 connectDB();
 
-
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Ammachi AI Backend server is running on port ${PORT}`);
   console.log(`📍 Server URL: http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`📋 Allowed origins: ${allowedOrigins.join(', ')}`);
 });
 
 module.exports = app;

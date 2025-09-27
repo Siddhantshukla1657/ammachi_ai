@@ -1,14 +1,37 @@
 const admin = require('firebase-admin');
-const serviceAccount = require('../credentials/amaachiai-f879ccf99f8e.json');
 
 let db, auth;
 
-// Initialize Firebase Admin SDK using service account key
+// Initialize Firebase Admin SDK using environment variables
 const initializeFirebase = () => {
   try {
+    // Check if required environment variables are present
+    if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_CLIENT_EMAIL) {
+      console.warn('⚠️ Firebase environment variables not configured. Auth features will be disabled.');
+      return null;
+    }
+
+    // Properly format the private key
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    
+    // If it's a JSON string, parse it
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      // Remove surrounding quotes and unescape
+      privateKey = privateKey.slice(1, -1).replace(/\\n/g, '\n');
+    } else if (privateKey.includes('\\n')) {
+      // Replace escaped newlines with actual newlines
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+
+    const serviceAccount = {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      privateKey: privateKey,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+    };
+
     const app = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
+      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
     });
 
     console.log('✅ Firebase Admin SDK initialized successfully');

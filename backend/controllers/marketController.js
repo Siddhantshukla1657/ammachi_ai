@@ -40,46 +40,32 @@ const handleError = (res, error, fallbackMessage) => {
 /**
  * Get mock market data for demonstration
  */
-const getMockMarketData = () => {
-  return [
-    {
-      variety: 'Basmati',
-      market: 'Ernakulam',
-      grade: 'Grade A',
-      min_price: 2200,
-      max_price: 2600,
-      modal_price: 2400,
-      arrival_date: new Date().toISOString(),
-      district: 'Ernakulam',
-      commodity: 'Rice',
-      state: 'Kerala'
-    },
-    {
-      variety: 'Coconut',
-      market: 'Ernakulam',
-      grade: 'Premium',
-      min_price: 30,
-      max_price: 40,
-      modal_price: 35,
-      arrival_date: new Date().toISOString(),
-      district: 'Ernakulam',
-      commodity: 'Coconut',
-      state: 'Kerala'
-    },
-    {
-      variety: 'Black Pepper',
-      market: 'Ernakulam',
-      grade: 'Grade A',
-      min_price: 480,
-      max_price: 560,
-      modal_price: 520,
-      arrival_date: new Date().toISOString(),
-      district: 'Ernakulam',
-      commodity: 'Pepper',
-      state: 'Kerala'
-    }
-  ];
-};
+const getMockMarketData = () => [
+  // Coconut (7 days)
+  { variety: 'Coconut', market: 'Ernakulam', grade: 'Premium', min_price: 30, max_price: 38, modal_price: 34, arrival_date: new Date(Date.now() - 6*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Coconut', state: 'Kerala' },
+  { variety: 'Coconut', market: 'Ernakulam', grade: 'Premium', min_price: 31, max_price: 39, modal_price: 36, arrival_date: new Date(Date.now() - 5*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Coconut', state: 'Kerala' },
+  { variety: 'Coconut', market: 'Ernakulam', grade: 'Premium', min_price: 32, max_price: 40, modal_price: 37, arrival_date: new Date(Date.now() - 4*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Coconut', state: 'Kerala' },
+  { variety: 'Coconut', market: 'Ernakulam', grade: 'Premium', min_price: 30, max_price: 38, modal_price: 35, arrival_date: new Date(Date.now() - 3*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Coconut', state: 'Kerala' },
+  { variety: 'Coconut', market: 'Ernakulam', grade: 'Premium', min_price: 29, max_price: 37, modal_price: 33, arrival_date: new Date(Date.now() - 2*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Coconut', state: 'Kerala' },
+  { variety: 'Coconut', market: 'Ernakulam', grade: 'Premium', min_price: 33, max_price: 41, modal_price: 38, arrival_date: new Date(Date.now() - 1*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Coconut', state: 'Kerala' },
+  { variety: 'Coconut', market: 'Ernakulam', grade: 'Premium', min_price: 32, max_price: 40, modal_price: 36, arrival_date: new Date().toISOString(), district: 'Ernakulam', commodity: 'Coconut', state: 'Kerala' },
+  // Rice (7 days)
+  { variety: 'Basmati', market: 'Ernakulam', grade: 'Grade A', min_price: 2200, max_price: 2500, modal_price: 2400, arrival_date: new Date(Date.now() - 6*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Rice', state: 'Kerala' },
+  { variety: 'Basmati', market: 'Ernakulam', grade: 'Grade A', min_price: 2220, max_price: 2520, modal_price: 2420, arrival_date: new Date(Date.now() - 5*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Rice', state: 'Kerala' },
+  { variety: 'Basmati', market: 'Ernakulam', grade: 'Grade A', min_price: 2230, max_price: 2530, modal_price: 2430, arrival_date: new Date(Date.now() - 4*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Rice', state: 'Kerala' },
+  { variety: 'Basmati', market: 'Ernakulam', grade: 'Grade A', min_price: 2210, max_price: 2510, modal_price: 2410, arrival_date: new Date(Date.now() - 3*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Rice', state: 'Kerala' },
+  { variety: 'Basmati', market: 'Ernakulam', grade: 'Grade A', min_price: 2240, max_price: 2540, modal_price: 2440, arrival_date: new Date(Date.now() - 2*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Rice', state: 'Kerala' },
+  { variety: 'Basmati', market: 'Ernakulam', grade: 'Grade A', min_price: 2260, max_price: 2560, modal_price: 2460, arrival_date: new Date(Date.now() - 1*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Rice', state: 'Kerala' },
+  { variety: 'Basmati', market: 'Ernakulam', grade: 'Grade A', min_price: 2280, max_price: 2580, modal_price: 2480, arrival_date: new Date().toISOString(), district: 'Ernakulam', commodity: 'Rice', state: 'Kerala' },
+  // Pepper (7 days)
+  { variety: 'Black Pepper', market: 'Ernakulam', grade: 'Grade A', min_price: 480, max_price: 540, modal_price: 500, arrival_date: new Date(Date.now() - 6*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Pepper', state: 'Kerala' },
+  { variety: 'Black Pepper', market: 'Ernakulam', grade: 'Grade A', min_price: 490, max_price: 550, modal_price: 510, arrival_date: new Date(Date.now() - 5*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Pepper', state: 'Kerala' },
+  { variety: 'Black Pepper', market: 'Ernakulam', grade: 'Grade A', min_price: 500, max_price: 560, modal_price: 520, arrival_date: new Date(Date.now() - 4*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Pepper', state: 'Kerala' },
+  { variety: 'Black Pepper', market: 'Ernakulam', grade: 'Grade A', min_price: 495, max_price: 555, modal_price: 515, arrival_date: new Date(Date.now() - 3*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Pepper', state: 'Kerala' },
+  { variety: 'Black Pepper', market: 'Ernakulam', grade: 'Grade A', min_price: 510, max_price: 570, modal_price: 530, arrival_date: new Date(Date.now() - 2*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Pepper', state: 'Kerala' },
+  { variety: 'Black Pepper', market: 'Ernakulam', grade: 'Grade A', min_price: 520, max_price: 580, modal_price: 540, arrival_date: new Date(Date.now() - 1*24*60*60*1000).toISOString(), district: 'Ernakulam', commodity: 'Pepper', state: 'Kerala' },
+  { variety: 'Black Pepper', market: 'Ernakulam', grade: 'Grade A', min_price: 530, max_price: 590, modal_price: 550, arrival_date: new Date().toISOString(), district: 'Ernakulam', commodity: 'Pepper', state: 'Kerala' }
+];
 
 /**
  * Get mock markets data
@@ -113,7 +99,7 @@ const buildApiUrl = (filters = {}, options = {}) => {
   return `${url}?${params.toString()}`;
 };
 
-/**
+/*
  * 🛒 Get market prices for commodities
  * Input: state, market, commodity
  * Output: variety, market, grade, min_price, max_price, modal_price

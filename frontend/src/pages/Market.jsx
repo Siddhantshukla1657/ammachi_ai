@@ -14,6 +14,34 @@ const KERALA_DISTRICTS = [
 // Popular crops for Kerala farmers
 const POPULAR_CROPS = ['Rice', 'Coconut', 'Pepper', 'Cardamom', 'Rubber', 'Ginger'];
 
+// Hardcoded chart data for demo video (more dramatic ups and downs)
+const hardcodedChartData = {
+  Rice: {
+    dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    prices: [2400, 2450, 2380, 2500, 2420, 2550, 2480]
+  },
+  Coconut: {
+    dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    prices: [34, 39, 32, 37, 31, 40, 36]
+  },
+  Pepper: {
+    dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    prices: [500, 540, 520, 510, 560, 530, 580]
+  },
+  Cardamom: {
+    dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    prices: [1200, 1300, 1250, 1400, 1350, 1450, 1380]
+  },
+  Rubber: {
+    dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    prices: [160, 170, 165, 175, 168, 180, 172]
+  },
+  Ginger: {
+    dates: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    prices: [80, 90, 85, 95, 88, 100, 92]
+  }
+};
+
 export default function Market() {
   const { language } = useLanguage();
   const [selectedDistrict, setSelectedDistrict] = useState('Ernakulam');
@@ -109,9 +137,7 @@ export default function Market() {
         chart = (echarts.init ? echarts.init(chartRef.current) : window.echarts.init(chartRef.current));
         
         // Generate chart data from market data or use default
-        const chartData = marketData.length > 0 
-          ? generateChartData(marketData)
-          : generateDefaultChartData();
+        const chartData = hardcodedChartData[selectedCrop] || hardcodedChartData['Rice'];
         
         const option = {
           color: ['#3CB371', '#66CDAA', '#98FB98'], // mediumseagreen variations

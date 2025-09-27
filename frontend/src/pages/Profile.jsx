@@ -517,7 +517,7 @@ export default function Profile() {
   );
 }
 
-/* ---------- Small icon component for readability ---------- */
+/* Small icon component for readability */
 function InfoItem({ label, value, icon }) {
   const { language } = useLanguage();
   // No need to destructure language here as we're using TranslatedText component

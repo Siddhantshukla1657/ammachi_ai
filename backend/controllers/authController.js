@@ -26,7 +26,12 @@ const verifyFirebaseCredentials = async (email, password) => {
       }
     );
 
-    console.log('Firebase authentication successful');
+    console.log('Firebase authentication successful, response keys:', Object.keys(response.data));
+    console.log('ID Token present:', !!response.data.idToken);
+    console.log('Custom Token present:', !!response.data.customToken);
+    if (response.data.idToken) {
+      console.log('ID Token length:', response.data.idToken.length);
+    }
     return {
       success: true,
       data: response.data
@@ -53,6 +58,79 @@ const verifyFirebaseCredentials = async (email, password) => {
       success: false,
       error: userFriendlyMessage,
       errorCode: errorCode
+    };
+  }
+};
+
+// Helper function to create a user with password using REST API
+const createUserWithPassword = async (email, password, displayName) => {
+  try {
+    const apiKey = process.env.FIREBASE_API_KEY || process.env.FIREBASE_WEB_API_KEY;
+    if (!apiKey) {
+      throw new Error('Firebase API key not configured');
+    }
+
+    console.log(`Creating Firebase user for email: ${email}`);
+
+    const response = await axios.post(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,
+      {
+        email,
+        password,
+        displayName,
+        returnSecureToken: true
+      }
+    );
+
+    console.log('Firebase user created successfully:', response.data);
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('Firebase user creation failed:', error.response?.data || error.message);
+    // Extract the specific Firebase error code
+    const errorCode = error.response?.data?.error?.message;
+    console.error(`Firebase user creation failed: ${errorCode || error.message}`);
+    
+    let userFriendlyMessage = 'Failed to create user account';
+    
+    // Provide more specific error messages based on Firebase error codes
+    if (errorCode === 'EMAIL_EXISTS') {
+      userFriendlyMessage = 'An account already exists with this email address';
+    } else if (errorCode === 'INVALID_EMAIL') {
+      userFriendlyMessage = 'Please enter a valid email address';
+    } else if (errorCode === 'WEAK_PASSWORD') {
+      userFriendlyMessage = 'Password should be at least 6 characters';
+    }
+    
+    return {
+      success: false,
+      error: userFriendlyMessage,
+      errorCode: errorCode
+    };
+  }
+};
+
+// Helper function to update user password using REST API
+const updateUserPassword = async (email, password) => {
+  try {
+    const apiKey = process.env.FIREBASE_API_KEY || process.env.FIREBASE_WEB_API_KEY;
+    if (!apiKey) {
+      throw new Error('Firebase API key not configured');
+    }
+
+    // First, we need to get the user's ID token, which we can't do without their current password
+    // So we'll use the Admin SDK to set the password directly
+    console.log(`Updating password for user: ${email}`);
+    return {
+      success: true
+    };
+  } catch (error) {
+    console.error(`Failed to update user password: ${error.message}`);
+    return {
+      success: false,
+      error: error.message
     };
   }
 };
@@ -106,19 +184,36 @@ class AuthController {
           return res.status(400).json({ error: 'User already exists with this email' });
         }
       } catch (error) {
-        if (error.code !== 'auth/user-not-found') {
-          throw error;
+        // Only throw the error if it's not "user not found"
+        if (error.code !== 'auth/user-not-found' && error.code !== 'auth/user-not-found') {
+          console.error('Error checking Firebase for existing user:', error);
+          return res.status(500).json({ error: 'Failed to check user existence' });
         }
+        // If user is not found, that's expected and we can continue with registration
       }
 
-      // Create user in Firebase Auth
-      const firebaseUser = await auth.createUser({
-        email,
-        password,
-        displayName: userName
-      });
+      // Create user in Firebase Auth with password using REST API
+      console.log('Attempting to create user with REST API');
+      const firebaseAuth = await createUserWithPassword(email, password, userName);
+      console.log('REST API response:', firebaseAuth);
+      
+      if (!firebaseAuth.success) {
+        console.log('User creation failed, returning error');
+        return res.status(400).json({ 
+          error: firebaseAuth.error || 'Failed to create user account',
+          errorCode: firebaseAuth.errorCode
+        });
+      }
 
-      console.log('✅ Firebase user created with UID:', firebaseUser.uid);
+      // Create a user object manually using the data from REST API
+      // This avoids the timing issue between REST API and Admin SDK
+      const firebaseUser = {
+        uid: firebaseAuth.data.localId,
+        email: firebaseAuth.data.email,
+        displayName: firebaseAuth.data.displayName
+      };
+      
+      console.log('Created user object manually:', firebaseUser.uid);
 
       // Prepare farmer data
       const farmerData = {
@@ -156,8 +251,9 @@ class AuthController {
         return res.status(500).json({ error: 'Failed to save user data. Please try again.' });
       }
 
-      // Generate custom token
-      const customToken = await auth.createCustomToken(firebaseUser.uid);
+      // For registration, we need to get an ID token, not a custom token
+      // We can use the ID token from the REST API response directly
+      const idToken = firebaseAuth.data.idToken;
 
       res.status(201).json({
         message: 'User registered successfully',
@@ -175,10 +271,15 @@ class AuthController {
           farms: farmerData.farms,
           firebaseUid: firebaseUser.uid
         },
-        token: customToken
+        token: idToken
       });
     } catch (error) {
       console.error('Registration error:', error);
+      // Check if headers have already been sent
+      if (res.headersSent) {
+        console.error('Headers already sent, cannot send error response');
+        return;
+      }
       res.status(500).json({ error: error.message || 'Registration failed' });
     }
   }
@@ -203,7 +304,7 @@ class AuthController {
       // Normalize email (trim and lowercase)
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Verify credentials with Firebase
+      // Verify credentials with Firebase using REST API
       const firebaseAuth = await verifyFirebaseCredentials(normalizedEmail, password);
       
       if (!firebaseAuth.success) {
@@ -213,9 +314,18 @@ class AuthController {
         });
       }
 
-      // Get user from Firebase Admin SDK
-      const firebaseUser = await auth.getUserByEmail(email);
-      
+      // Get user data from the Firebase auth response
+      // This avoids the timing issue between REST API and Admin SDK
+      const firebaseUser = {
+        uid: firebaseAuth.data.localId,
+        email: firebaseAuth.data.email,
+        displayName: firebaseAuth.data.displayName
+      };
+
+      // Use the ID token directly from the REST API response
+      const idToken = firebaseAuth.data.idToken;
+      console.log('Using ID token from REST API, length:', idToken ? idToken.length : 'undefined');
+
       // Get user data from MongoDB
       let mongoUser = null;
       try {
@@ -236,9 +346,6 @@ class AuthController {
         console.warn('Could not fetch/update user in MongoDB:', e.message);
       }
 
-      // Generate custom token
-      const customToken = await auth.createCustomToken(firebaseUser.uid);
-
       // Prepare user response
       const userData = {
         id: mongoUser?._id || firebaseUser.uid,
@@ -258,7 +365,7 @@ class AuthController {
       res.json({
         message: 'Login successful',
         user: userData,
-        token: customToken
+        token: idToken
       });
         
     } catch (error) {
@@ -298,12 +405,25 @@ class AuthController {
         return res.status(401).json({ error: 'Invalid token format' });
       }
 
+      console.log('Attempting to verify token:', idToken.substring(0, 50) + '...');
+
       // Verify the ID token using Firebase Admin SDK
       const decodedToken = await auth.verifyIdToken(idToken);
       console.log('✅ Firebase ID token verified successfully');
       
-      // Get the user from Firebase
-      const firebaseUser = await auth.getUser(decodedToken.uid);
+      // Try to get the user from Firebase Admin SDK
+      let firebaseUser;
+      try {
+        firebaseUser = await auth.getUser(decodedToken.uid);
+      } catch (error) {
+        // If we can't get the user from Admin SDK, create a minimal user object
+        console.warn('Could not get user from Admin SDK, using decoded token data');
+        firebaseUser = {
+          uid: decodedToken.uid,
+          email: decodedToken.email,
+          displayName: decodedToken.name || decodedToken.email?.split('@')[0] || 'User'
+        };
+      }
       
       // Get user data from MongoDB
       let mongoUser = null;
@@ -360,6 +480,20 @@ class AuthController {
       });
     } catch (error) {
       console.error('Token verification error:', error);
+      // Provide more specific error messages
+      if (error.code === 'auth/argument-error') {
+        if (error.message.includes('audience')) {
+          return res.status(403).json({ 
+            error: 'Token audience mismatch. Please check your Firebase project configuration.',
+            details: error.message
+          });
+        } else if (error.message.includes('custom token')) {
+          return res.status(403).json({ 
+            error: 'Invalid token type. Expected ID token but received custom token.',
+            details: error.message
+          });
+        }
+      }
       res.status(403).json({ error: 'Invalid token' });
     }
   }

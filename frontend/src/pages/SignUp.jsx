@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import './auth.css';
+import VideoBackground from '../components/VideoBackground.jsx';
 
 function makeFarmerId() {
   const t = Date.now().toString(36).slice(-6);
@@ -143,7 +144,6 @@ export default function SignUp() {
     if (v) { setError(v); return; }
 
     try {
-      // Prepare complete farmer data payload
       const farmerPayload = {
         email: payload.email,
         password: payload.password,
@@ -196,6 +196,7 @@ export default function SignUp() {
 
   return (
     <section className="auth-shell">
+      <VideoBackground />
       <div className="auth-container">
         <a href="#/" className="back-home" aria-label="Back to home">← Back to Home</a>
 
@@ -222,18 +223,18 @@ export default function SignUp() {
               <div className="field-row">
                 <label className="auth-label">
                   <span className="label-text">Name</span>
-                  <input className="auth-input" name="name" value={form.name} onChange={onChange} />
+                  <input className="auth-input" name="name" value={form.name} onChange={onChange} placeholder="Enter your name here" />
                 </label>
                 <label className="auth-label">
                   <span className="label-text">Email</span>
-                  <input className="auth-input" type="email" name="email" value={form.email} onChange={onChange} />
+                  <input className="auth-input" type="email" name="email" value={form.email} onChange={onChange} placeholder="xyz@gmail.com" />
                 </label>
               </div>
 
               <div className="field-row">
                 <label className="auth-label">
                   <span className="label-text">Phone</span>
-                  <input className="auth-input" name="phone" value={form.phone} onChange={onChange} />
+                  <input className="auth-input" name="phone" value={form.phone} onChange={onChange} placeholder="Enter your mobile number here"/>
                 </label>
                 <label className="auth-label">
                   <span className="label-text">Language</span>
@@ -247,11 +248,11 @@ export default function SignUp() {
               <div className="field-row">
                 <label className="auth-label">
                   <span className="label-text">Password</span>
-                  <input className="auth-input" type="password" name="password" value={form.password} onChange={onChange} />
+                  <input className="auth-input" type="password" name="password" value={form.password} onChange={onChange} placeholder="Minimum 8 characters"/>
                 </label>
                 <label className="auth-label">
                   <span className="label-text">Confirm Password</span>
-                  <input className="auth-input" type="password" name="confirmPassword" value={form.confirmPassword} onChange={onChange} />
+                  <input className="auth-input" type="password" name="confirmPassword" value={form.confirmPassword} onChange={onChange} placeholder='Re-enter the same password'/>
                 </label>
               </div>
 
@@ -278,7 +279,7 @@ export default function SignUp() {
 
                 <label className="auth-label">
                   <span className="label-text">District</span>
-                  <input className="auth-input" name="district" value={form.district} onChange={onChange} />
+                  <input className="auth-input" name="district" value={form.district} onChange={onChange} placeholder='Enter your district name here'/>
                 </label>
               </div>
 
@@ -288,32 +289,26 @@ export default function SignUp() {
                   <div key={idx} className="field-row farm-row" style={{ marginBottom: 8 }}>
                     <label className="auth-label">
                       <span className="label-text">Farm Name</span>
-                      <input className="auth-input" value={f.name} onChange={(e) => onFarmChange(idx, 'name', e.target.value)} />
+                      <input className="auth-input" value={f.name} onChange={(e) => onFarmChange(idx, 'name', e.target.value)} placeholder='Name of your farm' />
                     </label>
                     <label className="auth-label">
-                      <span className="label-text">Acres</span>
-                      <input className="auth-input" value={f.acres} onChange={(e) => onFarmChange(idx, 'acres', e.target.value)} />
+                      <span className="label-text">Farm Area</span>
+                      <input className="auth-input" value={f.acres} onChange={(e) => onFarmChange(idx, 'acres', e.target.value)} placeholder='Number of acres'/>
                     </label>
                     <label className="auth-label">
-                      <span className="label-text">Location</span>
-                      <input className="auth-input" value={f.location} onChange={(e) => onFarmChange(idx, 'location', e.target.value)} />
+                      <span className="label-text">Farm Location</span>
+                      <input className="auth-input" value={f.location} onChange={(e) => onFarmChange(idx, 'location', e.target.value)} placeholder='Location of your farm'/>
                     </label>
                     <label className="auth-label">
-                      <span className="label-text">Crops (comma separated for this farm)</span>
+                      <span className="label-text">Crops</span>
                       <input
-                        className="auth-input"
+                        className="auth-input "
                         value={f.crops || ''}
                         onChange={(e) => onFarmChange(idx, 'crops', e.target.value)}
-                        placeholder="rice, coconut"
+                        placeholder="rice, coconut, etc."
                       />
                     </label>
                   </div>
-                ))}
-              </div>
-
-              <div className="chips" aria-live="polite">
-                {cropList.map((c) => (
-                  <span className="chip" key={c}>{c}</span>
                 ))}
               </div>
 

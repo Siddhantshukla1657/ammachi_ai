@@ -1,9 +1,9 @@
-// src/pages/SignIn.jsx
 import React, { useState, useEffect } from 'react';
 import './auth.css';
 import { auth, googleProvider, db } from '../auth.js';
 import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import VideoBackground from '../components/VideoBackground.jsx';
 
 function findLocalProfile(identifier) {
   try {
@@ -286,6 +286,7 @@ export default function SignIn() {
 
   return (
     <section className="auth-shell">
+      <VideoBackground />
       <div className="auth-container">
         <a href="#/" className="back-home" aria-label="Back to home">
           ← Back to Home
@@ -326,6 +327,7 @@ export default function SignIn() {
                 value={form.identifier}
                 onChange={onChange}
                 autoComplete="username"
+                placeholder="xyz@gmai.com"
               />
             </label>
 
@@ -338,21 +340,17 @@ export default function SignIn() {
                 value={form.password}
                 onChange={onChange}
                 autoComplete="current-password"
+                placeholder="Minimum 8 characters"
               />
             </label>
             
             {/* Forgot password functionality removed */}
-
+          <div className="auth-actions"> 
             <button className="btn-submit" type="submit" disabled={isProcessing}>
               {isProcessing ? 'Signing in...' : 'Login'}
             </button>
-          </form>
-
-          <div
-            style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 12 }}
-          >
             <button
-              className="btn-google"
+              className="btn-outline"
               onClick={onGoogle}
               aria-label="Sign in with Google"
               disabled={isProcessing}
@@ -360,6 +358,7 @@ export default function SignIn() {
               {isProcessing ? 'Please wait...' : 'Continue with Google'}
             </button>
           </div>
+          </form>
 
           <p className="auth-switch">
             New here? <a href="#/signup">Create an account</a>

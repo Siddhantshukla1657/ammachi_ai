@@ -1,13 +1,11 @@
-/* ================================
-   Auth Pages — Ammachi AI
-   ================================ */
+/* Auth Pages — Ammachi AI */
 
    :root{
     --card-bg: rgba(245, 253, 250, 0.92);
     --border-subtle: rgba(161, 213, 190, 0.6);
-    --text-dark: #0f1720;          /* slate-950-ish */
-    --text-muted: #11654a;         /* deep green */
-    --accent: #059669;             /* emerald-600 */
+    --text-dark: #0f1720;
+    --text-muted: #11654a;
+    --accent: #059669;
     --accent-soft: rgba(5,150,105,.20);
     --shadow: 0 8px 20px rgba(19,54,40,.06);
   }
@@ -40,7 +38,7 @@
   }
   
   .auth-card-inner{
-    background: var(--card-bg);
+    background: #ffffffa2;
     border: 2px solid var(--border-subtle);
     border-radius: 16px;
     padding: 24px;
@@ -62,7 +60,6 @@
     color: #2d5a47;
   }
   
-  /* Errors */
   .auth-error{
     background: rgba(248,113,113,.12);
     border: 2px solid rgba(127,29,29,.4);
@@ -72,7 +69,6 @@
     margin: 0 0 14px;
   }
   
-  /* Form layout */
   .auth-form{
     display: grid;
     gap: 16px;
@@ -80,7 +76,7 @@
   
   .field-row{
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* perfectly even halves */
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     width: 100%;
   }
@@ -111,9 +107,9 @@
     box-shadow: none;
   }
   
-  .auth-input::placeholder{
-    color: inherit !important;           
-  }
+.auth-input::placeholder {
+  color: #b6babf;
+  opacity: 1;  }
   
   .auth-input:focus{
     outline: none;
@@ -122,26 +118,8 @@
     background: #ffffff;
   }
   
-  /* Chips preview */
-  .chips{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 4px 0 6px;
-  }
-  
-  .chip{
-    background: #d1fae5;        
-    border: 1.5px solid var(--border-subtle);
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: .9rem;
-    color: #065f46;
-    font-weight: 500;
-  }
-  
   .btn-submit{
-    background: #a7f3d0;        
+    background: #2e7d32 !important;        
     color: var(--text-dark);
     border: none;
     border-radius: 12px;
@@ -149,22 +127,29 @@
     font-weight: 800;
     cursor: pointer;
     transition: background .2s ease, color .2s ease, transform .1s ease;
+    width: fit-content;
+    margin: 0 10px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
-  .btn-submit:hover{ background: #8df0be; }
   .btn-submit:active{ transform: translateY(1px); }
   
   .btn-outline{
-    background: #fff;
-    border: 2px solid var(--border-subtle);
+    width: fit-content;
+    background: antiquewhite !important;
+    border: 1px solid #92d495 !important;
     padding: 10px 14px;
     border-radius: 12px;
-    color: #0f1720;
+    color: #0f1720 !important;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: background .2s ease;
+    width: auto;
+    margin: 0;
   }
   
   .btn-outline:hover{
@@ -173,51 +158,56 @@
   }
   
   .btn-google{
+    margin: 5px !important;
     background: #fff;
-    border: 2px solid var(--border-subtle);
+    border: 2px solid #92d495;
     padding: 10px 14px;
     border-radius: 12px;
     color: #2d5a47;
     cursor: pointer;
     transition: background .2s ease, border-color .2s ease;
+    width: fit-content !important;
+    max-width: 240px;
+    margin: 10px auto;
   }
-  
   
   .auth-form > div:last-child{
     display: flex;
     gap: 12px;
     justify-content: flex-start;
+    align-items: center;
   }
   
-  
   .auth-switch{ margin: 12px 0 0; color: #064e3b; }
-  .auth-switch a{ color: #0ea96a; text-decoration: underline; }
+  .auth-switch a{ color: #2e7d32; text-decoration: underline; }
   
   .btn-google:hover {
-  background: #eaf6ec;   /* pastel green tint */
+  background: #eaf6ec;
   border-color: #b7e1c4;
   color: #2d5a47;
   transform: translateY(-1px);
 }
 
   .back-home{
+    margin-left: 5px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 8px 12px;
     border-radius: 10px;
-    border: 2px solid #2e7d32;
-    color: #2e7d32;
-    background: transparent;
-    font-weight: 600;
+    border: 1px solid antiquewhite;
+    color:antiquewhite;
+    background: #2e7d32;
+    font-weight: 700;
     text-decoration: none;
     transition: background .2s ease, color .2s ease, transform .1s ease;
     align-self: flex-start;
+    z-index: 1;
   }
   
   .back-home:hover{
     background: #2e7d32;
-    color: #fff;
+    transform: translateY(-2px);
   }
   
   .back-home:active{
@@ -231,9 +221,12 @@
   @media (max-width: 720px){
     .auth-card-inner{ padding: 18px; }
     .field-row{ grid-template-columns: 1fr; }
+    .auth-form > div:last-child{
+      flex-direction: column;
+    }
   }
- /* Farms row: 4 columns and aligned inputs */
-.farm-row{
+
+  .farm-row{
   display: grid;
   grid-template-columns: 1.2fr 0.6fr 1fr 1.6fr; /* Name | Acres | Location | Crops */
   gap: 16px;
@@ -241,25 +234,26 @@
   width: 100%;
 }
 
-/* Inside the farms row, force labels to reserve space for up to 2 lines */
 .farm-row .auth-label{
   display: grid;
-  grid-template-rows: auto 1fr; /* label text row, then input row */
+  grid-template-rows: auto 1fr;
 }
 
 .farm-row .label-text{
   white-space: normal;
   line-height: 1.2;
-  min-height: 44px; /* ~2 lines so all four inputs line up */
+  min-height: 20px;
 }
 
 /* Responsive collapse */
 @media (max-width: 920px){
   .farm-row{ grid-template-columns: repeat(2, 1fr); }
 }
+
 @media (max-width: 640px){
   .farm-row{ grid-template-columns: 1fr; }
 }
+
 /* Input fields stay full width */
 .auth-form input {
   width: 100%;
@@ -267,24 +261,12 @@
 
 /* Login button: medium width */
 .btn-submit {
-  width: 70%;   /* adjust this percentage until it feels right */
-  max-width: 300px;  /* prevents it from stretching too much */
-  margin: 0 auto;    /* centers it under the inputs */
+  display: flex;
+  justify-content: center; 
+  align-items: center;   
 }
 
-/* Continue with Google button: smaller */
-.btn-google {
-  width: 55%;   /* smaller than Login */
-  max-width: 240px;
-  margin: 10px auto;
-}
-.btn-submit {
-  display: flex;
-  justify-content: center;  /* centers text horizontally */
-  align-items: center;      /* keeps it vertically centered */
-}
 .field-row.double {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* two equal columns */
-  gap: 16px; /* spacing between state & district */
-}
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;}
