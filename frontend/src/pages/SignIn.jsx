@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './auth.css';
-import { auth, googleProvider, db } from '../auth.js';
+import { auth, googleProvider, db, getBackendUrl } from '../auth.js';
 import { signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import VideoBackground from '../components/VideoBackground.jsx';
@@ -141,7 +141,7 @@ export default function SignIn() {
         setIdToken(idToken);
         
         // Send the ID token to the backend for verification
-        return fetch('/api/auth/verify-token', {
+        return fetch(`${getBackendUrl()}/api/auth/verify-token`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ export default function SignIn() {
             setIdToken(idToken);
             
             // Send the ID token to the backend for verification
-            return fetch('/api/auth/verify-token', {
+            return fetch(`${getBackendUrl()}/api/auth/verify-token`, {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',

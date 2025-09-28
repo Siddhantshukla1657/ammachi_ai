@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import './auth.css';
 import VideoBackground from '../components/VideoBackground.jsx';
+import { getBackendUrl } from '../auth.js';
 
 function makeFarmerId() {
   const t = Date.now().toString(36).slice(-6);
@@ -159,7 +160,7 @@ export default function SignUp() {
         crops: payload.crops
       };
 
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch(`${getBackendUrl()}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(farmerPayload)

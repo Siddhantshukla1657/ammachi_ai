@@ -17,6 +17,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 try { getAnalytics(app); } catch (e) { /* analytics may fail in some environments */ }
 
+// Determine the backend URL based on environment
+export const getBackendUrl = () => {
+  // In production, you'll need to set your actual backend URL
+  // For now, we're defaulting to localhost for development
+  // You should replace this with your actual deployed backend URL
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL;
+  }
+  // Default to localhost for development
+  return 'http://localhost:5000';
+};
+
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
