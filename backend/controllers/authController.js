@@ -185,11 +185,16 @@ class AuthController {
         }
       } catch (error) {
         // Only throw the error if it's not "user not found"
-        if (error.code !== 'auth/user-not-found' && error.code !== 'auth/user-not-found') {
+        // Firebase Admin SDK returns different error codes, let's be more inclusive
+        if (error.code !== 'auth/user-not-found' && 
+            error.code !== 'auth/user-not-found' && 
+            error.code !== 'auth/user-not-found-error') {
           console.error('Error checking Firebase for existing user:', error);
-          return res.status(500).json({ error: 'Failed to check user existence' });
+          // Don't fail registration just because we can't check Firebase
+          // Continue with registration to ensure robustness
+          console.warn('Continuing with registration despite Firebase check error');
         }
-        // If user is not found, that's expected and we can continue with registration
+        // If user is not found or there's an error checking, that's expected and we can continue with registration
       }
 
       // Create user in Firebase Auth with password using REST API
@@ -308,6 +313,26 @@ class AuthController {
       const firebaseAuth = await verifyFirebaseCredentials(normalizedEmail, password);
       
       if (!firebaseAuth.success) {
+        // If login fails, check if it's because the user exists but has no password
+        // This can happen with users created with the old method
+        try {
+          const firebaseUser = await auth.getUserByEmail(email);
+          if (firebaseUser) {
+            // User exists but login failed - this might be due to no password being set
+            // Return the specific error from Firebase
+            return res.status(401).json({ 
+              error: firebaseAuth.error || 'Invalid email or password',
+              errorCode: firebaseAuth.errorCode
+            });
+          }
+        } catch (userCheckError) {
+          // User doesn't exist at all
+          return res.status(401).json({ 
+            error: 'No account found with this email address.',
+            errorCode: 'EMAIL_NOT_FOUND'
+          });
+        }
+        
         return res.status(401).json({ 
           error: firebaseAuth.error || 'Invalid email or password',
           errorCode: firebaseAuth.errorCode
