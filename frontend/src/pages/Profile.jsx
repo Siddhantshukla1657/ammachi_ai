@@ -48,7 +48,7 @@ export default function Profile() {
         const authToken = localStorage.getItem('authToken');
         if (authToken) {
           try {
-            const tokenResponse = await fetch('http://localhost:5000/api/auth/verify-token', {
+            const tokenResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/verify-token`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ idToken: authToken })

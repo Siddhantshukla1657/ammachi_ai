@@ -212,7 +212,7 @@ export default function Weather(){
                 <div className="error-help">
                   <TranslatedText text="Please ensure" />:
                   <ul>
-                    <li><TranslatedText text="Backend server is running at" /> http://localhost:5000</li>
+                    <li><TranslatedText text="Backend server is running at" /> {import.meta.env.VITE_BACKEND_URL}</li>
                     <li>OPENWEATHER_API_KEY <TranslatedText text="is properly set in the backend .env file" /></li>
                     <li><TranslatedText text="Your internet connection is working" /></li>
                   </ul>

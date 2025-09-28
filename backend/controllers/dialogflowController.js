@@ -22,15 +22,35 @@ let sessionClient;
 let projectId;
 
 try {
-  const keyFilename = path.join(__dirname, '../credentials/amaachiai-f879ccf99f8e.json');
-  const serviceAccount = require(keyFilename);
-  projectId = serviceAccount.project_id;
-  
-  sessionClient = new dialogflow.SessionsClient({
-    keyFilename: keyFilename
-  });
-  
-  console.log('✅ Dialogflow client initialized successfully');
+  // Check if we have the required environment variables for Dialogflow
+  if (process.env.DIALOGFLOW_PROJECT_ID && process.env.DIALOGFLOW_PRIVATE_KEY && process.env.DIALOGFLOW_CLIENT_EMAIL) {
+    // Use environment variables instead of credential file
+    const serviceAccount = {
+      project_id: process.env.DIALOGFLOW_PROJECT_ID,
+      private_key: process.env.DIALOGFLOW_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      client_email: process.env.DIALOGFLOW_CLIENT_EMAIL
+    };
+    
+    projectId = serviceAccount.project_id;
+    
+    sessionClient = new dialogflow.SessionsClient({
+      credentials: serviceAccount,
+      projectId: projectId
+    });
+    
+    console.log('✅ Dialogflow client initialized successfully using environment variables');
+  } else {
+    // Try to use credential file as fallback
+    const keyFilename = path.join(__dirname, '../credentials/amaachiai-f879ccf99f8e.json');
+    const serviceAccount = require(keyFilename);
+    projectId = serviceAccount.project_id;
+    
+    sessionClient = new dialogflow.SessionsClient({
+      keyFilename: keyFilename
+    });
+    
+    console.log('✅ Dialogflow client initialized successfully using credential file');
+  }
 } catch (error) {
   console.warn('⚠️ Dialogflow initialization failed:', error.message);
   console.log('   Chatbot will use fallback responses');
@@ -65,7 +85,11 @@ const generateFallbackResponse = (message, language = 'en') => {
       general: `🌾 How can I help?\n• Crops\n• Diseases\n• Prices`
     },
     ml: {
-      greeting: `ഹായ്! ഞാൻ അമ്മച്ചി AI 🌾\n• കൃഷി സഹായം\n• രോഗ ടിപ്സ്\n• വില\nഎന്തു വേണം?`,
+      greeting: `ഹായ്! ഞാൻ അമ്മച്ചി AI 🌾
+• കൃഷി സഹായം
+• രോഗ ടിപ്സ്
+• വില
+എന്തു വേണം?`,
       rice: `🌾 നെല്ല്:\n• നല്ല വിത്ത്\n• വെള്ളം maintain\n• കീടങ്ങൾ നോക്കുക`,
       coconut: `🥥 തെങ്ങ്:\n• 7m അന്തരം\n• ആഴ്ചയിൽ 2 വാര വെള്ളം\n• organic manure`,
       pepper: `🌶️ കുരുമുളക്:\n• സപ്പോർട്ട് വേണം\n• drainage നല്ലത്\n• ചുവന്നപ്പോൾ വെട്ടുക`,

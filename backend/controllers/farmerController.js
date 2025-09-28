@@ -271,7 +271,7 @@ class FarmerController {
       const marketData = await Promise.all(
         farmer.crops.slice(0, 3).map(async (crop) => {
           try {
-            const response = await axios.get(`http://localhost:5000/api/market/prices`, {
+            const response = await axios.get(`${process.env.BACKEND_URL || 'http://localhost:5000'}/api/market/prices`, {
               params: {
                 state: farmer.location?.state || 'Kerala',
                 market: getMarketForDistrict(farmer.location?.district),
@@ -306,7 +306,7 @@ class FarmerController {
       try {
         const districtCoords = getDistrictCoordinates(farmer.location?.district);
         if (districtCoords) {
-          const weatherResponse = await axios.get(`http://localhost:5000/api/weather/current`, {
+          const weatherResponse = await axios.get(`${process.env.BACKEND_URL || 'http://localhost:5000'}/api/weather/current`, {
             params: {
               lat: districtCoords.lat,
               lon: districtCoords.lon
