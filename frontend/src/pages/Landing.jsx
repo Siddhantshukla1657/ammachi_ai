@@ -3,7 +3,7 @@ import './landing.css';
 
 const videoUrl = '/videos/Homepage_bg.mp4';
 const logoUrl =
-  '/images/logo_withbg.png';
+  '/images/Logo_withbg.png';
 
 export default function Landing() {
   return (
