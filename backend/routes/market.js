@@ -19,6 +19,13 @@ const marketController = require('../controllers/marketController');
 router.get('/prices', marketController.getMarketPrices);
 
 /**
+ * @route   GET /api/market/test-key
+ * @desc    Test if MARKET_API_KEY is properly configured
+ * @access  Public
+ */
+router.get('/test-key', marketController.testApiKey);
+
+/**
  * @route   GET /api/market/commodities
  * @desc    Get list of available commodities
  * @access  Public

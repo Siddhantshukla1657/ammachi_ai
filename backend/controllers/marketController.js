@@ -83,8 +83,11 @@ const buildApiUrl = (filters = {}, options = {}) => {
   let url = `${MARKET_API_BASE_URL}/${MARKET_RESOURCE_ID}`;
   const params = new URLSearchParams();
   
-  // Add API key
-  params.append('api-key', process.env.MARKET_API_KEY);
+  // Add API key from environment variables
+  const apiKey = process.env.MARKET_API_KEY;
+  if (apiKey) {
+    params.append('api-key', apiKey);
+  }
   params.append('format', format);
   params.append('limit', limit.toString());
   params.append('offset', offset.toString());
@@ -96,7 +99,9 @@ const buildApiUrl = (filters = {}, options = {}) => {
     }
   });
   
-  return `${url}?${params.toString()}`;
+  const finalUrl = `${url}?${params.toString()}`;
+  console.log('Built API URL:', finalUrl);
+  return finalUrl;
 };
 
 /*
@@ -109,7 +114,8 @@ exports.getMarketPrices = async (req, res) => {
     const { commodity, state, market } = req.query;
     
     // Check if API key is available
-    if (!process.env.MARKET_API_KEY) {
+    const apiKey = process.env.MARKET_API_KEY;
+    if (!apiKey) {
       console.warn('MARKET_API_KEY not found, returning mock data');
       const mockData = getMockMarketData().filter(item => 
         (!commodity || item.commodity.toLowerCase().includes(commodity.toLowerCase())) &&
@@ -148,14 +154,15 @@ exports.getMarketPrices = async (req, res) => {
     const apiUrl = buildApiUrl(filters, { limit: 100, offset: 0 });
     
     console.log('Making API request to:', apiUrl);
+    console.log('Using API key:', apiKey ? 'YES' : 'NO');
     
     const response = await axios.get(apiUrl, {
       headers: {
-        'X-API-Key': process.env.MARKET_API_KEY,
+        'X-API-Key': apiKey, // Also send as header for compatibility
         'Accept': 'application/json',
         'User-Agent': 'Ammachi-AI-Backend/1.0'
       },
-      timeout: 10000 // 10 second timeout
+      timeout: 15000 // Increase timeout to 15 seconds
     });
     
     // Process the response to extract the required fields
@@ -196,7 +203,33 @@ exports.getMarketPrices = async (req, res) => {
     });
     
   } catch (error) {
-    handleError(res, error, 'Failed to fetch market price data');
+    console.error('Market API error:', error.message);
+    
+    // Check if it's an API key issue or network issue
+    if (error.response && (error.response.status === 403 || error.response.status === 401)) {
+      console.warn('API key not authorized or invalid, returning mock data');
+      return res.json({
+        success: true,
+        message: 'Using demo data - API key not configured',
+        data: getMockMarketData(),
+        demo: true
+      });
+    }
+
+    if (error.response) {
+      console.error('Error Response:', error.response.data);
+      console.error('Error Status:', error.response.status);
+      return res.status(error.response.status).json({
+        error: 'Market API Error',
+        details: error.response.data,
+        status: error.response.status
+      });
+    }
+
+    return res.status(500).json({
+      error: 'Failed to fetch market price data',
+      message: error.message,
+    });
   }
 };
 
@@ -333,5 +366,39 @@ exports.getDistricts = async (req, res) => {
     });
   } catch (error) {
     handleError(res, error, 'Failed to fetch districts list');
+  }
+};
+
+/**
+ * Test endpoint to check if MARKET_API_KEY is properly configured
+ */
+exports.testApiKey = async (req, res) => {
+  try {
+    const apiKey = process.env.MARKET_API_KEY;
+    
+    if (!apiKey) {
+      return res.status(400).json({
+        success: false,
+        error: 'MARKET_API_KEY not found in environment variables',
+        env_vars: Object.keys(process.env).filter(key => key.includes('MARKET') || key.includes('API'))
+      });
+    }
+    
+    // Check if it's the expected key
+    const isExpectedKey = apiKey === '579b464db66ec23bdd0000016dd62f530d18433f6be27af179222bc2';
+    
+    res.json({
+      success: true,
+      message: 'MARKET_API_KEY is properly configured',
+      key_present: !!apiKey,
+      key_length: apiKey.length,
+      is_expected_key: isExpectedKey,
+      sample: apiKey.substring(0, 10) + '...' + apiKey.substring(apiKey.length - 10)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 };

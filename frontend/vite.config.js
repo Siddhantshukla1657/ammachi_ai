@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: env.VITE_BACKEND_URL || 'http://localhost:5000',
+          target: 'http://localhost:5000', // Always proxy to local backend in development
           changeOrigin: true,
           secure: false
         }

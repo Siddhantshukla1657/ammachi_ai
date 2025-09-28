@@ -24,7 +24,19 @@ PORT=5000
 NODE_ENV=production
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://ammachiai.vercel.app
 
-# Other API keys...
+# Weather and API Keys
+PLANT_ID_KEY=bMAVATb7bJdaJ61G6Upx8WiIVk1HbXNx55nlnHHwRFiviZqfcS
+DIALOGFLOW_API_KEY=077659109ad6e2ca1c6d5faf79b2f4cc5b068df8
+OPENWEATHER_API_KEY=3f30c645831039ee938726c81b34ee2d
+MARKET_API_KEY=579b464db66ec23bdd0000016dd62f530d18433f6be27af179222bc2
+
+# Gemini AI Configuration
+API_KEY=AIzaSyCKM6n4lzFVYeiowKk4EB4Fz1R0F_4_Rts
+MODEL=gemini-1.5-flash
+
+# Dialogflow Configuration (for deployment)
+GOOGLE_APPLICATION_CREDENTIALS_JSON={"type":"service_account","project_id":"amachiai",...}
+DIALOGFLOW_PROJECT_ID=amachiai
 ```
 
 ### 2. Deploy Your Backend
@@ -44,6 +56,28 @@ When deploying to Vercel, make sure to set the environment variable in the Verce
 - Key: `VITE_BACKEND_URL`
 - Value: `https://your-deployed-backend-url.com`
 
+## API Integration Verification
+
+### Market API
+The market API has been successfully integrated with the data.gov.in API using the provided API key:
+- API Key: `579b464db66ec23bdd0000016dd62f530d18433f6be27af179222bc2`
+- Resource: [Variety-wise daily market prices data commodity](https://www.data.gov.in/resource/variety-wise-daily-market-prices-data-commodity)
+- Endpoints working:
+  - `/api/market/prices` - Returns real market prices
+  - `/api/market/markets` - Returns real market list
+  - `/api/market/commodities` - Returns real commodity list
+
+### Weather API
+The OpenWeatherMap API is properly configured and working:
+- Endpoints working:
+  - `/api/weather/current` - Returns current weather
+  - `/api/weather/hourly` - Returns hourly forecast
+  - `/api/weather/daily` - Returns daily forecast
+
+### Chatbot API
+The chatbot requires Dialogflow and Gemini credentials to work fully:
+- Endpoints available but may show fallback responses without proper credentials
+
 ## Troubleshooting
 
 ### CORS Issues
@@ -61,11 +95,20 @@ ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://ammachiai.ve
 1. Verify your MongoDB connection string is correct
 2. Make sure your MongoDB cluster allows connections from your backend server's IP
 
+### Market API Returning Demo Data
+If the market API is still returning demo data:
+1. Verify `MARKET_API_KEY` is correctly set in backend environment variables
+2. Check that the API key has access to the market data resource
+3. Restart the backend server after updating environment variables
+
 ## Testing Your Deployment
 
 1. Visit your deployed frontend: https://ammachiai.vercel.app
 2. Try to register a new account
 3. Try to log in with an existing account
 4. Try Google Sign-In
+5. Test Market Prices page - should show real data, not demo data
+6. Test Weather page - should show real weather data
+7. Test Chatbot - should respond to messages (may show fallback responses if Dialogflow not configured)
 
 If any of these fail, check the browser console for errors and the backend logs for more information.

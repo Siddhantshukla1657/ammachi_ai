@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './dashboard.css';
 import Sidebar from '../components/Sidebar.jsx';
-import { FaCheckCircle, FaExclamationTriangle, FaLeaf, FaCloud, FaTint, FaWind, FaLightbulb, FaSync } from 'react-icons/fa';
+import { FaCheckCircle, FaExclamationTriangle, FaLeaf, FaCloud, FaTint, FaWind, FaLightbulb, FaSync, FaInfoCircle } from 'react-icons/fa';
 import TranslatedText from '../components/TranslatedText';
 import { useLanguage } from '../context/LanguageContext';
+import { getBackendUrl } from '../auth'; // Import the getBackendUrl function
 
 export default function Dashboard() {
   const { language } = useLanguage();
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [marketData, setMarketData] = useState([]);
   const [cropHealthData, setCropHealthData] = useState([]);
+  const [realTimeMarketData, setRealTimeMarketData] = useState([]); // New state for real-time market data
 
   function signOut() {
     localStorage.removeItem('ammachi_session');
@@ -42,8 +44,9 @@ export default function Dashboard() {
     try {
       setIsLoading(true);
       
-      // Fetch comprehensive dashboard data
-      const response = await fetch(`/api/farmers/dashboard/${userId}`);
+      // Use the getBackendUrl function to construct the proper URL
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/farmers/dashboard/${userId}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -63,6 +66,83 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Fetch real-time market data separately
+  const fetchRealTimeMarketData = async () => {
+    try {
+      const backendUrl = getBackendUrl();
+      // Get farmer's district from profile or use default
+      const district = profile.district || 'Ernakulam';
+      const state = profile.state || 'Kerala';
+      
+      // Get markets for the district
+      const marketsResponse = await fetch(`${backendUrl}/api/market/markets?state=${state}&district=${district}`);
+      if (!marketsResponse.ok) {
+        throw new Error('Failed to fetch markets');
+      }
+      
+      const marketsData = await marketsResponse.json();
+      const market = marketsData.data && marketsData.data.length > 0 ? marketsData.data[0] : 'Ernakulam';
+      
+      // Get farmer's crops or use defaults
+      const crops = profile.crops && profile.crops.length > 0 ? profile.crops : ['Rice', 'Coconut', 'Pepper'];
+      
+      // Fetch market prices for each crop
+      const marketPrices = await Promise.all(
+        crops.slice(0, 3).map(async (crop) => {
+          try {
+            const response = await fetch(
+              `${backendUrl}/api/market/prices?state=${state}&market=${market}&commodity=${crop}`
+            );
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.success && data.data && data.data.length > 0) {
+                const priceData = data.data[0];
+                return {
+                  crop: crop,
+                  price: priceData.modal_price || priceData.max_price || 0,
+                  change: calculatePriceChange(data.data),
+                  market: priceData.market,
+                  updated: new Date().toISOString()
+                };
+              }
+            }
+            return null;
+          } catch (error) {
+            console.error(`Error fetching market data for ${crop}:`, error);
+            return null;
+          }
+        })
+      );
+      
+      // Filter out null results and update state
+      const validMarketData = marketPrices.filter(data => data !== null);
+      setRealTimeMarketData(validMarketData);
+    } catch (error) {
+      console.error('Error fetching real-time market data:', error);
+    }
+  };
+
+  // Calculate price change based on historical data
+  const calculatePriceChange = (priceData) => {
+    if (priceData.length < 2) {
+      return { percentage: 0, direction: 'up' };
+    }
+    
+    const currentPrice = priceData[0].modal_price || priceData[0].max_price || 0;
+    const previousPrice = priceData[1].modal_price || priceData[1].max_price || 0;
+    
+    if (previousPrice === 0) {
+      return { percentage: 0, direction: 'up' };
+    }
+    
+    const changePercent = ((currentPrice - previousPrice) / previousPrice) * 100;
+    return {
+      percentage: parseFloat(changePercent.toFixed(1)),
+      direction: changePercent >= 0 ? 'up' : 'down'
+    };
   };
 
   // Fallback data for when API fails
@@ -94,14 +174,20 @@ export default function Dashboard() {
   // Auto-refresh dashboard data every 5 minutes
   useEffect(() => {
     fetchDashboardData();
+    fetchRealTimeMarketData(); // Fetch real-time market data
     
-    const interval = setInterval(fetchDashboardData, 5 * 60 * 1000); // 5 minutes
+    const interval = setInterval(() => {
+      fetchDashboardData();
+      fetchRealTimeMarketData(); // Refresh real-time market data
+    }, 5 * 60 * 1000); // 5 minutes
+    
     return () => clearInterval(interval);
   }, [userId]);
 
   // Manual refresh function
   const handleRefresh = () => {
     fetchDashboardData();
+    fetchRealTimeMarketData(); // Refresh real-time market data
   };
 
   useEffect(() => {
@@ -124,8 +210,10 @@ export default function Dashboard() {
         if (!chartRef.current || !echarts) return;
         chart = (echarts.init ? echarts.init(chartRef.current) : window.echarts.init(chartRef.current));
         
-        // Use real market data if available
-        const chartData = marketData.length > 0 ? generateChartData(marketData) : getDefaultChartData();
+        // Use real market data if available, otherwise fallback to dashboard data
+        const chartData = realTimeMarketData.length > 0 ? 
+          generateChartData(realTimeMarketData) : 
+          (marketData.length > 0 ? generateChartData(marketData) : getDefaultChartData());
         
         const option = {
           color: ['#1ea055', '#89d7a0', '#66c184'],
@@ -144,7 +232,7 @@ export default function Dashboard() {
     const handleResize = () => { if (chart) chart.resize(); }
     window.addEventListener('resize', handleResize);
     return () => { window.removeEventListener('resize', handleResize); if (chart) chart.dispose && chart.dispose(); };
-  }, [marketData]);
+  }, [marketData, realTimeMarketData]);
 
   // Generate chart data from real market prices
   const generateChartData = (marketPrices) => {
@@ -212,11 +300,12 @@ export default function Dashboard() {
     if (!dashboardData?.weather) {
       const fetchWeatherData = async () => {
         try {
+          const backendUrl = getBackendUrl();
           // Using Thiruvananthapuram as default location
           const { lat, lon } = { lat: 8.5241, lon: 76.9366 };
           
           // Fetch current weather data
-          const response = await fetch(`/api/weather/current?lat=${lat}&lon=${lon}`);
+          const response = await fetch(`${backendUrl}/api/weather/current?lat=${lat}&lon=${lon}`);
           
           if (!response.ok) {
             throw new Error(`Weather API returned status: ${response.status}`);
@@ -264,86 +353,107 @@ export default function Dashboard() {
     icon: scan.status === 'Healthy' || !scan.status ? 
       <FaCheckCircle style={{color: '#1ea055', marginRight: 4}} /> : 
       <FaExclamationTriangle style={{color: '#c44', marginRight: 4}} />
-  })) : [
-    {
-      crop: 'Rice',
-      status: 'Leaf Blast',
-      statusType: 'warn',
-      date: '5/15/2024',
-      icon: <FaExclamationTriangle style={{color: '#c44', marginRight: 4}} />
-    },
-    {
-      crop: 'Coconut',
-      status: 'Healthy',
-      statusType: 'ok',
-      date: '5/18/2024',
-      icon: <FaCheckCircle style={{color: '#1ea055', marginRight: 4}} />
-    }
-  ];
+  })) : [];
 
-  // Weather-based farming tips
-  const [tips, setTips] = useState([
-    {
-      title: 'Morning Care',
-      desc: "Check for pest damage during early morning hours when they're most active.",
+  // Crop-specific farming tips based on user's registered crops
+  const [tips, setTips] = useState([]);
+
+  // Generate crop-specific tips based on user's crops
+  useEffect(() => {
+    const userCrops = profile.crops || [];
+    const cropTips = [];
+    
+    // Add general tips that apply to all crops
+    cropTips.push({
+      title: 'General Farming Tip',
+      desc: 'Regular monitoring of your crops can help detect issues early and improve yields.',
       color: '#fef9c3',
       border: '#fde68a'
-    },
-    {
-      title: 'Watering Tip',
-      desc: 'Adjust watering based on current weather conditions.',
-      color: '#e0edff',
-      border: '#a5b4fc'
-    }
-  ]);
-  
-  // Update tips based on weather data
-  useEffect(() => {
-    const updatedTips = [...tips];
+    });
     
-    // Update watering tip based on humidity
-    if (weather.humidity > 70) {
-      updatedTips[1] = {
-        ...updatedTips[1],
-        desc: `High humidity (${weather.humidity}%) - reduce watering to prevent fungal growth.`,
-        color: '#e0edff',
-        border: '#a5b4fc'
-      };
-    } else if (weather.humidity < 40) {
-      updatedTips[1] = {
-        ...updatedTips[1],
-        desc: `Low humidity (${weather.humidity}%) - consider increasing watering frequency.`,
-        color: '#fee2e2',
-        border: '#fca5a5'
-      };
-    } else {
-      updatedTips[1] = {
-        ...updatedTips[1],
-        desc: `Moderate humidity (${weather.humidity}%) - maintain regular watering schedule.`,
-        color: '#e0edff',
-        border: '#a5b4fc'
-      };
-    }
-    
-    // Add weather-specific tip based on conditions
-    if (weather.desc.toLowerCase().includes('rain')) {
-      updatedTips.push({
-        title: 'Rain Alert',
-        desc: 'Rainy conditions detected. Consider postponing outdoor activities like spraying or harvesting.',
+    // Add crop-specific tips only for crops the user actually has
+    if (userCrops.includes('Rice')) {
+      cropTips.push({
+        title: 'Rice Care',
+        desc: 'Maintain proper water levels in your paddy fields. Too much or too little water can affect yield.',
         color: '#dbeafe',
         border: '#93c5fd'
       });
-    } else if (weather.desc.toLowerCase().includes('clear') || weather.desc.toLowerCase().includes('sun')) {
-      updatedTips.push({
-        title: 'Sunny Day',
-        desc: 'Good conditions for harvesting and drying crops. Ensure adequate irrigation.',
-        color: '#fef3c7',
-        border: '#fcd34d'
+    }
+    
+    if (userCrops.includes('Coconut')) {
+      cropTips.push({
+        title: 'Coconut Care',
+        desc: 'Regularly check for signs of coconut mite infestation. Early detection is key to preventing damage.',
+        color: '#fee2e2',
+        border: '#fca5a5'
       });
     }
     
-    setTips(updatedTips);
-  }, [weather]);
+    if (userCrops.includes('Pepper')) {
+      cropTips.push({
+        title: 'Pepper Care',
+        desc: 'Ensure good drainage to prevent root rot. Support vines with proper trellising for better growth.',
+        color: '#dcfce7',
+        border: '#86efac'
+      });
+    }
+    
+    if (userCrops.includes('Cardamom')) {
+      cropTips.push({
+        title: 'Cardamom Care',
+        desc: 'Cardamom thrives in shaded, humid conditions. Maintain mulch to retain soil moisture.',
+        color: '#f0fdfa',
+        border: '#5eead4'
+      });
+    }
+    
+    if (userCrops.includes('Rubber')) {
+      cropTips.push({
+        title: 'Rubber Care',
+        desc: 'Regular tapping should be done in the morning. Avoid tapping during dry seasons to prevent tree stress.',
+        color: '#f0f9ff',
+        border: '#bae6fd'
+      });
+    }
+    
+    // Add weather-based tips
+    if (weather.desc) {
+      if (weather.desc.toLowerCase().includes('rain')) {
+        cropTips.push({
+          title: 'Rain Alert',
+          desc: 'Rainy conditions detected. Ensure proper drainage to prevent waterlogging in your fields.',
+          color: '#dbeafe',
+          border: '#93c5fd'
+        });
+      } else if (weather.desc.toLowerCase().includes('clear') || weather.desc.toLowerCase().includes('sun')) {
+        cropTips.push({
+          title: 'Sunny Day',
+          desc: 'Good conditions for field work. Consider irrigation if soil moisture is low.',
+          color: '#fef3c7',
+          border: '#fcd34d'
+        });
+      }
+      
+      if (weather.humidity > 70) {
+        cropTips.push({
+          title: 'High Humidity',
+          desc: `High humidity (${weather.humidity}%) - Monitor for fungal diseases and ensure proper air circulation.`,
+          color: '#e0edff',
+          border: '#a5b4fc'
+        });
+      } else if (weather.humidity < 40) {
+        cropTips.push({
+          title: 'Low Humidity',
+          desc: `Low humidity (${weather.humidity}%) - Increase irrigation frequency to maintain soil moisture.`,
+          color: '#fee2e2',
+          border: '#fca5a5'
+        });
+      }
+    }
+    
+    setTips(cropTips);
+  }, [profile.crops, weather]);
 
   return (
     <div className="dash-layout">
@@ -415,15 +525,22 @@ export default function Dashboard() {
               <FaLeaf style={{marginRight: 8, color: '#059669'}} />
               <strong style={{fontSize: '1.15rem'}}><TranslatedText text="Crop Health" /></strong>
             </div>
-            {recentScans.map((scan, idx) => (
-              <div key={idx} style={{display: 'flex', alignItems: 'center', marginBottom: 12}}>
-                <span style={{fontWeight: 700, marginRight: 8}}>{scan.crop}</span>
-                <span className={scan.statusType} style={{display: 'flex', alignItems: 'center', fontWeight: 700, color: scan.statusType === 'warn' ? '#c44' : '#1ea055', marginRight: 8}}>
-                  {scan.icon} {scan.status}
-                </span>
-                <span style={{color: '#64748b', fontSize: 14}}>{scan.date}</span>
+            {recentScans.length > 0 ? (
+              recentScans.map((scan, idx) => (
+                <div key={idx} style={{display: 'flex', alignItems: 'center', marginBottom: 12}}>
+                  <span style={{fontWeight: 700, marginRight: 8}}>{scan.crop}</span>
+                  <span className={scan.statusType} style={{display: 'flex', alignItems: 'center', fontWeight: 700, color: scan.statusType === 'warn' ? '#c44' : '#1ea055', marginRight: 8}}>
+                    {scan.icon} {scan.status}
+                  </span>
+                  <span style={{color: '#64748b', fontSize: 14}}>{scan.date}</span>
+                </div>
+              ))
+            ) : (
+              <div style={{display: 'flex', alignItems: 'center', padding: '20px 0'}}>
+                <FaInfoCircle style={{marginRight: 8, color: '#64748b'}} />
+                <span style={{color: '#64748b'}}><TranslatedText text="Not detected any crops yet" /></span>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Block 2: Today's Tips */}
@@ -432,18 +549,25 @@ export default function Dashboard() {
               <FaLightbulb style={{marginRight: 8, color: '#fbbf24'}} />
               <strong style={{fontSize: '1.15rem'}}><TranslatedText text="Today's Tips" /></strong>
             </div>
-            {tips.map((tip, idx) => (
-              <div key={idx} style={{
-                background: tip.color,
-                border: `1.5px solid ${tip.border}`,
-                borderRadius: 8,
-                padding: '10px 14px',
-                marginBottom: 10
-              }}>
-                <div style={{fontWeight: 700, marginBottom: 2}}>{tip.title}</div>
-                <div style={{fontSize: 15, color: '#334155'}}>{tip.desc}</div>
+            {tips.length > 0 ? (
+              tips.map((tip, idx) => (
+                <div key={idx} style={{
+                  background: tip.color,
+                  border: `1.5px solid ${tip.border}`,
+                  borderRadius: 8,
+                  padding: '10px 14px',
+                  marginBottom: 10
+                }}>
+                  <div style={{fontWeight: 700, marginBottom: 2}}>{tip.title}</div>
+                  <div style={{fontSize: 15, color: '#334155'}}>{tip.desc}</div>
+                </div>
+              ))
+            ) : (
+              <div style={{display: 'flex', alignItems: 'center', padding: '20px 0'}}>
+                <FaInfoCircle style={{marginRight: 8, color: '#64748b'}} />
+                <span style={{color: '#64748b'}}><TranslatedText text="No specific tips available for your crops" /></span>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Block 3: Weather */}
@@ -509,7 +633,7 @@ export default function Dashboard() {
             </button>
           </div>
           <div className="market-row">
-            {marketData.length > 0 ? marketData.map((item, index) => (
+            {(realTimeMarketData.length > 0 ? realTimeMarketData : marketData).map((item, index) => (
               <div key={index} className="price-summary">
                 <div className="p-name">{item.crop}</div>
                 <div className="p-value">₹{item.price}</div>
@@ -520,26 +644,7 @@ export default function Dashboard() {
                   {item.market}
                 </div>
               </div>
-            )) : (
-              // Fallback data
-              <>
-                <div className="price-summary">
-                  <div className="p-name">Rice</div>
-                  <div className="p-value">₹2850</div>
-                  <div className="p-change pos">+5.2%</div>
-                </div>
-                <div className="price-summary">
-                  <div className="p-name">Coconut</div>
-                  <div className="p-value">₹12</div>
-                  <div className="p-change neg">-2.1%</div>
-                </div>
-                <div className="price-summary">
-                  <div className="p-name">Pepper</div>
-                  <div className="p-value">₹58000</div>
-                  <div className="p-change pos">+8.7%</div>
-                </div>
-              </>
-            )}
+            ))}
           </div>
           <div className="market-chart card-chart" ref={chartRef} />
         </div>

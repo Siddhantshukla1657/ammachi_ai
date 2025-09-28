@@ -271,13 +271,15 @@ class FarmerController {
       const marketData = await Promise.all(
         farmer.crops.slice(0, 3).map(async (crop) => {
           try {
-            const response = await axios.get(`${process.env.BACKEND_URL || 'http://localhost:5000'}/api/market/prices`, {
+            // Use the correct backend URL from environment variables
+            const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+            const response = await axios.get(`${backendUrl}/api/market/prices`, {
               params: {
                 state: farmer.location?.state || 'Kerala',
                 market: getMarketForDistrict(farmer.location?.district),
                 commodity: crop
               },
-              timeout: 5000
+              timeout: 10000 // Increase timeout to 10 seconds
             });
             
             if (response.data.success && response.data.data.length > 0) {
@@ -285,7 +287,7 @@ class FarmerController {
               return {
                 crop: crop,
                 price: priceData.modal_price || priceData.max_price,
-                change: calculatePriceChange(priceData),
+                change: calculatePriceChange(response.data.data),
                 market: priceData.market,
                 updated: new Date().toISOString()
               };
@@ -306,12 +308,14 @@ class FarmerController {
       try {
         const districtCoords = getDistrictCoordinates(farmer.location?.district);
         if (districtCoords) {
-          const weatherResponse = await axios.get(`${process.env.BACKEND_URL || 'http://localhost:5000'}/api/weather/current`, {
+          // Use the correct backend URL from environment variables
+          const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+          const weatherResponse = await axios.get(`${backendUrl}/api/weather/current`, {
             params: {
               lat: districtCoords.lat,
               lon: districtCoords.lon
             },
-            timeout: 5000
+            timeout: 10000 // Increase timeout to 10 seconds
           });
           
           if (weatherResponse.data) {
@@ -454,11 +458,20 @@ function getMarketForDistrict(district) {
   return districtMarkets[district] || 'Ernakulam';
 }
 
-// Helper function to calculate price change (mock for now)
+// Helper function to calculate price change based on historical data
 function calculatePriceChange(priceData) {
-  // In a real implementation, you would compare with historical data
-  // For now, return a random change between -10% and +10%
-  const changePercent = (Math.random() - 0.5) * 20;
+  if (priceData.length < 2) {
+    return { percentage: 0, direction: 'up' };
+  }
+  
+  const currentPrice = priceData[0].modal_price || priceData[0].max_price || 0;
+  const previousPrice = priceData[1].modal_price || priceData[1].max_price || 0;
+  
+  if (previousPrice === 0) {
+    return { percentage: 0, direction: 'up' };
+  }
+  
+  const changePercent = ((currentPrice - previousPrice) / previousPrice) * 100;
   return {
     percentage: parseFloat(changePercent.toFixed(1)),
     direction: changePercent >= 0 ? 'up' : 'down'
