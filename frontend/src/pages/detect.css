@@ -13,11 +13,11 @@
 .detect-layout { display:flex; gap:20px; }
 .detect-main { flex:1; }
 .detect-container { 
-  max-width:1100px; 
-  margin:0 auto; 
-  padding:16px 16px 16px 0; 
+  max-width: 1400px; /* Increased from 1100px */
+  margin: 0 auto; 
+  padding: 16px 24px 16px 24px; /* Added left padding */
   background: linear-gradient(180deg, #f4fbf6 0%, #eaf7ee 100%); 
-  min-height:100vh; 
+  min-height: 100vh; 
 }
 .detect-title { margin:0; color:#064e3b; font-size:1.8rem; font-weight:600; }
 .detect-sub { margin:8px 0 24px; color:var(--muted); font-size:1.1rem; }

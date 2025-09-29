@@ -20,7 +20,7 @@ try { getAnalytics(app); } catch (e) { /* analytics may fail in some environment
 // Determine the backend URL based on environment
 export const getBackendUrl = () => {
   // Use the VITE_BACKEND_URL environment variable, defaulting to localhost for development
-  return import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000' || 'https://ammachi-ai.onrender.com/api/auth/login';
+  return import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 };
 
 export const auth = getAuth(app);

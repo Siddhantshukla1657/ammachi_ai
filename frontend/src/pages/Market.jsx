@@ -59,6 +59,7 @@ export default function Market() {
     const fetchMarkets = async () => {
       try {
         setLoading(true);
+        // Use relative path to leverage Vite proxy
         const response = await fetch(`/api/market/markets?state=Kerala&district=${selectedDistrict}`);
         const data = await response.json();
         
@@ -71,7 +72,7 @@ export default function Market() {
         }
       } catch (error) {
         console.error('Failed to fetch markets:', error);
-        setError('Failed to load markets');
+        setError('Failed to load markets. Please check if the backend server is running.');
       } finally {
         setLoading(false);
       }
@@ -91,6 +92,7 @@ export default function Market() {
         setLoading(true);
         setError(null);
         
+        // Use relative path to leverage Vite proxy
         const response = await fetch(
           `/api/market/prices?state=Kerala&market=${encodeURIComponent(selectedMarket)}&commodity=${encodeURIComponent(selectedCrop)}`
         );
@@ -104,7 +106,7 @@ export default function Market() {
         }
       } catch (error) {
         console.error('Failed to fetch market data:', error);
-        setError('Failed to connect to market API');
+        setError('Failed to connect to market API. Please check if the backend server is running.');
       } finally {
         setLoading(false);
       }

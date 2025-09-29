@@ -9,6 +9,7 @@ const MARKET_RESOURCE_ID = '35985678-0d79-46b4-9ed6-6f13308a1d24';
  */
 const handleError = (res, error, fallbackMessage) => {
   console.error('Market API error:', error.message);
+  console.error('Error stack:', error.stack);
 
   // Check if it's an API key issue or network issue
   if (error.response && (error.response.status === 403 || error.response.status === 401)) {
@@ -24,16 +25,28 @@ const handleError = (res, error, fallbackMessage) => {
   if (error.response) {
     console.error('Error Response:', error.response.data);
     console.error('Error Status:', error.response.status);
+    console.error('Error Headers:', error.response.headers);
     return res.status(error.response.status).json({
       error: 'Market API Error',
       details: error.response.data,
-      status: error.response.status
+      status: error.response.status,
+      message: error.message
+    });
+  }
+  
+  if (error.request) {
+    console.error('No response received:', error.request);
+    return res.status(500).json({
+      error: 'No response from Market API',
+      message: 'The market data API did not respond. Please check your network connection.',
+      details: error.message
     });
   }
 
   return res.status(500).json({
     error: fallbackMessage,
     message: error.message,
+    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
   });
 };
 
@@ -113,6 +126,8 @@ exports.getMarketPrices = async (req, res) => {
   try {
     const { commodity, state, market } = req.query;
     
+    console.log('🔍 Market prices request received:', { commodity, state, market });
+    
     // Check if API key is available
     const apiKey = process.env.MARKET_API_KEY;
     if (!apiKey) {
@@ -153,8 +168,8 @@ exports.getMarketPrices = async (req, res) => {
     // Build API URL
     const apiUrl = buildApiUrl(filters, { limit: 100, offset: 0 });
     
-    console.log('Making API request to:', apiUrl);
-    console.log('Using API key:', apiKey ? 'YES' : 'NO');
+    console.log('📡 Making API request to:', apiUrl);
+    console.log('🔑 Using API key:', apiKey ? 'YES' : 'NO');
     
     const response = await axios.get(apiUrl, {
       headers: {
@@ -165,16 +180,27 @@ exports.getMarketPrices = async (req, res) => {
       timeout: 15000 // Increase timeout to 15 seconds
     });
     
+    console.log('✅ Market API response received, status:', response.status);
+    
     // Process the response to extract the required fields
     const records = response.data?.records || [];
     
     if (records.length === 0) {
+      // Return mock data when no records found
+      console.warn('No records found from API, returning mock data');
+      const mockData = getMockMarketData().filter(item => 
+        item.commodity.toLowerCase().includes(commodity.toLowerCase()) &&
+        item.state === state &&
+        item.market === market
+      );
+      
       return res.json({
         success: true,
-        message: 'No market price data found for the specified criteria',
-        count: 0,
-        data: [],
-        query_params: { state, market, commodity }
+        message: 'Demo data - No records found from API',
+        count: mockData.length,
+        data: mockData,
+        query_params: { state, market, commodity },
+        demo: true
       });
     }
     
@@ -194,6 +220,8 @@ exports.getMarketPrices = async (req, res) => {
       state: record.State || state
     }));
     
+    console.log('📦 Processed market data, count:', processedData.length);
+    
     res.json({
       success: true,
       count: processedData.length,
@@ -203,14 +231,14 @@ exports.getMarketPrices = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Market API error:', error.message);
+    console.error('❌ Market API error:', error.message);
     
     // Check if it's an API key issue or network issue
     if (error.response && (error.response.status === 403 || error.response.status === 401)) {
       console.warn('API key not authorized or invalid, returning mock data');
       return res.json({
         success: true,
-        message: 'Using demo data - API key not configured',
+        message: 'Using demo data - API key configured but not authorized',
         data: getMockMarketData(),
         demo: true
       });
@@ -219,16 +247,30 @@ exports.getMarketPrices = async (req, res) => {
     if (error.response) {
       console.error('Error Response:', error.response.data);
       console.error('Error Status:', error.response.status);
+      console.error('Error Headers:', error.response.headers);
       return res.status(error.response.status).json({
         error: 'Market API Error',
         details: error.response.data,
         status: error.response.status
       });
     }
-
-    return res.status(500).json({
-      error: 'Failed to fetch market price data',
-      message: error.message,
+    
+    // Return mock data when API fails
+    console.warn('Market API failed, returning mock data');
+    const { commodity, state, market } = req.query; // Get query parameters
+    const mockData = getMockMarketData().filter(item => 
+      (!commodity || item.commodity.toLowerCase().includes(commodity.toLowerCase())) &&
+      (!state || item.state === state) &&
+      (!market || item.market === market)
+    );
+    
+    return res.json({
+      success: true,
+      message: 'Demo data - Market API unavailable',
+      count: mockData.length,
+      data: mockData,
+      query_params: { state, market, commodity },
+      demo: true
     });
   }
 };
@@ -303,6 +345,8 @@ exports.getMarkets = async (req, res) => {
     // Build API URL
     const apiUrl = buildApiUrl(filters, { limit: 1000, offset: 0 });
     
+    console.log('Fetching markets with URL:', apiUrl);
+    
     const response = await axios.get(apiUrl, {
       headers: {
         'X-API-Key': process.env.MARKET_API_KEY,
@@ -325,7 +369,31 @@ exports.getMarkets = async (req, res) => {
       query_params: { state: state || 'all', district: district || 'all' }
     });
   } catch (error) {
-    handleError(res, error, 'Failed to fetch markets list');
+    console.error('Error in getMarkets:', error.message);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error setting up request:', error.message);
+    }
+    
+    // Return mock data when API fails
+    console.warn('Market API failed, returning mock data');
+    const { state, district } = req.query; // Get query parameters
+    const mockMarkets = getMockMarkets();
+    return res.json({
+      success: true,
+      message: 'Demo data - Market API unavailable',
+      count: mockMarkets.length,
+      data: mockMarkets.filter(market => 
+        (!district || market.includes(district)) || district === 'Ernakulam'
+      ),
+      query_params: { state: state || 'all', district: district || 'all' },
+      demo: true
+    });
   }
 };
 

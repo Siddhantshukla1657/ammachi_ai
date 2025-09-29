@@ -46,7 +46,9 @@ app.use(cors({
 
 // Add a middleware to log all requests for debugging
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin') || 'None'}`);
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('Origin') || 'None'}`);
+  console.log('Query params:', req.query);
+  console.log('Headers:', req.headers);
   next();
 });
 
@@ -77,8 +79,12 @@ app.post("/api/test-cors", (req, res) => {
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
+// Special route for market API testing
+app.get('/test-market', (req, res) => {
+  res.sendFile(path.join(__dirname, 'test-frontend.html'));
+});
+
 // Special route for weather API testing
-const path = require('path');
 app.get('/test-weather', (req, res) => {
   res.sendFile(path.join(__dirname, 'testapis', 'public', 'weather-test.html'));
 });

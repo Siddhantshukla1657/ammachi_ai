@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Market API Test</title>
+</head>
+<body>
+    <h1>Market API Test</h1>
+    <button onclick="testMarkets()">Test Markets API</button>
+    <button onclick="testPrices()">Test Prices API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testMarkets() {
+            try {
+                const response = await fetch('/api/market/markets?state=Kerala&district=Ernakulam');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p>Error: ' + error.message + '</p>';
+            }
+        }
+
+        async function testPrices() {
+            try {
+                const response = await fetch('/api/market/prices?state=Kerala&market=Ernakulam&commodity=Rice');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<p>Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

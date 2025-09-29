@@ -5,10 +5,16 @@ const CropDiarySchema = new mongoose.Schema({
   farmName: { type: String, required: true },              // reference to specific farm
   crop: { type: String, required: true },                  // crop name
   diseaseDetected: { type: String },                       // optional disease detected
-  severity: { type: String, enum: ['mild', 'moderate', 'severe'] },
+  severity: { type: String, enum: ['mild', 'moderate', 'severe', 'none'] },
   treatmentSuggested: { type: String },
   images: { type: [String], default: [] },                 // multiple images per entry
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  // Additional plant identification fields
+  scientificName: { type: String },                        // scientific name of the plant
+  plantCommonNames: { type: [String], default: [] },       // common names of the plant
+  plantIdentificationProbability: { type: Number },        // confidence level of plant identification
+  healthAssessment: { type: String },                      // health assessment description
+  detectionConfidence: { type: Number }                    // confidence level of disease detection
 });
 
 // Optional index for fast queries by farmer and farm

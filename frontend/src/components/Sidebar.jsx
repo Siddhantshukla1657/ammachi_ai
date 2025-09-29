@@ -93,7 +93,7 @@ export default function Sidebar() {
           <div className="user-avatar">{profile && profile.name ? profile.name[0] : 'A'}</div>
           <div className="user-name">{profile ? (profile.name || 'Farmer') : 'Guest'}</div>
         </div> */}
-        <button className="sidebar-signout" onClick={signOut}>
+        <button className="sidebar-signout" onClick={signOut} style={{ marginBottom: '20px' }}>
           {/* <span className="sidebar-icon">{icons.logout}</span> */}
           Logout</button>
       </div>

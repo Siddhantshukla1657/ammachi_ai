@@ -100,7 +100,7 @@ export default function Detect(){
         if (!data.result.is_healthy && data.result.disease && data.result.disease.suggestions && data.result.disease.suggestions.length > 0) {
           // Disease detected
           const topDisease = data.result.disease.suggestions[0];
-          setResult({
+          const resultData = {
             diseaseName: topDisease.name,
             probability: Math.round(topDisease.probability * 100),
             description: topDisease.description || translate('No description available'),
@@ -113,13 +113,18 @@ export default function Detect(){
               primaryCommonName: plantInfo.common_names && plantInfo.common_names.length > 0 ? plantInfo.common_names[0] : plantInfo.scientific_name,
               identificationProbability: Math.round(plantInfo.probability * 100)
             } : null
-          });
+          };
+          
+          setResult(resultData);
+          
+          // Save crop health data to backend
+          await saveCropHealthData(resultData);
           
           // Get remedies from Dialogflow
           await getRemedies(topDisease.name);
         } else {
           // Plant is healthy
-          setResult({
+          const resultData = {
             isHealthy: true,
             healthStatus: data.result.health_status,
             message: translate('Your crop appears to be healthy! No diseases detected.'),
@@ -129,20 +134,90 @@ export default function Detect(){
               primaryCommonName: plantInfo.common_names && plantInfo.common_names.length > 0 ? plantInfo.common_names[0] : plantInfo.scientific_name,
               identificationProbability: Math.round(plantInfo.probability * 100)
             } : null
-          });
+          };
+          
+          setResult(resultData);
+          
+          // Save crop health data to backend
+          await saveCropHealthData(resultData);
         }
       } else {
-        setResult({
+        const resultData = {
           isHealthy: true,
           message: translate('No diseases detected. Your crop appears to be healthy!'),
           probability: 0
-        });
+        };
+        
+        setResult(resultData);
+        
+        // Save crop health data to backend
+        await saveCropHealthData(resultData);
       }
     } catch (error) {
       console.error('Disease detection error:', error);
       setError(<TranslatedText text="Failed to analyze the image. Please try again with a clearer photo." />);
     } finally {
       setIsProcessing(false);
+    }
+  }
+  
+  // Function to save crop health data to backend
+  async function saveCropHealthData(resultData) {
+    try {
+      // Get user profile from localStorage
+      const profile = (() => {
+        try { return JSON.parse(localStorage.getItem('ammachi_profile') || '{}'); } catch { return {}; }
+      })();
+      
+      const session = (() => {
+        try { return JSON.parse(localStorage.getItem('ammachi_session') || '{}'); } catch { return {}; }
+      })();
+      
+      // Get user ID and farm info
+      const userId = session.userId || profile._id || profile.id;
+      const farmName = profile.farmName || profile.farms?.[0]?.name || 'Default Farm';
+      const crop = resultData.plantInfo?.primaryCommonName || resultData.plantInfo?.scientificName || 'Unknown Crop';
+      
+      if (!userId) {
+        console.warn('No user ID found, cannot save crop health data');
+        return;
+      }
+      
+      // Prepare data for saving with more detailed plant information
+      const cropHealthData = {
+        farmerId: userId,
+        farmName: farmName,
+        crop: crop,
+        diseaseDetected: resultData.isHealthy ? 'Healthy' : resultData.diseaseName,
+        severity: resultData.isHealthy ? 'none' : (resultData.probability > 80 ? 'severe' : resultData.probability > 60 ? 'moderate' : 'mild'),
+        treatmentSuggested: resultData.treatment?.suggested || resultData.treatment || 'No specific treatment suggested',
+        // Include plant identification details
+        plantScientificName: resultData.plantInfo?.scientificName || '',
+        plantCommonNames: resultData.plantInfo?.commonNames || [],
+        plantIdentificationProbability: resultData.plantInfo?.identificationProbability || 0,
+        // Include health assessment details
+        healthAssessment: resultData.healthStatus || 'Not assessed',
+        detectionConfidence: resultData.probability || resultData.plantInfo?.identificationProbability || 0
+      };
+      
+      console.log('Saving detailed crop health data:', cropHealthData);
+      
+      // Save to backend
+      const saveResponse = await fetch('/api/farmers/crop-health', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(cropHealthData)
+      });
+      
+      if (saveResponse.ok) {
+        console.log('Crop health data saved successfully');
+      } else {
+        console.error('Failed to save crop health data:', saveResponse.status);
+      }
+    } catch (error) {
+      console.error('Error saving crop health data:', error);
     }
   }
   
@@ -184,7 +259,7 @@ export default function Detect(){
     <div className="detect-layout">
       <Sidebar />
       <main className="detect-main page-scroll">
-        <div className="detect-container">
+        <div className="detect-container" style={{ marginLeft: '20px', marginRight: '20px' }}>
           <header className="detect-header">
             <h1 className="detect-title"><TranslatedText text="Disease Detection" /></h1>
             <p className="detect-sub"><TranslatedText text="Upload a photo of your crop to detect diseases" /> 🔬</p>
