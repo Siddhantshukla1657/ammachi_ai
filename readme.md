@@ -2,16 +2,16 @@
 <p align="center"><em>Empowering farmers with AI-driven agricultural solutions for a sustainable future</em></p>
 
 <p align="center">
-  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+  <a href="(https://github.com/Yashvi2874/ammachi_ai)">
     <img src="https://img.shields.io/badge/Smart-Irrigation-green?style=for-the-badge" alt="Smart Irrigation" />
   </a>
-  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+  <a href="https://github.com/Yashvi2874/ammachi_ai">
     <img src="https://img.shields.io/badge/Disease-Detection-orange?style=for-the-badge" alt="Disease Detection" />
   </a>
-  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+  <a href="https://github.com/Yashvi2874/ammachi_ai">
     <img src="https://img.shields.io/badge/Weather-Analytics-blue?style=for-the-badge" alt="Weather Analytics" />
   </a>
-  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+  <a href="https://github.com/Yashvi2874/ammachi_ai">
     <img src="https://img.shields.io/badge/SIH-2025-red?style=for-the-badge" alt="SIH 2025" />
   </a>
 </p>
