@@ -1,10 +1,22 @@
-# <p align="center">
-  <img src="frontend/public/images/logo_withbg.png" alt="Ammachi AI Logo" width="200"/> Ammachi AI - Smart Farming Assistant
-</p> 
+<h1 align="center">Ammachi AI - Smart Farming Assistant</h1>
+<p align="center"><em>Empowering farmers with AI-driven agricultural solutions for a sustainable future</em></p>
 
-> *Empowering farmers with AI-driven agricultural solutions for a sustainable future*
+<p align="center">
+  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+    <img src="https://img.shields.io/badge/Smart-Irrigation-green?style=for-the-badge" alt="Smart Irrigation" />
+  </a>
+  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+    <img src="https://img.shields.io/badge/Disease-Detection-orange?style=for-the-badge" alt="Disease Detection" />
+  </a>
+  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+    <img src="https://img.shields.io/badge/Weather-Analytics-blue?style=for-the-badge" alt="Weather Analytics" />
+  </a>
+  <a href="https://github.com/Siddhantshukla1657/ammachi_ai">
+    <img src="https://img.shields.io/badge/SIH-2025-red?style=for-the-badge" alt="SIH 2025" />
+  </a>
+</p>
 
-[![Smart Irrigation](https://img.shields.io/badge/Smart-Irrigation-green?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  [![Disease Detection](https://img.shields.io/badge/Disease-Detection-orange?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  [![Weather Analytics](https://img.shields.io/badge/Weather-Analytics-blue?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  [![SIH 2025](https://img.shields.io/badge/SIH-2025-red?style=for-the-badge)](https://github.com/Siddhantshukla1657/ammachi_ai)  
+  <img align="center" alt="Ammachi AI Screenshot" src="https://github.com/user-attachments/assets/85033329-6ff0-40f2-85ee-361aa0cb7058" />
 
 ---
 
