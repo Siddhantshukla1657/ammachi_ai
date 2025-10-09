@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "health-check": "node -e \"require('http').get('http://localhost:5000/api/health', (res) => { console.log('Status:', res.statusCode); res.on('data', (chunk) => { console.log('Body:', chunk.toString()); }); });\"",
+    "test-firebase": "node test-firebase.js"
   },
   "keywords": [],
   "author": "",

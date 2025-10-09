@@ -103,12 +103,16 @@ If the market API is still returning demo data:
 
 ## Testing Your Deployment
 
+### Automated Testing
+1. Visit your deployed backend URL and navigate to `/health-check.html` to run automated tests
+2. Visit your deployed frontend URL and navigate to `/api-test.html` to test frontend-backend connectivity
+
+### Manual Testing
 1. Visit your deployed frontend: https://ammachiai.vercel.app
 2. Try to register a new account
 3. Try to log in with an existing account
-4. Try Google Sign-In
-5. Test Market Prices page - should show real data, not demo data
-6. Test Weather page - should show real weather data
-7. Test Chatbot - should respond to messages (may show fallback responses if Dialogflow not configured)
+4. Test Market Prices page - should show real data, not demo data
+5. Test Weather page - should show real weather data
+6. Test Chatbot - should respond to messages (may show fallback responses if Dialogflow not configured)
 
 If any of these fail, check the browser console for errors and the backend logs for more information.

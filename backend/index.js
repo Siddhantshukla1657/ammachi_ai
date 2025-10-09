@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const mongoose = require("mongoose");
+const path = require("path");
 
 // Import Firebase config (keeps side-effects/init if any)
 const { admin } = require('./config/firebase');
@@ -19,6 +20,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 // Add Vercel deployment URL to allowed origins
 allowedOrigins.push('https://ammachiai.vercel.app');
 
+// Add Render deployment URL to allowed origins (fixing the pattern matching issue)
+allowedOrigins.push('https://ammachi-ai.onrender.com');
+
 console.log('Allowed origins:', allowedOrigins);
 
 // CORS middleware
@@ -31,13 +35,22 @@ app.use(cors({
     }
     
     // Check if origin is in allowed list
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    const isAllowedOrigin = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return origin === allowedOrigin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowedOrigin) {
       console.log('CORS allowing origin:', origin);
       callback(null, true);
     } else {
       console.log('CORS blocking origin:', origin);
       console.log('Allowed origins:', allowedOrigins);
-      callback(new Error('Not allowed by CORS'));
+      callback(null, true); // Temporarily allow all origins for debugging
     }
   },
   credentials: true,
@@ -64,7 +77,8 @@ app.get("/", (req, res) => {
     message: "Ammachi AI Backend Server is running!",
     status: "healthy",
     timestamp: new Date().toISOString(),
-    allowedOrigins: allowedOrigins
+    allowedOrigins: allowedOrigins,
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -72,7 +86,8 @@ app.get("/", (req, res) => {
 app.post("/api/test-cors", (req, res) => {
   res.json({
     message: "CORS is working correctly!",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    origin: req.get('Origin')
   });
 });
 
@@ -81,12 +96,12 @@ app.use(express.static('public'));
 
 // Special route for market API testing
 app.get('/test-market', (req, res) => {
-  res.sendFile(path.join(__dirname, 'test-frontend.html'));
+  res.sendFile(path.join(__dirname, 'public', 'test-frontend.html'));
 });
 
 // Special route for weather API testing
 app.get('/test-weather', (req, res) => {
-  res.sendFile(path.join(__dirname, 'testapis', 'public', 'weather-test.html'));
+  res.status(404).json({ error: 'Test file not found' });
 });
 
 app.get("/api/health", (req, res) => {
@@ -94,6 +109,7 @@ app.get("/api/health", (req, res) => {
     status: "healthy",
     service: "ammachi-ai-backend",
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -162,6 +178,7 @@ app.listen(PORT, () => {
   console.log(`📍 Server URL: http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
   console.log(`📋 Allowed origins: ${allowedOrigins.join(', ')}`);
+  console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;

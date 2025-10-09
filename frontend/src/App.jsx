@@ -8,6 +8,8 @@ import Market from './pages/Market.jsx';
 import Weather from './pages/Weather.jsx';
 import Detect from './pages/Detect.jsx';
 import Chat from './pages/Chat.jsx';
+import ApiTest from './pages/ApiTest.jsx';
+import FirebaseTest from './pages/FirebaseTest.jsx'; // Import the Firebase test component
 import MobileNav from './components/MobileNav.jsx';
 import { LanguageProvider } from './context/LanguageContext.jsx';
 
@@ -21,6 +23,7 @@ function getRoute() {
   if (h.startsWith('/weather')) return '/weather';
   if (h.startsWith('/detect')) return '/detect';
   if (h.startsWith('/profile')) return '/profile';
+  if (h.startsWith('/firebase-test')) return '/firebase-test'; // Add Firebase test route
   return '/';
 }
 
@@ -60,6 +63,10 @@ export default function App() {
       page = <Chat />; break;
     case '/profile':
       page = <Profile />; break;
+    case '/api-test': // Add the API test route
+      page = <ApiTest />; break;
+    case '/firebase-test': // Add the Firebase test route
+      page = <FirebaseTest />; break;
     default:
       page = <Landing />; break;
   }
