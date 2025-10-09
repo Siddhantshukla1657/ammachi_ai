@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar.jsx';
 import TranslatedText from '../components/TranslatedText';
 import { useLanguage } from '../context/LanguageContext';
 import { translate } from '../utils/translate';
+import { getBackendUrl } from '../auth'; // Import the backend URL function
 
 export default function Detect(){
   // Get current language from context
@@ -82,7 +83,9 @@ export default function Detect(){
       const formData = new FormData();
       formData.append('image', file);
       
-      const response = await fetch('/api/disease/detect', {
+      // Use proper backend URL for API calls
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/disease/detect`, {
         method: 'POST',
         body: formData
       });

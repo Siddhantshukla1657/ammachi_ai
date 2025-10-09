@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar.jsx';
 import TranslatedText from '../components/TranslatedText';
 import { useLanguage } from '../context/LanguageContext';
 import { translate } from '../utils/translate';
+import { getBackendUrl } from '../auth'; // Import the backend URL function
 
 export default function Chat(){
   // Get current language from context
@@ -43,7 +44,9 @@ export default function Chat(){
     setQuery('');
     setLoading(true);
     try {
-      const res = await fetch('/api/chatbot/chat', {
+      // Use proper backend URL for API calls
+      const backendUrl = getBackendUrl();
+      const res = await fetch(`${backendUrl}/api/chatbot/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

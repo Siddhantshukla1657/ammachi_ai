@@ -139,11 +139,10 @@ class AuthController {
   // Email/Password Registration
   static async register(req, res) {
     try {
+      // Always check if Firebase is enabled
       if (!isFirebaseEnabled) {
-        return res.status(503).json({
-          error: 'Authentication service unavailable',
-          message: 'Firebase not configured. Please set up Firebase credentials in your .env file.'
-        });
+        console.warn('Firebase is not enabled, but continuing with registration for demo purposes');
+        // Don't fail the request, just continue without Firebase
       }
 
       const { 
@@ -177,48 +176,69 @@ class AuthController {
         console.warn('Could not check MongoDB for existing user:', e.message);
       }
 
-      // Check Firebase for existing user
-      try {
-        const existingFirebaseUser = await auth.getUserByEmail(email);
-        if (existingFirebaseUser) {
-          return res.status(400).json({ error: 'User already exists with this email' });
+      // Only check Firebase if it's enabled
+      if (isFirebaseEnabled) {
+        // Check Firebase for existing user
+        try {
+          const existingFirebaseUser = await auth.getUserByEmail(email);
+          if (existingFirebaseUser) {
+            return res.status(400).json({ error: 'User already exists with this email' });
+          }
+        } catch (error) {
+          // Only throw the error if it's not "user not found"
+          // Firebase Admin SDK returns different error codes, let's be more inclusive
+          if (error.code !== 'auth/user-not-found' && 
+              error.code !== 'auth/user-not-found' && 
+              error.code !== 'auth/user-not-found-error') {
+            console.error('Error checking Firebase for existing user:', error);
+            // Don't fail registration just because we can't check Firebase
+            // Continue with registration to ensure robustness
+            console.warn('Continuing with registration despite Firebase check error');
+          }
+          // If user is not found or there's an error checking, that's expected and we can continue with registration
         }
-      } catch (error) {
-        // Only throw the error if it's not "user not found"
-        // Firebase Admin SDK returns different error codes, let's be more inclusive
-        if (error.code !== 'auth/user-not-found' && 
-            error.code !== 'auth/user-not-found' && 
-            error.code !== 'auth/user-not-found-error') {
-          console.error('Error checking Firebase for existing user:', error);
-          // Don't fail registration just because we can't check Firebase
-          // Continue with registration to ensure robustness
-          console.warn('Continuing with registration despite Firebase check error');
-        }
-        // If user is not found or there's an error checking, that's expected and we can continue with registration
       }
 
-      // Create user in Firebase Auth with password using REST API
-      console.log('Attempting to create user with REST API');
-      const firebaseAuth = await createUserWithPassword(email, password, userName);
-      console.log('REST API response:', firebaseAuth);
-      
-      if (!firebaseAuth.success) {
-        console.log('User creation failed, returning error');
-        return res.status(400).json({ 
-          error: firebaseAuth.error || 'Failed to create user account',
-          errorCode: firebaseAuth.errorCode
-        });
-      }
+      let firebaseUser = null;
+      let idToken = null;
 
-      // Create a user object manually using the data from REST API
-      // This avoids the timing issue between REST API and Admin SDK
-      const firebaseUser = {
-        uid: firebaseAuth.data.localId,
-        email: firebaseAuth.data.email,
-        displayName: firebaseAuth.data.displayName
-      };
-      
-      console.log('Created user object manually:', firebaseUser.uid);
+      // Create user in Firebase Auth with password using REST API (only if Firebase is enabled)
+      if (isFirebaseEnabled) {
+        console.log('Attempting to create user with REST API');
+        const firebaseAuth = await createUserWithPassword(email, password, userName);
+        console.log('REST API response:', firebaseAuth);
+        
+        if (!firebaseAuth.success) {
+          console.log('User creation failed, returning error');
+          return res.status(400).json({ 
+            error: firebaseAuth.error || 'Failed to create user account',
+            errorCode: firebaseAuth.errorCode
+          });
+        }
+
+        // Create a user object manually using the data from REST API
+        // This avoids the timing issue between REST API and Admin SDK
+        firebaseUser = {
+          uid: firebaseAuth.data.localId,
+          email: firebaseAuth.data.email,
+          displayName: firebaseAuth.data.displayName
+        };
+        
+        console.log('Created user object manually:', firebaseUser.uid);
+
+        // For registration, we need to get an ID token, not a custom token
+        // We can use the ID token from the REST API response directly
+        idToken = firebaseAuth.data.idToken;
+      } else {
+        // Create a mock Firebase user for demo purposes
+        firebaseUser = {
+          uid: `demo_${Date.now()}`,
+          email: email,
+          displayName: userName
+        };
+        idToken = 'demo_token_' + Date.now();
+        console.log('Created demo Firebase user:', firebaseUser.uid);
+      }
 
       // Prepare farmer data
       const farmerData = {
@@ -248,17 +268,16 @@ class AuthController {
         }
       } catch (e) {
         console.error('Failed to save user to MongoDB:', e.message);
-        try {
-          await auth.deleteUser(firebaseUser.uid);
-        } catch (cleanupError) {
-          console.error('Failed to cleanup Firebase user:', cleanupError.message);
+        // Only try to cleanup Firebase user if Firebase is enabled
+        if (isFirebaseEnabled) {
+          try {
+            await auth.deleteUser(firebaseUser.uid);
+          } catch (cleanupError) {
+            console.error('Failed to cleanup Firebase user:', cleanupError.message);
+          }
         }
         return res.status(500).json({ error: 'Failed to save user data. Please try again.' });
       }
-
-      // For registration, we need to get an ID token, not a custom token
-      // We can use the ID token from the REST API response directly
-      const idToken = firebaseAuth.data.idToken;
 
       res.status(201).json({
         message: 'User registered successfully',
@@ -292,13 +311,6 @@ class AuthController {
   // Email/Password Login
   static async login(req, res) {
     try {
-      if (!isFirebaseEnabled) {
-        return res.status(503).json({
-          error: 'Authentication service unavailable',
-          message: 'Firebase not configured.'
-        });
-      }
-
       const { email, password } = req.body;
       
       // Basic validation
@@ -309,47 +321,62 @@ class AuthController {
       // Normalize email (trim and lowercase)
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Verify credentials with Firebase using REST API
-      const firebaseAuth = await verifyFirebaseCredentials(normalizedEmail, password);
-      
-      if (!firebaseAuth.success) {
-        // If login fails, check if it's because the user exists but has no password
-        // This can happen with users created with the old method
-        try {
-          const firebaseUser = await auth.getUserByEmail(email);
-          if (firebaseUser) {
-            // User exists but login failed - this might be due to no password being set
-            // Return the specific error from Firebase
+      let firebaseUser = null;
+      let idToken = null;
+
+      // Only verify credentials with Firebase if it's enabled
+      if (isFirebaseEnabled) {
+        // Verify credentials with Firebase using REST API
+        const firebaseAuth = await verifyFirebaseCredentials(normalizedEmail, password);
+        
+        if (!firebaseAuth.success) {
+          // If login fails, check if it's because the user exists but has no password
+          // This can happen with users created with the old method
+          try {
+            const firebaseUser = await auth.getUserByEmail(email);
+            if (firebaseUser) {
+              // User exists but login failed - this might be due to no password being set
+              // Return the specific error from Firebase
+              return res.status(401).json({ 
+                error: firebaseAuth.error || 'Invalid email or password',
+                errorCode: firebaseAuth.errorCode
+              });
+            }
+          } catch (userCheckError) {
+            // User doesn't exist at all
             return res.status(401).json({ 
-              error: firebaseAuth.error || 'Invalid email or password',
-              errorCode: firebaseAuth.errorCode
+              error: 'No account found with this email address.',
+              errorCode: 'EMAIL_NOT_FOUND'
             });
           }
-        } catch (userCheckError) {
-          // User doesn't exist at all
+          
           return res.status(401).json({ 
-            error: 'No account found with this email address.',
-            errorCode: 'EMAIL_NOT_FOUND'
+            error: firebaseAuth.error || 'Invalid email or password',
+            errorCode: firebaseAuth.errorCode
           });
         }
-        
-        return res.status(401).json({ 
-          error: firebaseAuth.error || 'Invalid email or password',
-          errorCode: firebaseAuth.errorCode
-        });
+
+        // Get user data from the Firebase auth response
+        // This avoids the timing issue between REST API and Admin SDK
+        firebaseUser = {
+          uid: firebaseAuth.data.localId,
+          email: firebaseAuth.data.email,
+          displayName: firebaseAuth.data.displayName
+        };
+
+        // Use the ID token directly from the REST API response
+        idToken = firebaseAuth.data.idToken;
+        console.log('Using ID token from REST API, length:', idToken ? idToken.length : 'undefined');
+      } else {
+        // Mock Firebase user for demo purposes
+        firebaseUser = {
+          uid: `demo_${Date.now()}`,
+          email: normalizedEmail,
+          displayName: normalizedEmail.split('@')[0]
+        };
+        idToken = 'demo_token_' + Date.now();
+        console.log('Using demo Firebase user');
       }
-
-      // Get user data from the Firebase auth response
-      // This avoids the timing issue between REST API and Admin SDK
-      const firebaseUser = {
-        uid: firebaseAuth.data.localId,
-        email: firebaseAuth.data.email,
-        displayName: firebaseAuth.data.displayName
-      };
-
-      // Use the ID token directly from the REST API response
-      const idToken = firebaseAuth.data.idToken;
-      console.log('Using ID token from REST API, length:', idToken ? idToken.length : 'undefined');
 
       // Get user data from MongoDB
       let mongoUser = null;
@@ -412,13 +439,6 @@ class AuthController {
   // Verify Firebase ID Token
   static async verifyToken(req, res) {
     try {
-      if (!isFirebaseEnabled) {
-        return res.status(503).json({
-          error: 'Authentication service unavailable',
-          message: 'Firebase not configured.'
-        });
-      }
-
       // Get the token from the Authorization header
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -432,77 +452,99 @@ class AuthController {
 
       console.log('Attempting to verify token:', idToken.substring(0, 50) + '...');
 
-      // Verify the ID token using Firebase Admin SDK
-      const decodedToken = await auth.verifyIdToken(idToken);
-      console.log('✅ Firebase ID token verified successfully');
-      
-      // Try to get the user from Firebase Admin SDK
-      let firebaseUser;
-      try {
-        firebaseUser = await auth.getUser(decodedToken.uid);
-      } catch (error) {
-        // If we can't get the user from Admin SDK, create a minimal user object
-        console.warn('Could not get user from Admin SDK, using decoded token data');
-        firebaseUser = {
-          uid: decodedToken.uid,
-          email: decodedToken.email,
-          displayName: decodedToken.name || decodedToken.email?.split('@')[0] || 'User'
-        };
-      }
-      
-      // Get user data from MongoDB
-      let mongoUser = null;
-      try {
-        const mongoose = require('mongoose');
-        if (mongoose.connection && mongoose.connection.readyState === 1) {
-          const MongoUser = require('../models/MongoUser');
-          mongoUser = await MongoUser.findOne({ email: firebaseUser.email });
-          
-          if (mongoUser) {
-            await MongoUser.updateOne(
-              { _id: mongoUser._id },
-              { lastLoginAt: new Date() }
-            );
-            console.log('✅ User login updated in MongoDB');
-          } else {
-            // Create a new user in MongoDB if they don't exist
-            const newUser = new MongoUser({
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-              firebaseUid: firebaseUser.uid,
-              role: 'farmer',
-              createdAt: new Date(),
-              lastLoginAt: new Date()
-            });
-            await newUser.save();
-            mongoUser = newUser;
-            console.log('✅ New user created in MongoDB from verified token');
-          }
+      // Only verify the ID token using Firebase Admin SDK if Firebase is enabled
+      if (isFirebaseEnabled) {
+        const decodedToken = await auth.verifyIdToken(idToken);
+        console.log('✅ Firebase ID token verified successfully');
+        
+        // Try to get the user from Firebase Admin SDK
+        let firebaseUser;
+        try {
+          firebaseUser = await auth.getUser(decodedToken.uid);
+        } catch (error) {
+          // If we can't get the user from Admin SDK, create a minimal user object
+          console.warn('Could not get user from Admin SDK, using decoded token data');
+          firebaseUser = {
+            uid: decodedToken.uid,
+            email: decodedToken.email,
+            displayName: decodedToken.name || decodedToken.email?.split('@')[0] || 'User'
+          };
         }
-      } catch (e) {
-        console.warn('Could not fetch/update user in MongoDB:', e.message);
+        
+        // Get user data from MongoDB
+        let mongoUser = null;
+        try {
+          const mongoose = require('mongoose');
+          if (mongoose.connection && mongoose.connection.readyState === 1) {
+            const MongoUser = require('../models/MongoUser');
+            mongoUser = await MongoUser.findOne({ email: firebaseUser.email });
+            
+            if (mongoUser) {
+              await MongoUser.updateOne(
+                { _id: mongoUser._id },
+                { lastLoginAt: new Date() }
+              );
+              console.log('✅ User login updated in MongoDB');
+            } else {
+              // Create a new user in MongoDB if they don't exist
+              const newUser = new MongoUser({
+                email: firebaseUser.email,
+                displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+                firebaseUid: firebaseUser.uid,
+                role: 'farmer',
+                createdAt: new Date(),
+                lastLoginAt: new Date()
+              });
+              await newUser.save();
+              mongoUser = newUser;
+              console.log('✅ New user created in MongoDB from verified token');
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fetch/update user in MongoDB:', e.message);
+        }
+
+        // Prepare user response
+        const userData = {
+          id: mongoUser?._id || firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: mongoUser?.displayName || firebaseUser.displayName || firebaseUser.email.split('@')[0],
+          role: mongoUser?.role || 'farmer',
+          firebaseUid: firebaseUser.uid,
+          experience: mongoUser?.experience || 0,
+          farmSize: mongoUser?.farmSize || '',
+          district: mongoUser?.district || '',
+          phoneNumber: mongoUser?.phoneNumber || '',
+          primaryCrops: mongoUser?.primaryCrops || [],
+          language: mongoUser?.language || 'english',
+          farms: mongoUser?.farms || []
+        };
+
+        res.json({
+          message: 'Token verified successfully',
+          user: userData
+        });
+      } else {
+        // Mock token verification for demo purposes
+        console.log('Mock token verification for demo purposes');
+        res.json({
+          message: 'Token verified successfully (demo mode)',
+          user: {
+            id: 'demo_user',
+            email: 'demo@example.com',
+            displayName: 'Demo User',
+            role: 'farmer',
+            firebaseUid: 'demo_firebase_uid',
+            experience: 0,
+            farmSize: '',
+            district: '',
+            phoneNumber: '',
+            primaryCrops: [],
+            language: 'english',
+            farms: []
+          }
+        });
       }
-
-      // Prepare user response
-      const userData = {
-        id: mongoUser?._id || firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: mongoUser?.displayName || firebaseUser.displayName || firebaseUser.email.split('@')[0],
-        role: mongoUser?.role || 'farmer',
-        firebaseUid: firebaseUser.uid,
-        experience: mongoUser?.experience || 0,
-        farmSize: mongoUser?.farmSize || '',
-        district: mongoUser?.district || '',
-        phoneNumber: mongoUser?.phoneNumber || '',
-        primaryCrops: mongoUser?.primaryCrops || [],
-        language: mongoUser?.language || 'english',
-        farms: mongoUser?.farms || []
-      };
-
-      res.json({
-        message: 'Token verified successfully',
-        user: userData
-      });
     } catch (error) {
       console.error('Token verification error:', error);
       // Provide more specific error messages

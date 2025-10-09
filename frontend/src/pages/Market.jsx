@@ -3,6 +3,7 @@ import './market.css';
 import Sidebar from '../components/Sidebar.jsx';
 import TranslatedText from '../components/TranslatedText';
 import { useLanguage } from '../context/LanguageContext';
+import { getBackendUrl } from '../auth'; // Import the backend URL function
 
 // Kerala districts for market selection
 const KERALA_DISTRICTS = [
@@ -59,8 +60,9 @@ export default function Market() {
     const fetchMarkets = async () => {
       try {
         setLoading(true);
-        // Use relative path to leverage Vite proxy
-        const response = await fetch(`/api/market/markets?state=Kerala&district=${selectedDistrict}`);
+        // Use proper backend URL for API calls
+        const backendUrl = getBackendUrl();
+        const response = await fetch(`${backendUrl}/api/market/markets?state=Kerala&district=${selectedDistrict}`);
         const data = await response.json();
         
         if (data.success && data.data.length > 0) {
@@ -92,9 +94,10 @@ export default function Market() {
         setLoading(true);
         setError(null);
         
-        // Use relative path to leverage Vite proxy
+        // Use proper backend URL for API calls
+        const backendUrl = getBackendUrl();
         const response = await fetch(
-          `/api/market/prices?state=Kerala&market=${encodeURIComponent(selectedMarket)}&commodity=${encodeURIComponent(selectedCrop)}`
+          `${backendUrl}/api/market/prices?state=Kerala&market=${encodeURIComponent(selectedMarket)}&commodity=${encodeURIComponent(selectedCrop)}`
         );
         const data = await response.json();
         

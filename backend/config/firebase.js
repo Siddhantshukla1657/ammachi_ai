@@ -23,6 +23,12 @@ const initializeFirebase = () => {
       privateKey = privateKey.replace(/\\n/g, '\n');
     }
 
+    // Ensure the private key has proper line breaks
+    if (privateKey.includes('\n') === false && privateKey.includes('\\n') === false) {
+      // If it looks like a single line key, we might need to format it
+      console.log('Firebase private key may need formatting');
+    }
+
     const serviceAccount = {
       projectId: process.env.FIREBASE_PROJECT_ID,
       privateKey: privateKey,
@@ -42,6 +48,7 @@ const initializeFirebase = () => {
     };
   } catch (error) {
     console.error('❌ Firebase initialization error:', error.message);
+    console.error('Error stack:', error.stack);
     console.warn('Auth features will be disabled until Firebase is properly configured');
     return null;
   }

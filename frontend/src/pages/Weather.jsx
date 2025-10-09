@@ -3,6 +3,7 @@ import './weather.css';
 import Sidebar from '../components/Sidebar.jsx';
 import TranslatedText from '../components/TranslatedText';
 import { useLanguage } from '../context/LanguageContext';
+import { getBackendUrl } from '../auth'; // Import the backend URL function
 
 
 const DISTRICTS = {
@@ -36,11 +37,14 @@ export default function Weather(){
       try {
         const { lat, lon } = DISTRICTS[district] || DISTRICTS['Thiruvananthapuram'];
        
+        // Use proper backend URL for API calls
+        const backendUrl = getBackendUrl();
+       
         // Create an array of promises for the API calls
         const promises = [
-          fetch(`/api/weather/current?lat=${lat}&lon=${lon}`),
-          fetch(`/api/weather/daily?lat=${lat}&lon=${lon}`),
-          fetch(`/api/weather/hourly?lat=${lat}&lon=${lon}`)
+          fetch(`${backendUrl}/api/weather/current?lat=${lat}&lon=${lon}`),
+          fetch(`${backendUrl}/api/weather/daily?lat=${lat}&lon=${lon}`),
+          fetch(`${backendUrl}/api/weather/hourly?lat=${lat}&lon=${lon}`)
         ];
        
         // Use Promise.allSettled to handle partial failures
