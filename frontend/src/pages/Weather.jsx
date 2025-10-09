@@ -25,7 +25,6 @@ export default function Weather(){
   const [activeTab, setActiveTab] = useState('daily');
   const [expandedDay, setExpandedDay] = useState(null);
 
-
   useEffect(() => {
     let mounted = true;
     let retryCount = 0;
@@ -111,10 +110,9 @@ export default function Weather(){
         setDaily(days);
        
         // Process hourly forecast data
-        // The API provides 16 items (every 3 hours for 48 hours), not 24
-        const hours = hourlyJson.list ? hourlyJson.list.slice(0, 16) : [];
+        const hours = hourlyJson.list ? hourlyJson.list.slice(0, 24) : [];
         setHourly(hours);
-       
+
         // Reset retry count on success
         retryCount = 0;
       } catch (e) {
@@ -128,7 +126,6 @@ export default function Weather(){
     load();
     return () => { mounted = false; };
   }, [district]);
-
 
   const formatTemp = (t) => (t ? `${Math.round(t)}°C` : '—');
 
@@ -382,11 +379,10 @@ export default function Weather(){
             <section className="hourly-forecast">
               <h3>Hourly Forecast</h3>
               <div className="hour-row">
-                {(hourly && hourly.length > 0 ? hourly : Array.from({length: 16})).map((hourlyData, i) => {
+                {(hourly && hourly.length > 0 ? hourly : Array.from({length: 24})).map((hourlyData, i) => {
                   // For actual data, use the timestamp from the API
                   // For placeholder data, calculate timestamps at 3-hour intervals starting from now
-                  const baseTime = Math.floor(Date.now() / 1000);
-                  const timestamp = hourlyData?.dt || (baseTime + (i * 3 * 3600));
+                  const timestamp = hourlyData?.dt || (Math.floor(Date.now() / 1000) + (i * 3 * 3600));
                   
                   return (
                     <div key={i} className="hour-card">
