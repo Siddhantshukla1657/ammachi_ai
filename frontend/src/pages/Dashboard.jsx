@@ -5,18 +5,57 @@ import { FaCheckCircle, FaExclamationTriangle, FaLeaf, FaCloud, FaTint, FaWind, 
 import TranslatedText from '../components/TranslatedText';
 import { useLanguage } from '../context/LanguageContext';
 import { getBackendUrl } from '../auth'; // Import the getBackendUrl function
+import { debugDashboard, testBackendConnectivity } from '../utils/debug'; // Import debug utilities
 
 export default function Dashboard() {
   const { language } = useLanguage();
+  
+  // Get profile and session data with better error handling
   const profile = (() => {
-    try { return JSON.parse(localStorage.getItem('ammachi_profile') || '{}'); } catch { return {}; }
+    try { 
+      const data = JSON.parse(localStorage.getItem('ammachi_profile') || '{}');
+      console.log('Profile data from localStorage:', data);
+      return data;
+    } catch (error) { 
+      console.error('Failed to parse profile data from localStorage:', error);
+      return {}; 
+    }
   })();
+  
   const session = (() => {
-    try { return JSON.parse(localStorage.getItem('ammachi_session') || '{}'); } catch { return {}; }
+    try { 
+      const data = JSON.parse(localStorage.getItem('ammachi_session') || '{}');
+      console.log('Session data from localStorage:', data);
+      return data;
+    } catch (error) { 
+      console.error('Failed to parse session data from localStorage:', error);
+      return {}; 
+    }
   })();
 
-  // Get user ID from session or profile
-  const userId = session.userId || profile._id || profile.id;
+  // Get user ID from session or profile with better validation
+  const userId = (() => {
+    // Try to get userId from different possible sources
+    let id = session.userId || session.id || profile._id || profile.id || null;
+    
+    console.log('Extracted userId:', id);
+    console.log('UserId type:', typeof id);
+    
+    // Validate the user ID format (should be a 24-character hex string for MongoDB)
+    if (id && typeof id === 'string' && id.length === 24) {
+      console.log('✓ UserId format is valid');
+      return id;
+    }
+    
+    // If we have an ID but it's not the right format, log details
+    if (id) {
+      console.warn('⚠ UserId format is invalid. Expected 24-character hex string, got:', id, 'with length:', id.length);
+    } else {
+      console.warn('⚠ No userId found in session or profile');
+    }
+    
+    return null;
+  })();
 
   // State for dashboard data
   const [dashboardData, setDashboardData] = useState(null);
@@ -35,8 +74,28 @@ export default function Dashboard() {
 
   // Fetch dashboard data from backend
   const fetchDashboardData = async () => {
+    console.log('Attempting to fetch dashboard data...');
+    
+    // Validate userId before making request
     if (!userId) {
-      console.warn('No user ID available for dashboard data fetch');
+      console.warn('No valid user ID available for dashboard data fetch');
+      console.log('Profile data:', profile);
+      console.log('Session data:', session);
+      
+      // Use fallback data when no userId
+      setDashboardData(getFallbackDashboardData());
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate userId format (MongoDB ObjectId should be 24 characters)
+    if (typeof userId !== 'string' || userId.length !== 24) {
+      console.error('Invalid userId format. Expected 24-character hex string, got:', userId);
+      console.log('Profile data:', profile);
+      console.log('Session data:', session);
+      
+      // Use fallback data when userId format is invalid
+      setDashboardData(getFallbackDashboardData());
       setIsLoading(false);
       return;
     }
@@ -44,18 +103,40 @@ export default function Dashboard() {
     try {
       setIsLoading(true);
       
+      // Log the user ID for debugging
+      console.log('Fetching dashboard data for userId:', userId);
+      
       // Use the getBackendUrl function to construct the proper URL
       const backendUrl = getBackendUrl();
-      const response = await fetch(`${backendUrl}/api/farmers/dashboard/${userId}`);
+      console.log('Using backend URL:', backendUrl);
+      
+      const url = `${backendUrl}/api/farmers/dashboard/${userId}`;
+      console.log('Full request URL:', url);
+      
+      const response = await fetch(url);
+      console.log('Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Dashboard data received:', data);
         setDashboardData(data.data);
         setMarketData(data.data.marketPrices || []);
         setCropHealthData(data.data.cropHealth || []);
         setLastUpdated(new Date());
+      } else if (response.status === 404) {
+        console.error('Farmer not found for userId:', userId);
+        console.log('Profile data:', profile);
+        console.log('Session data:', session);
+        // Set fallback data
+        setDashboardData(getFallbackDashboardData());
+      } else if (response.status === 400) {
+        const errorData = await response.json();
+        console.error('Bad request error:', errorData);
+        // Set fallback data
+        setDashboardData(getFallbackDashboardData());
       } else {
-        console.error('Failed to fetch dashboard data:', response.status);
+        const errorText = await response.text();
+        console.error('Failed to fetch dashboard data:', response.status, errorText);
         // Set fallback data
         setDashboardData(getFallbackDashboardData());
       }
@@ -76,17 +157,23 @@ export default function Dashboard() {
       const district = profile.district || 'Ernakulam';
       const state = profile.state || 'Kerala';
       
+      console.log('Fetching market data for district:', district, 'state:', state);
+      
       // Get markets for the district
       const marketsResponse = await fetch(`${backendUrl}/api/market/markets?state=${state}&district=${district}`);
       if (!marketsResponse.ok) {
-        throw new Error('Failed to fetch markets');
+        throw new Error(`Failed to fetch markets: ${marketsResponse.status}`);
       }
       
       const marketsData = await marketsResponse.json();
+      console.log('Markets data:', marketsData);
+      
       const market = marketsData.data && marketsData.data.length > 0 ? marketsData.data[0] : 'Ernakulam';
+      console.log('Selected market:', market);
       
       // Get farmer's crops or use defaults
       const crops = profile.crops && profile.crops.length > 0 ? profile.crops : ['Rice', 'Coconut', 'Pepper'];
+      console.log('Crops to fetch prices for:', crops);
       
       // Fetch market prices for each crop
       const marketPrices = await Promise.all(
@@ -98,6 +185,8 @@ export default function Dashboard() {
             
             if (response.ok) {
               const data = await response.json();
+              console.log(`Market data for ${crop}:`, data);
+              
               if (data.success && data.data && data.data.length > 0) {
                 const priceData = data.data[0];
                 return {
@@ -110,6 +199,7 @@ export default function Dashboard() {
               }
             }
             // Return mock data if API fails
+            console.warn(`Failed to fetch market data for ${crop}, using mock data`);
             return {
               crop: crop,
               price: getMockPrice(crop),
@@ -133,6 +223,7 @@ export default function Dashboard() {
       
       // Filter out null results and update state
       const validMarketData = marketPrices.filter(data => data !== null);
+      console.log('Setting real-time market data:', validMarketData);
       setRealTimeMarketData(validMarketData);
     } catch (error) {
       console.error('Error fetching real-time market data:', error);
@@ -160,7 +251,9 @@ export default function Dashboard() {
 
   // Calculate price change based on historical data
   const calculatePriceChange = (priceData) => {
-    if (priceData.length < 2) {
+    // Ensure we have valid data
+    if (!priceData || !Array.isArray(priceData) || priceData.length < 2) {
+      // Return a default change object instead of undefined
       return { percentage: 0, direction: 'up' };
     }
     
@@ -180,11 +273,24 @@ export default function Dashboard() {
 
   // Fallback data for when API fails
   const getFallbackDashboardData = () => {
+    // Try to get name from profile/session, fallback to 'Farmer'
+    const farmerName = profile.name || session.name || 'Farmer';
+    
+    // Try to get crops from profile, fallback to default crops
+    const farmerCrops = (profile.crops && profile.crops.length > 0) 
+      ? profile.crops 
+      : ['Rice', 'Coconut', 'Pepper'];
+    
+    // Try to get district from profile, fallback to default
+    const farmerDistrict = profile.district || 'Ernakulam';
+
     return {
       farmer: {
-        name: profile.name || session.name || 'Farmer',
-        crops: profile.crops || ['Rice', 'Coconut', 'Pepper'],
-        district: profile.district || 'Ernakulam'
+        name: farmerName,
+        crops: farmerCrops,
+        district: farmerDistrict,
+        experience: profile.experience || 5,
+        farmSize: profile.farmSize || '2 acres'
       },
       cropHealth: [
         { crop: 'Rice', status: 'Leaf Blast', severity: 'moderate', date: new Date().toISOString() },
@@ -268,20 +374,34 @@ export default function Dashboard() {
           series: chartData.series
         };
         chart.setOption(option);
-      } catch (e) {}
+      } catch (e) {
+        console.error('Chart initialization error:', e);
+      }
     }
     initChart();
-    const handleResize = () => { if (chart) chart.resize(); }
+    const handleResize = () => { if (chart) chart.resize(); };
     window.addEventListener('resize', handleResize);
     return () => { window.removeEventListener('resize', handleResize); if (chart) chart.dispose && chart.dispose(); };
   }, [marketData, realTimeMarketData]);
 
   // Generate chart data from real market prices
   const generateChartData = (marketPrices) => {
+    // Ensure we have valid data
+    if (!marketPrices || !Array.isArray(marketPrices) || marketPrices.length === 0) {
+      console.warn('Invalid market prices data for chart generation:', marketPrices);
+      return getDefaultChartData();
+    }
+    
     const legend = marketPrices.map(item => item.crop);
     const series = marketPrices.map((item, index) => {
+      // Validate the item structure
+      if (!item || typeof item !== 'object') {
+        console.warn('Invalid market item:', item);
+        return null;
+      }
+      
       // Generate trend data based on current price
-      const basePrice = item.price;
+      const basePrice = item.price || 0;
       const trendData = Array.from({ length: 7 }, (_, i) => {
         const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
         return Math.round(basePrice * (1 + variation));
@@ -290,7 +410,7 @@ export default function Dashboard() {
       const colors = ['#1ea055', '#89d7a0', '#66c184', '#2fb46a', '#4ade80'];
       
       return {
-        name: item.crop,
+        name: item.crop || 'Unknown',
         type: 'line',
         smooth: true,
         showSymbol: false,
@@ -298,7 +418,13 @@ export default function Dashboard() {
         areaStyle: { color: `rgba(47,180,106,${0.14 - index * 0.02})` },
         lineStyle: { color: colors[index] || '#1ea055', width: 3 - index * 0.5 }
       };
-    });
+    }).filter(item => item !== null); // Remove any null items
+    
+    // If we filtered out all items, return default data
+    if (series.length === 0) {
+      console.warn('No valid series data for chart');
+      return getDefaultChartData();
+    }
     
     return { legend, series };
   };
@@ -708,18 +834,44 @@ export default function Dashboard() {
             </button>
           </div>
           <div className="market-row">
-            {(realTimeMarketData.length > 0 ? realTimeMarketData : (marketData.length > 0 ? marketData : getFallbackMarketData(profile))).map((item, index) => (
-              <div key={index} className="price-summary">
-                <div className="p-name">{item.crop}</div>
-                <div className="p-value">₹{item.price}</div>
-                <div className={`p-change ${item.change?.direction === 'up' ? 'pos' : 'neg'}`}>
-                  {item.change?.direction === 'up' ? '+' : ''}{item.change?.percentage || item.change}%
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
-                  {item.market}
-                </div>
-              </div>
-            ))}
+            {/* Ensure we have valid data before mapping */}
+            {(() => {
+              const marketDataToDisplay = realTimeMarketData.length > 0 ? 
+                realTimeMarketData : 
+                (marketData.length > 0 ? marketData : getFallbackMarketData(profile));
+                
+              // Validate that we have an array
+              if (!Array.isArray(marketDataToDisplay)) {
+                console.error('Invalid market data format:', marketDataToDisplay);
+                return <div>Error: Invalid market data format</div>;
+              }
+              
+              return marketDataToDisplay.map((item, index) => {
+                // Validate each item
+                if (!item || typeof item !== 'object') {
+                  console.error('Invalid market item:', item);
+                  return <div key={index}>Error: Invalid market item</div>;
+                }
+                
+                // Ensure change object exists and has required properties
+                const change = item.change || { percentage: 0, direction: 'up' };
+                const percentage = change.percentage !== undefined ? change.percentage : 0;
+                const direction = change.direction || 'up';
+                
+                return (
+                  <div key={index} className="price-summary">
+                    <div className="p-name">{item.crop || 'Unknown'}</div>
+                    <div className="p-value">₹{item.price || 0}</div>
+                    <div className={`p-change ${direction === 'up' ? 'pos' : direction === 'down' ? 'neg' : ''}`}>
+                      {direction === 'up' ? '+' : ''}{percentage}%
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
+                      {item.market || 'Unknown Market'}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
           <div className="market-chart card-chart" ref={chartRef} />
         </div>

@@ -69,9 +69,14 @@ exports.getHourlyForecast = async (req, res) => {
         ...coords,
         appid: process.env.OPENWEATHER_API_KEY,
         units: "metric",
-        cnt: 16, // 16 timestamps → 48 hrs
+        cnt: 24, // 24 timestamps → 72 hrs
       },
     });
+    
+    // Debug logging
+    console.log(`Hourly forecast API call for lat:${coords.lat}, lon:${coords.lon}`);
+    console.log(`Requested 24 entries, got ${response.data.list ? response.data.list.length : 0} entries`);
+    
     res.json(response.data);
   } catch (error) {
     handleError(res, error, "Failed to fetch hourly forecast data");
