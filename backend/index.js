@@ -6,31 +6,28 @@ const multer = require("multer");
 const mongoose = require("mongoose");
 const path = require("path");
 
-// Import Firebase config (keeps side-effects/init if any)
+// Import Firebase config
 const { admin } = require('./config/firebase');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Allowed origins (comma-separated in .env) or sensible defaults
+// Configure allowed origins for CORS
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
   : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176'];
 
-// Add Vercel deployment URL to allowed origins
+// Add deployment URLs to allowed origins
 allowedOrigins.push('https://ammachiai.vercel.app');
-
-// Add Render deployment URL to allowed origins (fixing the pattern matching issue)
 allowedOrigins.push('https://ammachi-ai.onrender.com');
 
 console.log('Allowed origins:', allowedOrigins);
 
-// CORS middleware
+// CORS middleware configuration
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, postman)
+    // Allow requests with no origin
     if (!origin) {
-      console.log('No origin header, allowing request');
       return callback(null, true);
     }
     
@@ -45,11 +42,8 @@ app.use(cors({
     });
     
     if (isAllowedOrigin) {
-      console.log('CORS allowing origin:', origin);
       callback(null, true);
     } else {
-      console.log('CORS blocking origin:', origin);
-      console.log('Allowed origins:', allowedOrigins);
       callback(null, true); // Temporarily allow all origins for debugging
     }
   },
@@ -57,11 +51,9 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
-// Add a middleware to log all requests for debugging
+// Log all requests for debugging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.get('Origin') || 'None'}`);
-  console.log('Query params:', req.query);
-  console.log('Headers:', req.headers);
   next();
 });
 
@@ -71,7 +63,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Basic routes / health checks
+// Basic routes
 app.get("/", (req, res) => {
   res.json({
     message: "Ammachi AI Backend Server is running!",
@@ -91,15 +83,14 @@ app.post("/api/test-cors", (req, res) => {
   });
 });
 
-// Serve static files from the 'public' directory
+// Serve static files
 app.use(express.static('public'));
 
-// Special route for market API testing
+// Test routes
 app.get('/test-market', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'test-frontend.html'));
 });
 
-// Special route for weather API testing
 app.get('/test-weather', (req, res) => {
   res.status(404).json({ error: 'Test file not found' });
 });
@@ -121,7 +112,7 @@ const marketRoutes = require('./routes/market');
 const weatherRoutes = require('./routes/weather');
 const chatbotRoutes = require('./routes/chatbot');
 
-// API Routes - keep them together and before error handlers
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/disease', diseaseRoutes);
 app.use('/api/farmers', farmersRoutes);
@@ -152,7 +143,7 @@ app.use((req, res) => {
   });
 });
 
-// MongoDB Connection (Optional - only if MONGO_URI is provided)
+// MongoDB Connection
 async function connectDB() {
   if (!process.env.MONGO_URI) {
     console.log("⚠️ MongoDB URI not provided. MongoDB features will be disabled.");

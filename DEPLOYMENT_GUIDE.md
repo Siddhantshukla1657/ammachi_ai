@@ -22,7 +22,7 @@ MONGO_URI=mongodb+srv://ammachi_user:LlNSuHPKvGTtMvbC@cluster0.qah2c3s.mongodb.n
 # Server Configuration
 PORT=5000
 NODE_ENV=production
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://ammachiai.vercel.app
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://ammachiai.vercel.app,https://ammachi-ai.onrender.com
 
 # Weather and API Keys
 PLANT_ID_KEY=bMAVATb7bJdaJ61G6Upx8WiIVk1HbXNx55nlnHHwRFiviZqfcS
@@ -48,13 +48,13 @@ Deploy your backend to a hosting service like Render, Heroku, or AWS. Note the d
 Update your frontend `.env.production` file with your deployed backend URL:
 
 ```
-VITE_BACKEND_URL=https://your-deployed-backend-url.com
+VITE_BACKEND_URL=https://ammachi-ai.onrender.com
 ```
 
 ### 2. Deploy to Vercel
 When deploying to Vercel, make sure to set the environment variable in the Vercel dashboard:
 - Key: `VITE_BACKEND_URL`
-- Value: `https://your-deployed-backend-url.com`
+- Value: `https://ammachi-ai.onrender.com`
 
 ## API Integration Verification
 
@@ -83,7 +83,7 @@ The chatbot requires Dialogflow and Gemini credentials to work fully:
 ### CORS Issues
 If you encounter CORS issues, make sure your backend's `ALLOWED_ORIGINS` includes your frontend URL:
 ```
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://ammachiai.vercel.app
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://ammachiai.vercel.app,https://ammachi-ai.onrender.com
 ```
 
 ### Authentication Issues
