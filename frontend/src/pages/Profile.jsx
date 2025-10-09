@@ -31,8 +31,11 @@ export default function Profile() {
         throw new Error('No logged-in user found in local storage');
       }
       
+      // Use the full backend URL for API requests in production
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+      
       // First try to get profile from auth API
-      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`);
+      const response = await fetch(`${backendUrl}/api/auth/profile/${encodeURIComponent(userEmail)}`);
       const data = await response.json();
       
       if (data.success) {
@@ -48,7 +51,7 @@ export default function Profile() {
         const authToken = localStorage.getItem('authToken');
         if (authToken) {
           try {
-            const tokenResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/verify-token`, {
+            const tokenResponse = await fetch(`${backendUrl}/api/auth/verify-token`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ idToken: authToken })
@@ -113,7 +116,10 @@ export default function Profile() {
         return;
       }
 
-      const response = await fetch(`/api/auth/profile/${encodeURIComponent(userEmail)}`, {
+      // Use the full backend URL for API requests in production
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+
+      const response = await fetch(`${backendUrl}/api/auth/profile/${encodeURIComponent(userEmail)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -467,7 +473,9 @@ export default function Profile() {
                     changeLanguage(newLanguage);
                     // Save language change immediately to database
                     if (user?.email) {
-                      fetch(`/api/auth/profile/${encodeURIComponent(user.email)}`, {
+                      // Use the full backend URL for API requests in production
+                      const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+                      fetch(`${backendUrl}/api/auth/profile/${encodeURIComponent(user.email)}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ language: newLanguage }),

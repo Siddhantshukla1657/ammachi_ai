@@ -205,8 +205,11 @@ export default function Detect(){
       
       console.log('Saving detailed crop health data:', cropHealthData);
       
+      // Use proper backend URL for API calls
+      const backendUrl = getBackendUrl();
+      
       // Save to backend
-      const saveResponse = await fetch('/api/farmers/crop-health', {
+      const saveResponse = await fetch(`${backendUrl}/api/farmers/crop-health`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -227,7 +230,10 @@ export default function Detect(){
   async function getRemedies(diseaseName) {
     setIsGettingRemedies(true);
     try {
-      const response = await fetch('/api/chatbot/remedies', {
+      // Use proper backend URL for API calls
+      const backendUrl = getBackendUrl();
+      
+      const response = await fetch(`${backendUrl}/api/chatbot/remedies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
