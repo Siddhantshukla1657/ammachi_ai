@@ -111,7 +111,8 @@ export default function Weather(){
         setDaily(days);
        
         // Process hourly forecast data
-        const hours = hourlyJson.list ? hourlyJson.list.slice(0, 24) : [];
+        // The API provides 16 items (every 3 hours for 48 hours), not 24
+        const hours = hourlyJson.list ? hourlyJson.list.slice(0, 16) : [];
         setHourly(hours);
        
         // Reset retry count on success
@@ -130,13 +131,30 @@ export default function Weather(){
 
 
   const formatTemp = (t) => (t ? `${Math.round(t)}°C` : '—');
+
+  const getFarmingTip = (dayData) => {
+    if (!dayData) return '';
+    const temp = dayData.temp || dayData.main?.temp;
+    const humidity = dayData.humidity || dayData.main?.humidity;
+    const pop = dayData.pop || 0;
+    const windSpeed = dayData.wind?.speed || 0;
+
+    if (pop > 0.7) return '🌧️ Heavy rain expected - Avoid field work';
+    if (pop > 0.4) return '🌦️ Light rain - Good for watering, avoid harvesting';
+    if (temp > 35) return '☀️ Hot day - Water early morning or evening';
+    if (temp < 15) return '❄️ Cool day - Good for planting and transplanting';
+    if (humidity > 80) return '💧 High humidity - Watch for fungal diseases';
+    if (windSpeed > 5) return '💨 Windy conditions - Secure crops and equipment';
+    return '🌱 Good weather for farming activities';
+  };
+
   const popPercent = (d) => {
     if (!d) return '';
     if (typeof d.pop === 'number') return `${Math.round(d.pop * 100)}%`;
     if (d.rain) return `${Math.round(d.rain)}%`;
     return '';
   };
- 
+
   const formatTime = (timestamp) => {
     if (!timestamp) return '—';
     const date = new Date(timestamp * 1000);
@@ -159,22 +177,6 @@ export default function Weather(){
     if (code.includes('thunder')) return '⚡';
     if (code.includes('mist') || code.includes('fog')) return '🌫️';
     return '☁️';
-  };
-
-  const getFarmingTip = (dayData) => {
-    if (!dayData) return '';
-    const temp = dayData.temp || dayData.main?.temp;
-    const humidity = dayData.humidity || dayData.main?.humidity;
-    const pop = dayData.pop || 0;
-    const windSpeed = dayData.wind?.speed || 0;
-
-    if (pop > 0.7) return '🌧️ Heavy rain expected - Avoid field work';
-    if (pop > 0.4) return '🌦️ Light rain - Good for watering, avoid harvesting';
-    if (temp > 35) return '☀️ Hot day - Water early morning or evening';
-    if (temp < 15) return '❄️ Cool day - Good for planting and transplanting';
-    if (humidity > 80) return '💧 High humidity - Watch for fungal diseases';
-    if (windSpeed > 5) return '💨 Windy conditions - Secure crops and equipment';
-    return '🌱 Good weather for farming activities';
   };
 
   const toggleDayExpansion = (dayIndex) => {
@@ -380,21 +382,18 @@ export default function Weather(){
             <section className="hourly-forecast">
               <h3>Hourly Forecast</h3>
               <div className="hour-row">
-                {Array.from({length:24}).map((_,i)=> {
-                  // Calculate proper timestamp starting from 12:00 AM today
-                  const now = new Date();
-                  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-                  const timestamp = Math.floor(startOfDay.getTime()/1000) + i*3600;
-                  
-                  // Get hourly data if available, otherwise use null
-                  const hourlyData = hourly[i] || null;
+                {(hourly && hourly.length > 0 ? hourly : Array.from({length: 16})).map((hourlyData, i) => {
+                  // For actual data, use the timestamp from the API
+                  // For placeholder data, calculate timestamps at 3-hour intervals starting from now
+                  const baseTime = Math.floor(Date.now() / 1000);
+                  const timestamp = hourlyData?.dt || (baseTime + (i * 3 * 3600));
                   
                   return (
                     <div key={i} className="hour-card">
                       <div className="hour-time">{formatTime(timestamp)}</div>
                       <div className="hour-icon">{getWeatherIcon(hourlyData?.weather?.[0]?.main)}</div>
                       <div className="hour-temp">{hourlyData?.main?.temp ? `${Math.round(hourlyData.main.temp)}°C` : '—'}</div>
-                      <div className="hour-cond muted">{ hourlyData?.weather?.[0]?.main || 'Cloudy' }</div>
+                      <div className="hour-cond muted">{ hourlyData?.weather?.[0]?.description || hourlyData?.weather?.[0]?.main || 'Cloudy' }</div>
                       <div className="hour-pop muted">{ popPercent(hourlyData) }</div>
                     </div>
                   );
